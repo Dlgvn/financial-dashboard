@@ -1,36 +1,79 @@
-"""Welcome to Reflex! This file outlines the steps to create a basic app."""
+"""MSE Analytica - Financial Dashboard for Mongolian Stock Exchange."""
 
 import reflex as rx
 
-from rxconfig import config
-
-
-class State(rx.State):
-    """The app state."""
+from .components.file_list import file_list
+from .components.upload_zone import selected_files_list, upload_zone
+from .state import UploadState
 
 
 def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
+    """Main page: upload zone + parsed files table."""
+    return rx.box(
         rx.color_mode.button(position="top-right"),
-        rx.vstack(
-            rx.heading("Welcome to Reflex!", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
+        rx.container(
+            rx.vstack(
+                # Header
+                rx.heading("MSE Analytica", size="7", trim="both"),
+                rx.text(
+                    "Upload financial statements from members.mse.mn",
+                    color=rx.color("gray", 11),
+                    size="3",
+                ),
+                rx.separator(),
+
+                # Upload zone
+                upload_zone(),
+                selected_files_list(),
+
+                # Upload progress spinner
+                rx.cond(
+                    UploadState.is_uploading,
+                    rx.hstack(
+                        rx.spinner(size="3"),
+                        rx.text("Parsing files...", size="2"),
+                        align="center",
+                        spacing="2",
+                    ),
+                ),
+
+                # Success message
+                rx.cond(
+                    UploadState.success_message != "",
+                    rx.callout(
+                        UploadState.success_message,
+                        icon="check",
+                        color_scheme="green",
+                        width="100%",
+                    ),
+                ),
+
+                # Error message
+                rx.cond(
+                    UploadState.parse_error != "",
+                    rx.callout(
+                        UploadState.parse_error,
+                        icon="triangle-alert",
+                        color_scheme="red",
+                        width="100%",
+                    ),
+                ),
+
+                rx.separator(),
+
+                # Parsed files table
+                rx.heading("Uploaded Files", size="5"),
+                file_list(),
+
+                spacing="4",
+                width="100%",
+                padding_y="6",
             ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
+            max_width="900px",
         ),
+        min_height="100vh",
     )
 
 
 app = rx.App()
-app.add_page(index)
+app.add_page(index, on_load=UploadState.on_load)
