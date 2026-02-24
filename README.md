@@ -1,6 +1,6 @@
 # MSE Financial Dashboard
 
-A financial statement analysis tool for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [members.mse.mn](https://members.mse.mn), computes financial ratios, and provides exploratory data analysis through interactive visualizations.
+A financial statement analysis tool for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [mse.mn](https://mse.mn), computes financial ratios, and provides exploratory data analysis through interactive visualizations.
 
 ## Features
 
