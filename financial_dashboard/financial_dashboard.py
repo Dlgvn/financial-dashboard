@@ -3,77 +3,59 @@
 import reflex as rx
 
 from .components.file_list import file_list
+from .components.layout import page_layout
 from .components.upload_zone import selected_files_list, upload_zone
 from .pages.company import company_page
+from .pages.portfolio import portfolio_page
 from .pages.screener import screener_page
-from .state import AnalysisState, UploadState
+from .state import AnalysisState, PortfolioState, UploadState
 
 
 def index() -> rx.Component:
     """Main page: upload zone + parsed files table."""
-    return rx.box(
-        rx.color_mode.button(position="top-right"),
-        rx.container(
-            rx.vstack(
-                # Header
-                rx.heading("MSE Analytica", size="7", trim="both"),
-                rx.text(
-                    "Upload financial statements from members.mse.mn",
-                    color=rx.color("gray", 11),
-                    size="3",
-                ),
-                rx.separator(),
-
-                # Upload zone
-                upload_zone(),
-                selected_files_list(),
-
-                # Upload progress spinner
-                rx.cond(
-                    UploadState.is_uploading,
-                    rx.hstack(
-                        rx.spinner(size="3"),
-                        rx.text("Parsing files...", size="2"),
-                        align="center",
-                        spacing="2",
-                    ),
-                ),
-
-                # Success message
-                rx.cond(
-                    UploadState.success_message != "",
-                    rx.callout(
-                        UploadState.success_message,
-                        icon="check",
-                        color_scheme="green",
-                        width="100%",
-                    ),
-                ),
-
-                # Error message
-                rx.cond(
-                    UploadState.parse_error != "",
-                    rx.callout(
-                        UploadState.parse_error,
-                        icon="triangle-alert",
-                        color_scheme="red",
-                        width="100%",
-                    ),
-                ),
-
-                rx.separator(),
-
-                # Parsed files table
-                rx.heading("Uploaded Files", size="5"),
-                file_list(),
-
-                spacing="4",
-                width="100%",
-                padding_y="6",
+    return page_layout(
+        rx.vstack(
+            rx.heading("Upload Financial Statements", size="6", class_name="text-slate-100"),
+            rx.text(
+                "Upload .xls or .xlsx files from members.mse.mn",
+                class_name="text-slate-400 text-sm",
             ),
-            max_width="900px",
+            rx.separator(class_name="border-slate-700"),
+            upload_zone(),
+            selected_files_list(),
+            rx.cond(
+                UploadState.is_uploading,
+                rx.hstack(
+                    rx.spinner(size="3"),
+                    rx.text("Parsing files...", size="2", class_name="text-slate-300"),
+                    align="center",
+                    spacing="2",
+                ),
+            ),
+            rx.cond(
+                UploadState.success_message != "",
+                rx.callout(
+                    UploadState.success_message,
+                    icon="check",
+                    color_scheme="green",
+                    width="100%",
+                ),
+            ),
+            rx.cond(
+                UploadState.parse_error != "",
+                rx.callout(
+                    UploadState.parse_error,
+                    icon="triangle-alert",
+                    color_scheme="red",
+                    width="100%",
+                ),
+            ),
+            rx.separator(class_name="border-slate-700"),
+            rx.text("Uploaded Companies", class_name="text-slate-200 font-semibold"),
+            file_list(),
+            spacing="4",
+            width="100%",
         ),
-        min_height="100vh",
     )
 
 
@@ -85,3 +67,4 @@ app.add_page(
     route="/company/[company]",
     on_load=AnalysisState.on_load_company,
 )
+app.add_page(portfolio_page, route="/portfolio")
