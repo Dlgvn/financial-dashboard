@@ -146,7 +146,7 @@ PIOTROSKI_LABELS: dict[str, str] = {
     "f1_roa_positive":      "ROA Positive",
     "f2_ocf_positive":      "Operating Cash Flow Positive",
     "f3_roa_improving":     "ROA Improving YoY",
-    "f4_accruals":          "Cash Earnings Quality (OCF > Net Income)",
+    "f4_accruals":          "Cash Earnings Quality (OCF/Assets > ROA)",
     "f5_leverage_down":     "Leverage Decreased",
     "f6_liquidity_up":      "Current Ratio Improved",
     "f7_no_dilution":       "No Share Dilution",

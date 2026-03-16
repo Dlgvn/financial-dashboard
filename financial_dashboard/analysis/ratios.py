@@ -319,38 +319,29 @@ def compute_piotroski(parsed_data: dict) -> dict:
             return None
 
     # ── F1: ROA positive (net_income / total_assets > 0) ─────────────────────
-    roa = safe_div(net_income, ta)
-    f1  = _flag(roa is not None and roa > 0)
+    roa_curr = safe_div(net_income, ta)
+    f1 = None if roa_curr is None else _flag(roa_curr > 0)
 
     # ── F2: Operating cash flow positive ─────────────────────────────────────
-    f2 = _flag(ocf is not None and ocf > 0)
+    f2 = None if ocf is None else _flag(ocf > 0)
 
     # ── F3: ROA improving year-over-year ─────────────────────────────────────
-    roa_curr = safe_div(net_income, ta)
     roa_prev = safe_div(ni_prev, ta_prev)
-    f3 = _flag(
-        roa_curr is not None and roa_prev is not None and roa_curr > roa_prev
-    )
+    f3 = None if (roa_curr is None or roa_prev is None) else _flag(roa_curr > roa_prev)
 
     # ── F4: Accruals — cash earnings quality (OCF/TA > ROA) ──────────────────
     ocf_ta = safe_div(ocf, ta)
-    f4 = _flag(
-        ocf_ta is not None and roa_curr is not None and ocf_ta > roa_curr
-    )
+    f4 = None if (ocf_ta is None or roa_curr is None) else _flag(ocf_ta > roa_curr)
 
     # ── F5: Leverage decreased (total_liabilities / total_assets) ────────────
     lev      = safe_div(tl, ta)
     lev_prev = safe_div(tl_prev, ta_prev)
-    f5 = _flag(
-        lev is not None and lev_prev is not None and lev < lev_prev
-    )
+    f5 = None if (lev is None or lev_prev is None) else _flag(lev < lev_prev)
 
     # ── F6: Current ratio improved ────────────────────────────────────────────
     cr      = safe_div(ca, cl)
     cr_prev = safe_div(ca_prev, cl_prev)
-    f6 = _flag(
-        cr is not None and cr_prev is not None and cr > cr_prev
-    )
+    f6 = None if (cr is None or cr_prev is None) else _flag(cr > cr_prev)
 
     # ── F7: No share dilution — skip (shares_outstanding not in MSE data) ────
     f7 = None
@@ -358,16 +349,12 @@ def compute_piotroski(parsed_data: dict) -> dict:
     # ── F8: Gross margin improving ────────────────────────────────────────────
     gm      = safe_div(gp, rev)
     gm_prev = safe_div(gp_prev, rev_prev)
-    f8 = _flag(
-        gm is not None and gm_prev is not None and gm > gm_prev
-    )
+    f8 = None if (gm is None or gm_prev is None) else _flag(gm > gm_prev)
 
     # ── F9: Asset turnover improving (revenue / total_assets) ────────────────
     at      = safe_div(rev, ta)
     at_prev = safe_div(rev_prev, ta_prev)
-    f9 = _flag(
-        at is not None and at_prev is not None and at > at_prev
-    )
+    f9 = None if (at is None or at_prev is None) else _flag(at > at_prev)
 
     criteria = {
         "f1_roa_positive":   f1,
