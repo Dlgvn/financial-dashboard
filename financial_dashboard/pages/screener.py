@@ -33,7 +33,7 @@ def company_row(company: dict) -> rx.Component:
         rx.table.cell(
             rx.link(
                 company["company"],
-                href=rx.Var.create("/company/") + company["company"],
+                href=company["url"],
                 class_name="text-green-400 hover:text-green-300 font-medium",
             ),
             class_name="py-3 px-4",

@@ -140,6 +140,7 @@ def _load_all_companies() -> list[dict]:
             results.append({
                 "filename":  entry["filename"],
                 "company":   entry["company"],
+                "url":       f"/company/{entry['company']}",
                 "year":      entry.get("year", ""),
                 "sector":    entry.get("sector", ""),
                 "score":     composite["score"],
@@ -248,6 +249,7 @@ class PortfolioState(AnalysisState):
         holdings.append({
             "company":  entry["company"],
             "filename": entry["filename"],
+            "url":      entry.get("url", f"/company/{entry['company']}"),
             "weight":   new_weight,
             "score":    entry["score"],
             "label":    entry["label"],
