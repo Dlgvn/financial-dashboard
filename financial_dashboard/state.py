@@ -347,18 +347,21 @@ class PortfolioState(AnalysisState):
         n = len(self.holdings) + 1
         # Rebalance to equal weights
         new_weight = round(1 / n, 4)
+        weight_str = f"{new_weight * 100:.1f}%"
         holdings = [
-            {**h, "weight": new_weight}
+            {**h, "weight": new_weight, "weight_str": weight_str}  # score_str preserved via **h
             for h in self.holdings
         ]
         holdings.append({
-            "company":  entry["company"],
-            "filename": entry["filename"],
-            "url":      entry.get("url", f"/company/{entry['company']}"),
-            "weight":   new_weight,
-            "score":    entry["score"],
-            "label":    entry["label"],
-            "color":    entry["color"],
+            "company":    entry["company"],
+            "filename":   entry["filename"],
+            "url":        entry.get("url", f"/company/{entry['company']}"),
+            "weight":     new_weight,
+            "weight_str": f"{new_weight * 100:.1f}%",
+            "score":      entry["score"],
+            "score_str":  str(entry["score"]),
+            "label":      entry["label"],
+            "color":      entry["color"],
         })
         self.holdings = holdings
 
@@ -369,7 +372,8 @@ class PortfolioState(AnalysisState):
         n = len(holdings)
         if n > 0:
             new_weight = round(1 / n, 4)
-            holdings = [{**h, "weight": new_weight} for h in holdings]
+            weight_str = f"{new_weight * 100:.1f}%"
+            holdings = [{**h, "weight": new_weight, "weight_str": weight_str} for h in holdings]
         self.holdings = holdings
 
     @rx.var

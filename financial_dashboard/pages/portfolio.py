@@ -16,14 +16,14 @@ def holding_row(holding: dict) -> rx.Component:
         ),
         rx.table.cell(
             rx.text(
-                (holding["weight"] * 100).to_string() + "%",
+                holding["weight_str"],
                 class_name="text-slate-300 text-sm font-mono",
             ),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
             rx.text(
-                holding["score"].to_string(),
+                holding["score_str"],
                 class_name=rx.cond(
                     holding["color"] == "green",
                     "font-bold text-green-400",
