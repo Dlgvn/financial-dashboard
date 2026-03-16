@@ -47,25 +47,11 @@ def company_row(company: dict) -> rx.Component:
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.text(
-                rx.cond(
-                    company["f_score"] != None,  # noqa: E711
-                    company["f_score"].to_string() + " / 9",
-                    "N/A",
-                ),
-                class_name="text-slate-300 text-sm",
-            ),
+            rx.text(company["f_score_str"], class_name="text-slate-300 text-sm"),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.text(
-                rx.cond(
-                    company["roe"] != None,  # noqa: E711
-                    (company["roe"] * 100).to_string() + "%",
-                    "N/A",
-                ),
-                class_name="text-slate-300 text-sm",
-            ),
+            rx.text(company["roe_str"], class_name="text-slate-300 text-sm"),
             class_name="py-3 px-4",
         ),
         rx.table.cell(

@@ -137,19 +137,20 @@ def _load_all_companies() -> list[dict]:
             beneish   = compute_beneish(data)
             composite = compute_composite_score(ratios, piotroski, beneish)
 
+            roe = ratios["current"].get("profitability", {}).get("roe")
+            f_score = piotroski["f_score"]
+            max_score = piotroski["max_score"]
             results.append({
-                "filename":  entry["filename"],
-                "company":   entry["company"],
-                "url":       f"/company/{entry['company']}",
-                "year":      entry.get("year", ""),
-                "sector":    entry.get("sector", ""),
-                "score":     composite["score"],
-                "label":     composite["label"],
-                "color":     composite["color"],
-                "z_score":   ratios["current"].get("z_score", {}).get("z_score"),
-                "roe":       ratios["current"].get("profitability", {}).get("roe"),
-                "f_score":   piotroski["f_score"],
-                "m_score":   beneish["m_score"],
+                "filename":    entry["filename"],
+                "company":     entry["company"],
+                "url":         f"/company/{entry['company']}",
+                "year":        entry.get("year", ""),
+                "sector":      entry.get("sector", ""),
+                "score":       composite["score"],
+                "label":       composite["label"],
+                "color":       composite["color"],
+                "roe_str":     f"{roe * 100:.1f}%" if roe is not None else "N/A",
+                "f_score_str": f"{f_score} / {max_score}" if f_score is not None else "N/A",
             })
         except Exception as e:
             print(f"[_load_all_companies] Skipping {entry.get('filename', '?')}: {e}")
