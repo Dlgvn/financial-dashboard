@@ -612,44 +612,44 @@ def compute_composite_score(
     roa = curr.get("profitability", {}).get("roa")
     roe = curr.get("profitability", {}).get("roe")
     npm = curr.get("profitability", {}).get("net_margin")
-    prof_parts = list(filter(None, [
+    prof_parts = [x for x in [
         _interp(roa,  0,    0.15, 0, 100),
         _interp(roe,  0,    0.25, 0, 100),
         _interp(npm, -0.05, 0.20, 0, 100),
-    ]))
+    ] if x is not None]
     prof_score = sum(prof_parts) / len(prof_parts) if prof_parts else None
 
     # Liquidity
     cr = curr.get("liquidity", {}).get("current_ratio")
     qr = curr.get("liquidity", {}).get("quick_ratio")
     cash_r = curr.get("liquidity", {}).get("cash_ratio")
-    liq_parts = list(filter(None, [
+    liq_parts = [x for x in [
         _interp(cr,     0, 3.0,  0, 100),
         _interp(qr,     0, 1.5,  0, 100),
         _interp(cash_r, 0, 0.5,  0, 100),
-    ]))
+    ] if x is not None]
     liq_score = sum(liq_parts) / len(liq_parts) if liq_parts else None
 
     # Solvency (inverted: lower debt = better)
     d2e = curr.get("solvency", {}).get("debt_to_equity")
     d2a = curr.get("solvency", {}).get("debt_to_assets")
     ic  = curr.get("solvency", {}).get("interest_coverage")
-    solv_parts = list(filter(None, [
+    solv_parts = [x for x in [
         _interp(d2e, 5, 0, 0, 100),   # inverted
         _interp(d2a, 1, 0, 0, 100),   # inverted
         _interp(ic,  0, 5, 0, 100),
-    ]))
+    ] if x is not None]
     solv_score = sum(solv_parts) / len(solv_parts) if solv_parts else None
 
     # Activity
     tat = curr.get("activity", {}).get("total_asset_turnover")
     dso = curr.get("activity", {}).get("days_sales_outstanding")
     it  = curr.get("activity", {}).get("inventory_turnover")
-    act_parts = list(filter(None, [
+    act_parts = [x for x in [
         _interp(tat, 0, 2.0,  0, 100),
         _interp(dso, 180, 30, 0, 100),  # inverted (lower DSO = better)
         _interp(it,  0, 20,   0, 100),
-    ]))
+    ] if x is not None]
     act_score = sum(act_parts) / len(act_parts) if act_parts else None
 
     # Altman Z-Score
