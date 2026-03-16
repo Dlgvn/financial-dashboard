@@ -158,6 +158,18 @@ def _load_all_companies() -> list[dict]:
     return results
 
 
+def _fmt(v, decimals: int = 2) -> str:
+    """Format a float/int for display, or 'N/A' if None."""
+    return f"{v:.{decimals}f}" if v is not None else "N/A"
+
+
+def _crit(v) -> int:
+    """Convert Piotroski criterion (1/0/None) to int (-1 for None)."""
+    if v is None:
+        return -1
+    return int(v)
+
+
 class AnalysisState(UploadState):
     """State for company screener and individual company analysis."""
 
@@ -165,12 +177,52 @@ class AnalysisState(UploadState):
     all_companies: list[dict] = []
     screener_filter: str = "All"     # sector filter value
 
-    # Company detail
+    # Company detail — raw dicts (kept for any backend use)
     selected_company_name: str = ""
     company_ratios:    dict = {}
     company_piotroski: dict = {}
     company_beneish:   dict = {}
     company_composite: dict = {}
+
+    # Flat display vars — composite
+    company_score: int = 0
+    company_health_label: str = ""
+    company_health_color: str = ""
+
+    # Flat display vars — scores
+    company_f_score_display: str = ""
+    company_m_score_display: str = ""
+    company_m_interp: str = ""
+
+    # Flat display vars — ratios (pre-formatted strings)
+    company_roa: str = ""
+    company_roe: str = ""
+    company_net_margin: str = ""
+    company_current_ratio: str = ""
+    company_quick_ratio: str = ""
+    company_debt_equity: str = ""
+    company_interest_cov: str = ""
+    company_asset_turnover: str = ""
+    company_z_score: str = ""
+
+    # Flat display vars — Piotroski criteria (1/0/-1)
+    company_f1: int = -1
+    company_f2: int = -1
+    company_f3: int = -1
+    company_f4: int = -1
+    company_f5: int = -1
+    company_f6: int = -1
+    company_f8: int = -1
+    company_f9: int = -1
+
+    # Flat display vars — Beneish indices (pre-formatted strings)
+    company_dsri: str = ""
+    company_gmi: str = ""
+    company_aqi: str = ""
+    company_sgi: str = ""
+    company_sgai: str = ""
+    company_lvgi: str = ""
+    company_tata: str = ""
 
     @rx.event
     def load_screener(self):
@@ -205,6 +257,58 @@ class AnalysisState(UploadState):
         self.company_composite = compute_composite_score(
             self.company_ratios, self.company_piotroski, self.company_beneish
         )
+
+        # --- Populate flat display vars ---
+        comp  = self.company_composite
+        piots = self.company_piotroski
+        ben   = self.company_beneish
+        curr  = self.company_ratios.get("current", {})
+
+        self.company_score        = comp.get("score", 0)
+        self.company_health_label = comp.get("label", "")
+        self.company_health_color = comp.get("color", "")
+
+        fs = piots.get("f_score")
+        ms = piots.get("max_score")
+        self.company_f_score_display = f"{fs} / {ms}" if fs is not None else "N/A"
+        mv = ben.get("m_score")
+        self.company_m_score_display = f"{mv:.2f}" if mv is not None else "N/A"
+        self.company_m_interp = ben.get("interpretation", "")
+
+        prof = curr.get("profitability", {})
+        liq  = curr.get("liquidity", {})
+        solv = curr.get("solvency", {})
+        act  = curr.get("activity", {})
+        zs   = curr.get("z_score", {})
+
+        self.company_roa          = _fmt(prof.get("roa"))
+        self.company_roe          = _fmt(prof.get("roe"))
+        self.company_net_margin   = _fmt(prof.get("net_margin"))
+        self.company_current_ratio = _fmt(liq.get("current_ratio"))
+        self.company_quick_ratio  = _fmt(liq.get("quick_ratio"))
+        self.company_debt_equity  = _fmt(solv.get("debt_to_equity"))
+        self.company_interest_cov = _fmt(solv.get("interest_coverage"))
+        self.company_asset_turnover = _fmt(act.get("total_asset_turnover"))
+        self.company_z_score      = _fmt(zs.get("z_score"))
+
+        crit = piots.get("criteria", {})
+        self.company_f1 = _crit(crit.get("f1_roa_positive"))
+        self.company_f2 = _crit(crit.get("f2_ocf_positive"))
+        self.company_f3 = _crit(crit.get("f3_roa_improving"))
+        self.company_f4 = _crit(crit.get("f4_accruals"))
+        self.company_f5 = _crit(crit.get("f5_leverage_down"))
+        self.company_f6 = _crit(crit.get("f6_liquidity_up"))
+        self.company_f8 = _crit(crit.get("f8_gross_margin_up"))
+        self.company_f9 = _crit(crit.get("f9_asset_turnover_up"))
+
+        idx = ben.get("indices", {})
+        self.company_dsri  = _fmt(idx.get("dsri"))
+        self.company_gmi   = _fmt(idx.get("gmi"))
+        self.company_aqi   = _fmt(idx.get("aqi"))
+        self.company_sgi   = _fmt(idx.get("sgi"))
+        self.company_sgai  = _fmt(idx.get("sgai"))
+        self.company_lvgi  = _fmt(idx.get("lvgi"))
+        self.company_tata  = _fmt(idx.get("tata"))
 
     @rx.event
     def on_load_company(self):
