@@ -389,4 +389,185 @@ def compute_piotroski(parsed_data: dict) -> dict:
     }
 
 
+def compute_beneish(parsed_data: dict) -> dict:
+    """Compute Beneish M-Score for earnings manipulation detection.
+
+    Uses 8 financial indices. Requires two years of data.
+    M-Score > -1.78  → possible manipulation
+    M-Score < -2.22  → likely clean
+
+    Returns:
+        {
+            "m_score": float | None,
+            "interpretation": str,
+            "threshold": float,
+            "indices": { dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata },
+            "missing_indices": [str],
+            "reliable": bool,   # False if < 5 indices computable
+        }
+    """
+    bs  = parsed_data.get("balance_sheet", {})
+    inc = parsed_data.get("income_statement", {})
+    cf  = parsed_data.get("cash_flow", {})
+
+    # ── Extract current year fields ───────────────────────────────────────────
+    ar     = bs.get("accounts_receivable")
+    rev    = inc.get("revenue")
+    gp     = inc.get("gross_profit")
+    cogs   = inc.get("cost_of_goods_sold")
+    ta     = bs.get("total_assets")
+    ca     = bs.get("total_current_assets")
+    ppe    = bs.get("fixed_assets")          # property, plant & equipment proxy
+    dep    = None                            # depreciation not in MSE data
+    sga    = None
+    if inc.get("selling_expenses") or inc.get("general_and_admin_expenses"):
+        parts = [inc.get("selling_expenses") or 0,
+                 inc.get("general_and_admin_expenses") or 0]
+        sga = sum(parts)
+    ltd    = bs.get("long_term_loans")
+    cl     = bs.get("total_current_liabilities")
+    ni     = inc.get("net_income")
+    ocf    = cf.get("operating_cash_flow")
+
+    # Derive gross profit if missing
+    if gp is None and rev is not None and cogs is not None:
+        gp = rev - cogs
+
+    # ── Extract previous year fields ──────────────────────────────────────────
+    ar_p   = bs.get("accounts_receivable_prev")
+    rev_p  = inc.get("revenue_prev")
+    gp_p   = inc.get("gross_profit_prev")
+    cogs_p = inc.get("cost_of_goods_sold_prev")
+    ta_p   = bs.get("total_assets_prev")
+    ca_p   = bs.get("total_current_assets_prev")
+    ppe_p  = bs.get("fixed_assets_prev")
+    sga_p  = None
+    if inc.get("selling_expenses_prev") or inc.get("general_and_admin_expenses_prev"):
+        parts = [inc.get("selling_expenses_prev") or 0,
+                 inc.get("general_and_admin_expenses_prev") or 0]
+        sga_p = sum(parts)
+    ltd_p  = bs.get("long_term_loans_prev")
+    cl_p   = bs.get("total_current_liabilities_prev")
+
+    if gp_p is None and rev_p is not None and cogs_p is not None:
+        gp_p = rev_p - cogs_p
+
+    # ── Compute the 8 indices ─────────────────────────────────────────────────
+    indices = {}
+    missing = []
+
+    # DSRI: Days Sales Receivables Index = (AR_t/Rev_t) / (AR_p/Rev_p)
+    dsri = safe_div(safe_div(ar, rev), safe_div(ar_p, rev_p))
+    indices["dsri"] = dsri
+    if dsri is None:
+        missing.append("dsri")
+
+    # GMI: Gross Margin Index = (GM_p/Rev_p) / (GM_t/Rev_t)  — prev/curr
+    gm   = safe_div(gp, rev)
+    gm_p = safe_div(gp_p, rev_p)
+    gmi  = safe_div(gm_p, gm)
+    indices["gmi"] = gmi
+    if gmi is None:
+        missing.append("gmi")
+
+    # AQI: Asset Quality Index
+    # = (1 - (CA_t + PPE_t)/TA_t) / (1 - (CA_p + PPE_p)/TA_p)
+    def _aq(ca_v, ppe_v, ta_v):
+        num = safe_div(ca_v, ta_v)
+        num2 = safe_div(ppe_v, ta_v)
+        if num is None or num2 is None:
+            return None
+        return 1 - num - num2
+
+    aq   = _aq(ca, ppe, ta)
+    aq_p = _aq(ca_p, ppe_p, ta_p)
+    aqi  = safe_div(aq, aq_p)
+    indices["aqi"] = aqi
+    if aqi is None:
+        missing.append("aqi")
+
+    # SGI: Sales Growth Index = Rev_t / Rev_p
+    sgi = safe_div(rev, rev_p)
+    indices["sgi"] = sgi
+    if sgi is None:
+        missing.append("sgi")
+
+    # DEPI: Depreciation Index — skipped, depreciation not in MSE data
+    indices["depi"] = None
+    missing.append("depi")
+
+    # SGAI: SG&A Index = (SGA_t/Rev_t) / (SGA_p/Rev_p)
+    sgai = safe_div(safe_div(sga, rev), safe_div(sga_p, rev_p))
+    indices["sgai"] = sgai
+    if sgai is None:
+        missing.append("sgai")
+
+    # LVGI: Leverage Index = ((LTD_t + CL_t)/TA_t) / ((LTD_p + CL_p)/TA_p)
+    def _lev(ltd_v, cl_v, ta_v):
+        if ltd_v is None and cl_v is None:
+            return None
+        num = (ltd_v or 0) + (cl_v or 0)
+        return safe_div(num, ta_v)
+
+    lv   = _lev(ltd, cl, ta)
+    lv_p = _lev(ltd_p, cl_p, ta_p)
+    lvgi = safe_div(lv, lv_p)
+    indices["lvgi"] = lvgi
+    if lvgi is None:
+        missing.append("lvgi")
+
+    # TATA: Total Accruals to Total Assets = (NI - OCF) / TA
+    tata = safe_div(
+        (ni - ocf) if (ni is not None and ocf is not None) else None,
+        ta
+    )
+    indices["tata"] = tata
+    if tata is None:
+        missing.append("tata")
+
+    # ── Compute M-Score ───────────────────────────────────────────────────────
+    # Weights: -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI
+    #          + 0.115*DEPI - 0.172*SGAI + 4.679*TATA - 0.327*LVGI
+    available = 8 - len(missing)
+    reliable  = available >= 5
+
+    m_score = None
+    if reliable:
+        coeffs = {
+            "dsri":  0.920,
+            "gmi":   0.528,
+            "aqi":   0.404,
+            "sgi":   0.892,
+            "depi":  0.115,
+            "sgai": -0.172,
+            "tata":  4.679,
+            "lvgi": -0.327,
+        }
+        total = -4.84
+        for key, coeff in coeffs.items():
+            val = indices.get(key)
+            if val is not None:
+                total += coeff * val
+            # Missing indices: excluded (partial score — noted in reliable flag)
+        m_score = total
+
+    if m_score is None:
+        interpretation = "Insufficient data"
+    elif m_score > -1.78:
+        interpretation = "Possible manipulation"
+    elif m_score < -2.22:
+        interpretation = "Likely clean"
+    else:
+        interpretation = "Inconclusive (grey zone)"
+
+    return {
+        "m_score":         m_score,
+        "interpretation":  interpretation,
+        "threshold":       -1.78,
+        "indices":         indices,
+        "missing_indices": missing,
+        "reliable":        reliable,
+    }
+
+
 from .labels import RATIO_LABELS  # noqa: F401  (re-exported for convenience)
