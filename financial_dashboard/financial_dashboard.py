@@ -4,7 +4,8 @@ import reflex as rx
 
 from .components.file_list import file_list
 from .components.upload_zone import selected_files_list, upload_zone
-from .state import UploadState
+from .pages.screener import screener_page
+from .state import AnalysisState, UploadState
 
 
 def index() -> rx.Component:
@@ -77,3 +78,4 @@ def index() -> rx.Component:
 
 app = rx.App()
 app.add_page(index, on_load=UploadState.on_load)
+app.add_page(screener_page, route="/screener", on_load=AnalysisState.load_screener)
