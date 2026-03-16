@@ -278,44 +278,128 @@ def compute_ratios(parsed_data: dict) -> dict:
     return result
 
 
-# Human-readable labels for display
-RATIO_LABELS = {
-    # Activity
-    "total_asset_turnover": ("Total Asset Turnover", "times"),
-    "fixed_asset_turnover": ("Fixed Asset Turnover", "times"),
-    "inventory_turnover": ("Inventory Turnover", "times"),
-    "days_inventory": ("Days Inventory Outstanding", "days"),
-    "receivables_turnover": ("Receivables Turnover", "times"),
-    "days_sales_outstanding": ("Days Sales Outstanding", "days"),
-    "payables_turnover": ("Payables Turnover", "times"),
-    "days_payable_outstanding": ("Days Payable Outstanding", "days"),
-    "cash_conversion_cycle": ("Cash Conversion Cycle", "days"),
-    # Liquidity
-    "current_ratio": ("Current Ratio", "x"),
-    "quick_ratio": ("Quick Ratio", "x"),
-    "cash_ratio": ("Cash Ratio", "x"),
-    "working_capital": ("Working Capital", "₮ thousands"),
-    # Solvency
-    "debt_to_equity": ("Debt-to-Equity", "x"),
-    "debt_to_assets": ("Debt-to-Assets", "ratio"),
-    "equity_ratio": ("Equity Ratio", "ratio"),
-    "interest_coverage": ("Interest Coverage", "x"),
-    # Profitability
-    "gross_margin": ("Gross Profit Margin", "%"),
-    "operating_margin": ("Operating Margin", "%"),
-    "net_margin": ("Net Profit Margin", "%"),
-    "roa": ("Return on Assets (ROA)", "%"),
-    "roe": ("Return on Equity (ROE)", "%"),
-    "ebit_margin": ("EBIT Margin", "%"),
-    # Performance
-    "ocf_ratio": ("Operating CF Ratio", "x"),
-    "cf_to_debt": ("Cash Flow to Debt", "x"),
-    "reinvestment_ratio": ("Reinvestment Ratio", "x"),
-    # Z-Score
-    "x1_wc_ta": ("X1: Working Capital / Total Assets", "ratio"),
-    "x2_re_ta": ("X2: Retained Earnings / Total Assets", "ratio"),
-    "x3_ebit_ta": ("X3: EBIT / Total Assets", "ratio"),
-    "x4_eq_tl": ("X4: Equity / Total Liabilities", "ratio"),
-    "x5_rev_ta": ("X5: Revenue / Total Assets", "ratio"),
-    "z_score": ("Altman Z-Score", "score"),
-}
+def compute_piotroski(parsed_data: dict) -> dict:
+    """Compute Piotroski F-Score (0–9 financial strength indicator).
+
+    Returns:
+        {
+            "f_score": int,
+            "max_score": int,          # criteria with available data
+            "criteria": { f1..f9: 0|1|None },
+            "interpretation": "Strong"|"Neutral"|"Weak",
+        }
+    """
+    bs  = parsed_data.get("balance_sheet", {})
+    inc = parsed_data.get("income_statement", {})
+    cf  = parsed_data.get("cash_flow", {})
+
+    # ── Extract fields ────────────────────────────────────────────────────────
+    net_income  = inc.get("net_income")
+    ni_prev     = inc.get("net_income_prev")
+    ta          = bs.get("total_assets")
+    ta_prev     = bs.get("total_assets_prev")
+    ocf         = cf.get("operating_cash_flow")
+    tl          = bs.get("total_liabilities")
+    tl_prev     = bs.get("total_liabilities_prev")
+    ca          = bs.get("total_current_assets")
+    ca_prev     = bs.get("total_current_assets_prev")
+    cl          = bs.get("total_current_liabilities")
+    cl_prev     = bs.get("total_current_liabilities_prev")
+    rev         = inc.get("revenue")
+    rev_prev    = inc.get("revenue_prev")
+    gp          = inc.get("gross_profit")
+    gp_prev     = inc.get("gross_profit_prev")
+
+    # ── Helper ────────────────────────────────────────────────────────────────
+    def _flag(condition) -> int | None:
+        """Return 1/0 if condition evaluable, else None."""
+        try:
+            return 1 if condition else 0
+        except TypeError:
+            return None
+
+    # ── F1: ROA positive (net_income / total_assets > 0) ─────────────────────
+    roa = safe_div(net_income, ta)
+    f1  = _flag(roa is not None and roa > 0)
+
+    # ── F2: Operating cash flow positive ─────────────────────────────────────
+    f2 = _flag(ocf is not None and ocf > 0)
+
+    # ── F3: ROA improving year-over-year ─────────────────────────────────────
+    roa_curr = safe_div(net_income, ta)
+    roa_prev = safe_div(ni_prev, ta_prev)
+    f3 = _flag(
+        roa_curr is not None and roa_prev is not None and roa_curr > roa_prev
+    )
+
+    # ── F4: Accruals — cash earnings quality (OCF/TA > ROA) ──────────────────
+    ocf_ta = safe_div(ocf, ta)
+    f4 = _flag(
+        ocf_ta is not None and roa_curr is not None and ocf_ta > roa_curr
+    )
+
+    # ── F5: Leverage decreased (total_liabilities / total_assets) ────────────
+    lev      = safe_div(tl, ta)
+    lev_prev = safe_div(tl_prev, ta_prev)
+    f5 = _flag(
+        lev is not None and lev_prev is not None and lev < lev_prev
+    )
+
+    # ── F6: Current ratio improved ────────────────────────────────────────────
+    cr      = safe_div(ca, cl)
+    cr_prev = safe_div(ca_prev, cl_prev)
+    f6 = _flag(
+        cr is not None and cr_prev is not None and cr > cr_prev
+    )
+
+    # ── F7: No share dilution — skip (shares_outstanding not in MSE data) ────
+    f7 = None
+
+    # ── F8: Gross margin improving ────────────────────────────────────────────
+    gm      = safe_div(gp, rev)
+    gm_prev = safe_div(gp_prev, rev_prev)
+    f8 = _flag(
+        gm is not None and gm_prev is not None and gm > gm_prev
+    )
+
+    # ── F9: Asset turnover improving (revenue / total_assets) ────────────────
+    at      = safe_div(rev, ta)
+    at_prev = safe_div(rev_prev, ta_prev)
+    f9 = _flag(
+        at is not None and at_prev is not None and at > at_prev
+    )
+
+    criteria = {
+        "f1_roa_positive":   f1,
+        "f2_ocf_positive":   f2,
+        "f3_roa_improving":  f3,
+        "f4_accruals":       f4,
+        "f5_leverage_down":  f5,
+        "f6_liquidity_up":   f6,
+        "f7_no_dilution":    f7,
+        "f8_gross_margin_up": f8,
+        "f9_asset_turnover_up": f9,
+    }
+
+    scored    = [v for v in criteria.values() if v is not None]
+    f_score   = sum(scored)
+    max_score = len(scored)
+
+    if max_score == 0:
+        interpretation = "Insufficient data"
+    elif f_score >= 7:
+        interpretation = "Strong"
+    elif f_score <= 2:
+        interpretation = "Weak"
+    else:
+        interpretation = "Neutral"
+
+    return {
+        "f_score":        f_score,
+        "max_score":      max_score,
+        "criteria":       criteria,
+        "interpretation": interpretation,
+    }
+
+
+from .labels import RATIO_LABELS  # noqa: F401  (re-exported for convenience)
