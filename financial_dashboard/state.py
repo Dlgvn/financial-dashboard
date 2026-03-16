@@ -204,6 +204,13 @@ class AnalysisState(UploadState):
             self.company_ratios, self.company_piotroski, self.company_beneish
         )
 
+    @rx.event
+    def on_load_company(self):
+        """Called on page load -- reads company name from URL params."""
+        company = self.router.page.params.get("company", "")
+        if company:
+            self.load_company(company)
+
     @rx.var
     def filtered_companies(self) -> list[dict]:
         if self.screener_filter == "All":
