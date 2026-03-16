@@ -570,4 +570,150 @@ def compute_beneish(parsed_data: dict) -> dict:
     }
 
 
+def compute_composite_score(
+    ratios: dict,
+    piotroski: dict,
+    beneish: dict,
+) -> dict:
+    """Compute Composite Health Score (0–100) from all models.
+
+    Args:
+        ratios:     Output of compute_ratios()
+        piotroski:  Output of compute_piotroski()
+        beneish:    Output of compute_beneish()
+
+    Returns:
+        {
+            "score": int,           # 0–100
+            "label": str,           # Healthy | Caution | Distress
+            "color": str,           # green | amber | red  (for UI)
+            "breakdown": { category: sub_score },
+            "beneish_penalty": int,
+        }
+    """
+
+    def _clamp(v, lo=0.0, hi=100.0):
+        return max(lo, min(hi, v)) if v is not None else None
+
+    def _interp(v, lo_v, hi_v, lo_s=0.0, hi_s=100.0):
+        """Linear interpolation: map value range -> score range."""
+        if v is None:
+            return None
+        if hi_v == lo_v:
+            return lo_s
+        ratio = (v - lo_v) / (hi_v - lo_v)
+        return _clamp(lo_s + ratio * (hi_s - lo_s))
+
+    curr = ratios.get("current", {})
+
+    # -- Sub-scores (each 0-100) -----------------------------------------------
+
+    # Profitability
+    roa = curr.get("profitability", {}).get("roa")
+    roe = curr.get("profitability", {}).get("roe")
+    npm = curr.get("profitability", {}).get("net_margin")
+    prof_parts = list(filter(None, [
+        _interp(roa,  0,    0.15, 0, 100),
+        _interp(roe,  0,    0.25, 0, 100),
+        _interp(npm, -0.05, 0.20, 0, 100),
+    ]))
+    prof_score = sum(prof_parts) / len(prof_parts) if prof_parts else None
+
+    # Liquidity
+    cr = curr.get("liquidity", {}).get("current_ratio")
+    qr = curr.get("liquidity", {}).get("quick_ratio")
+    cash_r = curr.get("liquidity", {}).get("cash_ratio")
+    liq_parts = list(filter(None, [
+        _interp(cr,     0, 3.0,  0, 100),
+        _interp(qr,     0, 1.5,  0, 100),
+        _interp(cash_r, 0, 0.5,  0, 100),
+    ]))
+    liq_score = sum(liq_parts) / len(liq_parts) if liq_parts else None
+
+    # Solvency (inverted: lower debt = better)
+    d2e = curr.get("solvency", {}).get("debt_to_equity")
+    d2a = curr.get("solvency", {}).get("debt_to_assets")
+    ic  = curr.get("solvency", {}).get("interest_coverage")
+    solv_parts = list(filter(None, [
+        _interp(d2e, 5, 0, 0, 100),   # inverted
+        _interp(d2a, 1, 0, 0, 100),   # inverted
+        _interp(ic,  0, 5, 0, 100),
+    ]))
+    solv_score = sum(solv_parts) / len(solv_parts) if solv_parts else None
+
+    # Activity
+    tat = curr.get("activity", {}).get("total_asset_turnover")
+    dso = curr.get("activity", {}).get("days_sales_outstanding")
+    it  = curr.get("activity", {}).get("inventory_turnover")
+    act_parts = list(filter(None, [
+        _interp(tat, 0, 2.0,  0, 100),
+        _interp(dso, 180, 30, 0, 100),  # inverted (lower DSO = better)
+        _interp(it,  0, 20,   0, 100),
+    ]))
+    act_score = sum(act_parts) / len(act_parts) if act_parts else None
+
+    # Altman Z-Score
+    z = curr.get("z_score", {}).get("z_score")
+    if z is None:
+        z_score_sub = None
+    elif z >= 2.99:
+        z_score_sub = _interp(z, 2.99, 5.0, 70, 100)
+    elif z >= 1.81:
+        z_score_sub = _interp(z, 1.81, 2.99, 30, 70)
+    else:
+        z_score_sub = _interp(z, 0, 1.81, 0, 30)
+
+    # Piotroski F-Score
+    f  = piotroski.get("f_score")
+    mx = piotroski.get("max_score") or 9
+    piotr_score = _clamp((f / mx) * 100) if f is not None and mx > 0 else None
+
+    # -- Weighted aggregate ----------------------------------------------------
+    weights = {
+        "profitability": (prof_score, 0.25),
+        "liquidity":     (liq_score,  0.20),
+        "solvency":      (solv_score, 0.20),
+        "activity":      (act_score,  0.15),
+        "altman":        (z_score_sub, 0.10),
+        "piotroski":     (piotr_score, 0.10),
+    }
+
+    total_weight = 0.0
+    weighted_sum = 0.0
+    breakdown    = {}
+
+    for cat, (score, w) in weights.items():
+        breakdown[cat] = round(score, 1) if score is not None else None
+        if score is not None:
+            weighted_sum += score * w
+            total_weight += w
+
+    if total_weight == 0:
+        raw_score = 0
+    else:
+        # Re-normalise weights for available components
+        raw_score = weighted_sum / total_weight * 100 / 100
+
+    # -- Beneish penalty -------------------------------------------------------
+    m = beneish.get("m_score")
+    penalty = -10 if (m is not None and beneish.get("reliable") and m > -1.78) else 0
+
+    final_score = int(_clamp(raw_score + penalty))
+
+    if final_score >= 70:
+        label, color = "Healthy",  "green"
+    elif final_score >= 40:
+        label, color = "Caution",  "amber"
+    else:
+        label, color = "Distress", "red"
+
+    return {
+        "score":           final_score,
+        "label":           label,
+        "color":           color,
+        "breakdown":       breakdown,
+        "beneish_penalty": penalty,
+    }
+
+
 from .labels import RATIO_LABELS  # noqa: F401  (re-exported for convenience)
