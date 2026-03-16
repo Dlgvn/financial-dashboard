@@ -9,7 +9,7 @@ def holding_row(holding: dict) -> rx.Component:
         rx.table.cell(
             rx.link(
                 holding["company"],
-                href="/company/" + holding["company"],
+                href=rx.Var.create("/company/") + holding["company"],
                 class_name="text-green-400 hover:text-green-300 font-medium",
             ),
             class_name="py-3 px-4",
