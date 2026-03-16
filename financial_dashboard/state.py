@@ -150,7 +150,8 @@ def _load_all_companies() -> list[dict]:
                 "f_score":   piotroski["f_score"],
                 "m_score":   beneish["m_score"],
             })
-        except Exception:
+        except Exception as e:
+            print(f"[_load_all_companies] Skipping {entry.get('filename', '?')}: {e}")
             continue
     return results
 
@@ -263,7 +264,7 @@ class PortfolioState(AnalysisState):
         if not self.holdings:
             return 0
         total = sum(h["score"] * h["weight"] for h in self.holdings)
-        return int(total)
+        return int(round(total))
 
     @rx.var
     def in_portfolio(self) -> list[str]:
