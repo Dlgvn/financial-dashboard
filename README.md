@@ -1,37 +1,56 @@
-# MSE Financial Dashboard
+# MSE Analytica
 
-A financial statement analysis tool for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [mse.mn](https://mse.mn), computes financial ratios, and provides exploratory data analysis through interactive visualizations.
+A financial health analysis platform for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [members.mse.mn](https://members.mse.mn), computes forensic and fundamental scores, and surfaces insights through an interactive dark-themed web dashboard.
 
 ## Features
 
 - **Automated XLS Parsing** — Upload Mongolian-language financial statements; headers are auto-mapped to standardized English fields
 - **Structured JSON Storage** — Each company's data stored as JSON with balance sheet, income statement, and cash flow sections
-- **26 Financial Ratios** — Activity (9), Liquidity (4), Solvency (4), Profitability (6), Performance (3), Altman Z-Score
-- **EDA Notebook** — Jupyter notebook with 7 chart types: box plots, bar charts, scatter plots, correlation heatmaps, radar charts, and more
-- **Auto-Discovery** — Add a new company JSON to `data/` and re-run the notebook — no code changes needed
+- **26 Financial Ratios** — Profitability, Liquidity, Solvency, Activity, and Altman Z-Score
+- **Piotroski F-Score** — 9-point rule-based fundamental strength signal (scored over available criteria)
+- **Beneish M-Score** — Forensic fraud detection via 8 accounting indices (threshold: −1.78)
+- **Composite Health Score (0–100)** — Weighted blend: profitability 25%, liquidity 20%, solvency 20%, activity 15%, Altman 10%, Piotroski 10%; −10 Beneish penalty if M > −1.78
+- **Company Screener** — Browse all companies with health badges, F-Score, and ROE at a glance
+- **Company Detail Page** — Full ratio table, Piotroski checklist, and Beneish indices
+- **Portfolio Manager** — Add companies, equal-weight rebalancing, blended health score
+- **EDA Notebook** — Jupyter notebook with 7 chart types for exploratory analysis
+
+## Demo
+
+```bash
+./venv/bin/reflex run
+# Open http://localhost:3000
+# Click "Load 7 MSE Companies" to instantly load all pre-parsed companies
+```
 
 ## Project Structure
 
 ```
 financial-dashboard/
-├── data/                          # Parsed company JSON files
-│   ├── Хаан_банк_2025.json
-│   ├── АПУ_2025.json
-│   ├── "_Премиум_Нэксус_"_ХК_2025.json
-│   └── index.json
+├── data/                          # Parsed company JSON files + index.json
+├── docs/plans/                    # Design and implementation plans
 ├── notebooks/
 │   └── eda_report.ipynb           # EDA report notebook
 ├── financial_dashboard/
 │   ├── analysis/
-│   │   ├── __init__.py
-│   │   └── ratios.py              # Ratio computation engine
+│   │   ├── ratios.py              # Ratio, Piotroski, Beneish, Composite computation
+│   │   └── labels.py             # Display labels for ratios and criteria
 │   ├── parser/
 │   │   ├── excel_parser.py        # XLS → JSON parser
 │   │   └── header_mappings.py     # Mongolian → English field mapping
 │   ├── storage/
 │   │   └── json_store.py          # JSON file storage
-│   ├── components/                # Reflex UI components
-│   └── financial_dashboard.py     # Main Reflex app
+│   ├── components/
+│   │   ├── layout.py              # Dark sidebar layout wrapper
+│   │   ├── sidebar.py             # Navigation sidebar
+│   │   ├── upload_zone.py         # File upload component
+│   │   └── file_list.py           # Uploaded files table
+│   ├── pages/
+│   │   ├── screener.py            # Company screener page
+│   │   ├── company.py             # Individual company analysis page
+│   │   └── portfolio.py           # Portfolio management page
+│   ├── state.py                   # Reflex state (Upload, Analysis, Portfolio)
+│   └── financial_dashboard.py     # App entry point + routes
 ├── requirements.txt
 └── README.md
 ```
@@ -50,46 +69,59 @@ source venv/bin/activate        # macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-## Usage
-
-### Run the EDA Notebook
-
-```bash
-jupyter lab
-# Open notebooks/eda_report.ipynb → Run All Cells
-```
-
-### Run the Web Dashboard
-
-```bash
+# Run the dashboard
 reflex run
 ```
 
-### Add a New Company
+## Routes
 
-1. Download the XLS financial statement from [members.mse.mn](https://members.mse.mn)
-2. Upload via the dashboard UI, or place the parsed JSON in `data/`
-3. Re-run the notebook — it auto-discovers all `data/*.json` files
+| Route | Description |
+|-------|-------------|
+| `/` | Upload page — upload XLS or use demo shortcut |
+| `/screener` | Company screener with health scores and methodology panel |
+| `/company/[company]` | Individual company analysis |
+| `/portfolio` | Portfolio manager with blended health score |
 
-## Companies Analyzed
+## Companies Analyzed (2025)
 
-| Company | Sector | Notes |
-|---------|--------|-------|
-| Хаан банк (Khan Bank) | Banking | No revenue/COGS (bank structure) |
-| АПУ (APU) | Manufacturing/Beverages | Full income statement |
-| Премиум Нэксус ХК | Manufacturing/Holding | Full income statement |
+| Company | Sector | Health Score |
+|---------|--------|-------------|
+| АПУ (APU) | Manufacturing / Beverages | 71 — Healthy |
+| Хаан банк (Khan Bank) | Banking | 36 — Distress |
+| Мандал даатгал | Insurance | ~50 — Caution |
+| Сүү | Dairy / Food | ~48 — Caution |
+| Моносхүнс | Food Processing | ~44 — Caution |
+| Дархан нэхий | Textiles | ~46 — Caution |
+| Премиум Нэксус ХК | Holding / Manufacturing | ~48 — Caution |
 
-## EDA Report Contents
+## Scoring Models
 
-| Section | Rubric Weight | Description |
-|---------|--------------|-------------|
-| Data Acquisition | 20% | Dynamic JSON loading, DataFrame reshaping, column descriptions |
-| Data Quality | 20% | Missing values heatmap, duplicates, dtypes, outlier detection |
-| Visualizations | 25% | 7 charts (box, bar, scatter, heatmap, grouped bar, trend, radar) |
-| Insights | 20% | Key findings, sector patterns, hypotheses, limitations |
-| Documentation | 10% | Methodology, reproducibility, data dictionary |
+### Piotroski F-Score (0–9)
+Nine binary criteria across profitability (F1–F4), leverage/liquidity (F5–F6), and efficiency (F8–F9). Scored over non-None criteria only. Interpretation: ≥7 Strong, 4–6 Neutral, ≤3 Weak.
+
+### Beneish M-Score
+Eight indices (DSRI, GMI, AQI, SGI, DEPI, SGAI, LVGI, TATA). M > −1.78 flags potential manipulation. DEPI is always N/A in MSE filings (no separate depreciation disclosure). Reliable if ≥5 indices available.
+
+### Composite Health Score (0–100)
+| Component | Weight |
+|-----------|--------|
+| Profitability ratios | 25% |
+| Liquidity ratios | 20% |
+| Solvency ratios | 20% |
+| Activity ratios | 15% |
+| Altman Z-Score | 10% |
+| Piotroski F-Score | 10% |
+| Beneish penalty (if M > −1.78) | −10 pts |
+
+Labels: ≥60 Healthy (green), 40–59 Caution (amber), <40 Distress (red).
+
+## Known Limitations
+
+- Dataset: 7 MSE companies, 1–2 years of historical data
+- DEPI index always N/A — MSE filings don't disclose depreciation separately
+- No market price data — P/E ratio and market cap ratios out of scope
+- Banking sector (Khan Bank) uses different financial structure; some ratios not applicable
 
 ## Data Format
 
@@ -107,7 +139,7 @@ All monetary values are in **₮ thousands** (Mongolian Tugrik). Each JSON file 
 ## Tech Stack
 
 - **Python 3.12**
-- **Reflex** — Web dashboard framework
+- **Reflex 0.8.26** — Web dashboard framework
 - **pandas / matplotlib / seaborn** — Data analysis and visualization
 - **openpyxl / xlrd** — Excel file parsing
 - **Jupyter** — Interactive notebook environment
