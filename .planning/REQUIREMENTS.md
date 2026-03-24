@@ -12,7 +12,7 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 - [ ] **SCRP-01**: System scrapes historical price data (Open/High/Low/Close/Volume/Date) from `old.mse.mn/en/company/{id}` using requests + BeautifulSoup4
 - [ ] **SCRP-02**: System stores price history as JSON in `data/prices/{company}.json` with date-indexed records
 - [ ] **SCRP-03**: System maintains a mapping of all 7 demo company names to their MSE company IDs (APU=90; others discovered)
-- [ ] **SCRP-04**: User can trigger "Refresh Prices" from the company detail page UI; system shows loading state and success/error feedback
+- [ ] **SCRP-04**: User can trigger "Refresh Prices" from the upload/home page UI; system shows loading state and success/error feedback
 
 ### [B] Valuation Metrics
 
