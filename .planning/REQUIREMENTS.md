@@ -89,11 +89,33 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SCRP-01–04 | TBD | Pending |
-| VAL-01–03 | TBD | Pending |
-| SECTOR-01–03 | TBD | Pending |
-| COMP-01–07 | TBD | Pending |
-| SCREEN-01–02 | TBD | Pending |
-| PORT-01–06 | TBD | Pending |
-| DEPLOY-01–02 | TBD | Pending |
-| DOCS-01–03 | TBD | Pending |
+| SCRP-01 | Phase 1 | Pending |
+| SCRP-02 | Phase 1 | Pending |
+| SCRP-03 | Phase 1 | Pending |
+| SCRP-04 | Phase 1 | Pending |
+| SECTOR-01 | Phase 2 | Pending |
+| SECTOR-02 | Phase 2 | Pending |
+| SECTOR-03 | Phase 2 | Pending |
+| COMP-01 | Phase 2 | Pending |
+| COMP-02 | Phase 2 | Pending |
+| COMP-03 | Phase 2 | Pending |
+| COMP-04 | Phase 2 | Pending |
+| COMP-05 | Phase 2 | Pending |
+| COMP-06 | Phase 2 | Pending |
+| COMP-07 | Phase 2 | Pending |
+| SCREEN-01 | Phase 2 | Pending |
+| SCREEN-02 | Phase 2 | Pending |
+| VAL-01 | Phase 3 | Pending |
+| VAL-02 | Phase 3 | Pending |
+| VAL-03 | Phase 3 | Pending |
+| PORT-01 | Phase 4 | Pending |
+| PORT-02 | Phase 4 | Pending |
+| PORT-03 | Phase 4 | Pending |
+| PORT-04 | Phase 4 | Pending |
+| PORT-05 | Phase 4 | Pending |
+| PORT-06 | Phase 4 | Pending |
+| DEPLOY-01 | Phase 5 | Pending |
+| DEPLOY-02 | Phase 5 | Pending |
+| DOCS-01 | Phase 5 | Pending |
+| DOCS-02 | Phase 5 | Pending |
+| DOCS-03 | Phase 5 | Pending |
