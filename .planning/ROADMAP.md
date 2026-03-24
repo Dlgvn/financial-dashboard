@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Price Scraper** — Scrape and store historical MSE price data for all 7 demo companies
+- [ ] **Phase 1: Price Data Seed** — Scrape and store historical MSE price data for all 162 listed companies (Classification I, II, III) as a one-time data seed
 - [ ] **Phase 2: Sector Routing, Company Detail & Screener** — Wire bank/insurance engines, expand company page to full ratios/tabs/charts, and add sector/valuation filters to screener
 - [ ] **Phase 3: Valuation Metrics** — Compute and display valuation ratios and historical price chart on company page
 - [ ] **Phase 4: Portfolio Optimization** — Add manual weights, risk metrics, mean-variance optimization, and efficient frontier
@@ -19,17 +19,18 @@
 
 ## Phase Details
 
-### Phase 1: Price Scraper
-**Goal**: Historical MSE price data is scraped, stored, and refreshable from the UI for all 7 demo companies
+### Phase 1: Price Data Seed
+**Goal**: Scrape and store historical price data for all 162 MSE-listed companies (Classification I, II, III) as a one-time data seed — so price data is already waiting for any company a user later uploads, with no missing-data gaps
 **Depends on**: Nothing (first phase)
 **Requirements**: SCRP-01, SCRP-02, SCRP-03, SCRP-04
 **Success Criteria** (what must be TRUE):
-  1. All 7 demo companies have a populated `data/prices/{company}.json` file with OHLCV + Date records after running the scraper
-  2. The company-to-MSE-ID mapping is complete for all 7 companies (APU=90 confirmed, remaining 6 discovered and stored)
-  3. User can click "Refresh Prices" on a company detail page and see a loading indicator followed by a success or error message
-  4. Scraped price files survive a process restart (persisted to disk, not in-memory only)
+  1. `data/company_registry.json` contains all 162 MSE companies with ticker, name, classification tier (I/II/III), and MSE company ID — built by scraping old.mse.mn/en/companies_info/1, /2, /3
+  2. `data/prices/{ticker}.json` exists for all 162 companies with OHLCV + Date records (scraped from old.mse.mn/en/company/{id})
+  3. When a user uploads any of the 7 demo company XLS files, the app immediately finds their price history in data/prices/ — no "price data unavailable" state
+  4. Scraper handles failures gracefully: per-company errors are logged and skipped without crashing the full run; completed files are not re-scraped on retry
+  5. All price files and company_registry.json are bundled into deployment alongside financial JSONs
 **Plans**: TBD
-**UI hint**: yes
+**UI hint**: no — scraper runs as a one-time seed script; optional admin "Refresh All Prices" button in upload page
 
 ### Phase 2: Sector Routing, Company Detail & Screener
 **Goal**: Company pages show full ratio coverage with sector-correct engines, tabbed navigation, forensic visualizations, and the screener supports sector and sorting filters
