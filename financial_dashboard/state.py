@@ -230,6 +230,12 @@ class AnalysisState(UploadState):
         self.all_companies = _load_all_companies()
 
     @rx.event
+    def load_demo_data(self):
+        """Pre-load all 7 MSE companies and redirect to screener (demo shortcut)."""
+        self.all_companies = _load_all_companies()
+        return rx.redirect("/screener")
+
+    @rx.event
     def load_company(self, company_name: str):
         """Load and compute full analysis for one company."""
         self.selected_company_name = company_name
