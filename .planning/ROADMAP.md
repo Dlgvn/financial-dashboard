@@ -1,7 +1,7 @@
 # Roadmap — v1.1 Complete MSE Analytica
 
 **Milestone:** v1.1 — Complete MSE Analytica
-**Goal:** Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, production-quality platform covering the complete 6-step fundamental analysis workflow.
+**Goal:** Transform the working MVP into a rubric-excellent (95-100%), fully-deployed, production-quality platform covering the complete 6-step fundamental analysis workflow.
 **Total requirements:** 30
 **Generated:** 2026-03-24
 
@@ -29,7 +29,10 @@
   3. When a user uploads any of the 7 demo company XLS files, the app immediately finds their price history in data/prices/ — no "price data unavailable" state
   4. Scraper handles failures gracefully: per-company errors are logged and skipped without crashing the full run; completed files are not re-scraped on retry
   5. All price files and company_registry.json are bundled into deployment alongside financial JSONs
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Registry, scraper module, seed script, and tests
+- [ ] 01-02-PLAN.md — Refresh Prices button UI with streaming feedback
 **UI hint**: no — scraper runs as a one-time seed script; optional admin "Refresh All Prices" button in upload page
 
 ### Phase 2: Sector Routing, Company Detail & Screener
@@ -86,7 +89,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Price Scraper | 0/? | Not started | - |
+| 1. Price Scraper | 0/2 | Planning complete | - |
 | 2. Sector Routing, Company Detail & Screener | 0/? | Not started | - |
 | 3. Valuation Metrics | 0/? | Not started | - |
 | 4. Portfolio Optimization | 0/? | Not started | - |
