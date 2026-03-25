@@ -1,11 +1,13 @@
 """Seed script for scraping historical price data from old.mse.mn.
 
 Usage:
-    python scripts/seed_prices.py           # Skip companies with existing price files
-    python scripts/seed_prices.py --force   # Re-scrape all companies
+    python scripts/seed_prices.py                        # Skip companies with existing price files
+    python scripts/seed_prices.py --force                # Re-scrape all companies
+    python scripts/seed_prices.py --companies "АПУ,Сүү"  # Seed only specific companies
 
-The script iterates over all 161 MSE-listed companies in data/company_registry.json,
-scrapes OHLCV data for each one, and saves to data/prices/{company}.json.
+The script iterates over companies in data/company_registry.json (all 161 by default,
+or a targeted subset via --companies), scrapes OHLCV data for each one, and saves
+to data/prices/{company}.json.
 
 Per-company errors are caught and logged without crashing the full run (idempotent).
 """
@@ -35,16 +37,27 @@ logger = logging.getLogger(__name__)
 POLITENESS_DELAY = 0.5  # seconds between requests
 
 
-def run_seed(force: bool = False) -> tuple[int, int, int]:
-    """Run the price seed process for all companies in the registry.
+def run_seed(force: bool = False, target_names: list[str] | None = None) -> tuple[int, int, int]:
+    """Run the price seed process for companies in the registry.
 
     Args:
         force: If True, re-scrape companies that already have price files.
+        target_names: Optional list of company names to seed. If None, all companies
+            in the registry are seeded.
 
     Returns:
         Tuple of (ok_count, skipped_count, failed_count).
     """
     companies = all_companies()
+
+    if target_names:
+        target_set = {n.strip() for n in target_names}
+        companies = [c for c in companies if c["name"] in target_set]
+        if not companies:
+            logger.error("No matching companies found for: %s", target_names)
+            return 0, 0, 0
+        logger.info("Filtered to %d target companies", len(companies))
+
     total = len(companies)
     ok = 0
     skipped = 0
@@ -86,15 +99,22 @@ def run_seed(force: bool = False) -> tuple[int, int, int]:
 def main() -> None:
     """Parse CLI arguments and run the seed."""
     parser = argparse.ArgumentParser(
-        description="Seed historical price data from old.mse.mn for all MSE-listed companies."
+        description="Seed historical price data from old.mse.mn for MSE-listed companies."
     )
     parser.add_argument(
         "--force",
         action="store_true",
         help="Re-scrape companies that already have price files (override idempotency).",
     )
+    parser.add_argument(
+        "--companies",
+        type=str,
+        default=None,
+        help="Comma-separated list of company names to seed (default: all companies in registry).",
+    )
     args = parser.parse_args()
-    run_seed(force=args.force)
+    target = args.companies.split(",") if args.companies else None
+    run_seed(force=args.force, target_names=target)
 
 
 if __name__ == "__main__":
