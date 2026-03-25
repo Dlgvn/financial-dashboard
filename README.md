@@ -1,6 +1,6 @@
 # MSE Analytica
 
-A financial health analysis platform for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [members.mse.mn](https://members.mse.mn), computes forensic and fundamental scores, and surfaces insights through an interactive dark-themed web dashboard.
+A financial health analysis platform for companies listed on the **Mongolian Stock Exchange (MSE)**. Parses XLS reports from [old.mse.mn](https://old.mse.mn), computes forensic and fundamental scores, and surfaces insights through an interactive dark-themed web dashboard.
 
 ## Features
 
