@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.1
+milestone_name: milestone
+status: Ready to execute
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-25T02:04:45.691Z"
+progress:
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+---
+
 # Project State
 
 ## Project Reference
@@ -5,20 +19,17 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Upload an MSE Excel file and get a complete fundamental analysis — ratios, forensic scores, valuation, and portfolio optimization — in one place, in one click.
-**Current focus:** Phase 1 — Price Scraper
+**Current focus:** Phase 01 — price-data-seed
 
 ## Current Position
 
-Phase: 1 of 5 (Price Scraper)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-24 — Roadmap created, Phase 1 ready to plan
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 01 (price-data-seed) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: -
 - Total execution time: 0 hours
@@ -34,6 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 | 5. Deployment & Documentation | - | - | - |
 
 *Updated after each plan completion*
+| Phase 01 P01 | 12 | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -44,6 +56,9 @@ Progress: [░░░░░░░░░░] 0%
 - Sector detection: Add `sector` field to index.json manually for 7 demo companies
 - Valuation: Show EV/EBITDA + FCF yield always; P/E + P/BV only if shares outstanding provided
 - Portfolio optimization: Simple mean-variance (not Black-Litterman views UI) for v1.1
+- [Phase 01]: Registry name normalization removes ALL quotes and collapses spaces to handle index.json embedded-quote format
+- [Phase 01]: company_registry.json tracked in git (gitignore exception) as project infrastructure, not user data
+- [Phase 01]: 154 non-demo companies use Company_{mse_id} placeholder names; corrected when uploaded by users
 
 ### Known Reflex Gotchas
 
@@ -65,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: Roadmap and STATE.md initialized; no plans created yet
+Last session: 2026-03-25T02:04:45.688Z
+Stopped at: Completed 01-01-PLAN.md
 Resume file: None

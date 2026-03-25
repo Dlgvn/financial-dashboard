@@ -9,9 +9,9 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 ### [A] Price Scraper
 
-- [ ] **SCRP-01**: System scrapes historical price data (Open/High/Low/Close/Volume/Date) from `old.mse.mn/en/company/{id}` using requests + BeautifulSoup4
-- [ ] **SCRP-02**: System stores price history as JSON in `data/prices/{company}.json` with date-indexed records
-- [ ] **SCRP-03**: System maintains a mapping of all 7 demo company names to their MSE company IDs (APU=90; others discovered)
+- [x] **SCRP-01**: System scrapes historical price data (Open/High/Low/Close/Volume/Date) from `old.mse.mn/en/company/{id}` using requests + BeautifulSoup4
+- [x] **SCRP-02**: System stores price history as JSON in `data/prices/{company}.json` with date-indexed records
+- [x] **SCRP-03**: System maintains a mapping of all 7 demo company names to their MSE company IDs (APU=90; others discovered)
 - [ ] **SCRP-04**: User can trigger "Refresh Prices" from the upload/home page UI; system shows loading state and success/error feedback
 
 ### [B] Valuation Metrics
@@ -89,9 +89,9 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SCRP-01 | Phase 1 | Pending |
-| SCRP-02 | Phase 1 | Pending |
-| SCRP-03 | Phase 1 | Pending |
+| SCRP-01 | Phase 1 | Complete |
+| SCRP-02 | Phase 1 | Complete |
+| SCRP-03 | Phase 1 | Complete |
 | SCRP-04 | Phase 1 | Pending |
 | SECTOR-01 | Phase 2 | Pending |
 | SECTOR-02 | Phase 2 | Pending |
