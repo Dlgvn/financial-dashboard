@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Price Data Seed** — Scrape and store historical MSE price data for all 162 listed companies (Classification I, II, III) as a one-time data seed
+- [x] **Phase 1: Price Data Seed** — Scrape and store historical MSE price data for all 162 listed companies (Classification I, II, III) as a one-time data seed (completed 2026-03-25)
 - [ ] **Phase 2: Sector Routing, Company Detail & Screener** — Wire bank/insurance engines, expand company page to full ratios/tabs/charts, and add sector/valuation filters to screener
 - [ ] **Phase 3: Valuation Metrics** — Compute and display valuation ratios and historical price chart on company page
 - [ ] **Phase 4: Portfolio Optimization** — Add manual weights, risk metrics, mean-variance optimization, and efficient frontier
@@ -29,10 +29,10 @@
   3. When a user uploads any of the 7 demo company XLS files, the app immediately finds their price history in data/prices/ — no "price data unavailable" state
   4. Scraper handles failures gracefully: per-company errors are logged and skipped without crashing the full run; completed files are not re-scraped on retry
   5. All price files and company_registry.json are bundled into deployment alongside financial JSONs
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 01-01-PLAN.md — Registry, scraper module, seed script, and tests
-- [ ] 01-02-PLAN.md — Refresh Prices button UI with streaming feedback
+- [x] 01-02-PLAN.md — Refresh Prices button UI with streaming feedback
 **UI hint**: no — scraper runs as a one-time seed script; optional admin "Refresh All Prices" button in upload page
 
 ### Phase 2: Sector Routing, Company Detail & Screener
@@ -89,7 +89,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Price Scraper | 1/2 | In Progress|  |
+| 1. Price Scraper | 2/2 | Complete   | 2026-03-25 |
 | 2. Sector Routing, Company Detail & Screener | 0/? | Not started | - |
 | 3. Valuation Metrics | 0/? | Not started | - |
 | 4. Portfolio Optimization | 0/? | Not started | - |

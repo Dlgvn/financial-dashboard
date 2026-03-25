@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-25T02:04:45.691Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-25T02:22:45.242Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -46,6 +46,7 @@ Plan: 2 of 2
 
 *Updated after each plan completion*
 | Phase 01 P01 | 12 | 3 tasks | 11 files |
+| Phase 01 P02 | 15 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Plan: 2 of 2
 - [Phase 01]: Registry name normalization removes ALL quotes and collapses spaces to handle index.json embedded-quote format
 - [Phase 01]: company_registry.json tracked in git (gitignore exception) as project infrastructure, not user data
 - [Phase 01]: 154 non-demo companies use Company_{mse_id} placeholder names; corrected when uploaded by users
+- [Phase 01]: Refresh Prices scopes to index.json companies only (not all 161) for fast targeted operation
+- [Phase 01]: Streaming yield pattern: reassign list via list() copy on each yield so Reflex detects state change
 
 ### Known Reflex Gotchas
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T02:04:45.688Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-25T02:22:45.240Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
