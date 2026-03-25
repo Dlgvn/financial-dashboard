@@ -29,10 +29,11 @@
   3. When a user uploads any of the 7 demo company XLS files, the app immediately finds their price history in data/prices/ — no "price data unavailable" state
   4. Scraper handles failures gracefully: per-company errors are logged and skipped without crashing the full run; completed files are not re-scraped on retry
   5. All price files and company_registry.json are bundled into deployment alongside financial JSONs
-**Plans:** 2/2 plans complete
+**Plans:** 3 plans (2 complete, 1 gap closure)
 Plans:
 - [x] 01-01-PLAN.md — Registry, scraper module, seed script, and tests
 - [x] 01-02-PLAN.md — Refresh Prices button UI with streaming feedback
+- [ ] 01-03-PLAN.md — Gap closure: seed 7 demo company price files
 **UI hint**: no — scraper runs as a one-time seed script; optional admin "Refresh All Prices" button in upload page
 
 ### Phase 2: Sector Routing, Company Detail & Screener
@@ -89,7 +90,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Price Scraper | 2/2 | Complete   | 2026-03-25 |
+| 1. Price Scraper | 2/3 | Gap closure in progress | - |
 | 2. Sector Routing, Company Detail & Screener | 0/? | Not started | - |
 | 3. Valuation Metrics | 0/? | Not started | - |
 | 4. Portfolio Optimization | 0/? | Not started | - |
