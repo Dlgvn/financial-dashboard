@@ -46,7 +46,12 @@ Plans:
   3. A standard company page shows all 26+ ratios organized by category across the Ratios tab, with DuPont decomposition, Red Flags, health gauge, radar chart, and Beneish bar chart each in their own tabs — all without a page reload
   4. The screener dropdown filters companies by sector (All / Banking / Insurance / Manufacturing / Food / Textiles / Holding) and the table updates immediately
   5. Clicking a column header in the screener (Health Score, F-Score, ROE, sector) sorts the table ascending/descending
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — Test scaffold, index.json sector patch, state.py sector routing and 60+ display vars
+- [ ] 02-02-PLAN.md — Company page rewrite: 5-tab layout, full ratios, charts, DuPont, Red Flags
+- [ ] 02-03-PLAN.md — Screener: sector filter dropdown, sector column, sortable headers
+- [ ] 02-04-PLAN.md — Visual verification checkpoint
 **UI hint**: yes
 
 ### Phase 3: Valuation Metrics
@@ -91,7 +96,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Price Scraper | 3/3 | Complete   | 2026-03-25 |
-| 2. Sector Routing, Company Detail & Screener | 0/? | Not started | - |
+| 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
 | 3. Valuation Metrics | 0/? | Not started | - |
 | 4. Portfolio Optimization | 0/? | Not started | - |
 | 5. Deployment & Documentation | 0/? | Not started | - |
