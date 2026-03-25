@@ -86,6 +86,59 @@ def index() -> rx.Component:
             rx.separator(class_name="border-slate-700"),
             rx.text("Uploaded Companies", class_name="text-slate-200 font-semibold"),
             file_list(),
+            # --- Price Refresh Section ---
+            rx.separator(class_name="border-slate-700"),
+            rx.text("Price Data", class_name="text-slate-200 font-semibold"),
+            rx.hstack(
+                rx.button(
+                    rx.cond(
+                        UploadState.is_refreshing_prices,
+                        rx.spinner(size="2"),
+                        rx.icon("refresh-cw", size=16),
+                    ),
+                    "Refresh Prices",
+                    on_click=UploadState.refresh_prices,
+                    disabled=UploadState.is_refreshing_prices,
+                    class_name=(
+                        "flex items-center gap-2 px-4 py-2 rounded-lg "
+                        "bg-blue-600 hover:bg-blue-500 text-white font-semibold "
+                        "transition-colors text-sm disabled:opacity-50"
+                    ),
+                ),
+                rx.cond(
+                    UploadState.price_refresh_summary != "",
+                    rx.text(
+                        UploadState.price_refresh_summary,
+                        class_name="text-slate-400 text-sm",
+                    ),
+                ),
+                spacing="3",
+                align="center",
+            ),
+            rx.text(
+                "Re-scrapes price data for uploaded companies from old.mse.mn",
+                class_name="text-slate-500 text-xs",
+            ),
+            rx.cond(
+                UploadState.price_refresh_log.length() > 0,
+                rx.box(
+                    rx.foreach(
+                        UploadState.price_refresh_log,
+                        lambda entry: rx.hstack(
+                            rx.cond(
+                                entry["status"] == "ok",
+                                rx.icon("check-circle", size=14, class_name="text-green-400"),
+                                rx.icon("x-circle", size=14, class_name="text-red-400"),
+                            ),
+                            rx.text(entry["company"], class_name="text-slate-300 text-sm font-medium"),
+                            rx.text(entry["detail"], class_name="text-slate-500 text-xs"),
+                            spacing="2",
+                            align="center",
+                        ),
+                    ),
+                    class_name="bg-slate-900/50 border border-slate-700 rounded-lg p-3 space-y-1 w-full max-h-48 overflow-y-auto",
+                ),
+            ),
             spacing="4",
             width="100%",
         ),
