@@ -12,6 +12,8 @@ from .analysis.ratios import (
     compute_ratios,
 )
 from .parser.excel_parser import parse_excel_file
+from .scraper.price_scraper import scrape_company_prices, save_price_data
+from .scraper.registry_loader import find_mse_id
 from .storage.json_store import (
     DATA_DIR,
     delete_parsed_file,
@@ -33,6 +35,11 @@ class UploadState(rx.State):
     # Feedback messages
     parse_error: str = ""
     success_message: str = ""
+
+    # Price refresh state
+    is_refreshing_prices: bool = False
+    price_refresh_log: list[dict[str, str]] = []
+    price_refresh_summary: str = ""
 
     # Currently selected file
     selected_file: str = ""
@@ -115,6 +122,46 @@ class UploadState(rx.State):
         """Clear success and error messages."""
         self.parse_error = ""
         self.success_message = ""
+
+    @rx.event
+    async def refresh_prices(self):
+        """Re-scrape prices for companies currently in index.json."""
+        self.is_refreshing_prices = True
+        self.price_refresh_log = []
+        self.price_refresh_summary = ""
+        yield
+
+        index = load_index()
+        companies = list({e["company"] for e in index.get("files", [])})
+
+        ok = 0
+        failed = 0
+        log_entries: list[dict[str, str]] = []
+
+        for company in companies:
+            try:
+                mse_id = find_mse_id(company)
+                records = scrape_company_prices(mse_id, company)
+                save_price_data(company, mse_id, records)
+                log_entries.append({
+                    "company": company,
+                    "status": "ok",
+                    "detail": f"{len(records)} records"
+                })
+                ok += 1
+            except Exception as e:
+                log_entries.append({
+                    "company": company,
+                    "status": "error",
+                    "detail": str(e)
+                })
+                failed += 1
+            self.price_refresh_log = list(log_entries)
+            yield
+
+        self.is_refreshing_prices = False
+        self.price_refresh_summary = f"{ok} updated, {failed} failed"
+        yield
 
 
 def _load_all_companies() -> list[dict]:
