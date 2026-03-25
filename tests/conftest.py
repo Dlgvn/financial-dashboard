@@ -1,7 +1,43 @@
 import json
+import sys
+import types
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
+
+# ---------------------------------------------------------------------------
+# Minimal reflex stub so state.py can be imported without the full Reflex
+# package installed.  Only the symbols used at module / class definition
+# time need to be present.
+# ---------------------------------------------------------------------------
+if "reflex" not in sys.modules:
+    rx_mock = types.ModuleType("reflex")
+
+    # rx.State base class
+    class _StateBase:
+        pass
+
+    rx_mock.State = _StateBase
+
+    # rx.var / rx.event decorators — pass-through
+    def _passthrough(fn=None, **kwargs):
+        if fn is not None:
+            return fn
+        def decorator(f):
+            return f
+        return decorator
+
+    rx_mock.var = _passthrough
+    rx_mock.event = _passthrough
+
+    # rx.UploadFile stub
+    rx_mock.UploadFile = MagicMock
+
+    # rx.redirect stub
+    rx_mock.redirect = MagicMock
+
+    sys.modules["reflex"] = rx_mock
 
 
 @pytest.fixture

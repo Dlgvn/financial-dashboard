@@ -37,11 +37,27 @@ def save_parsed_data(parsed_dict: dict) -> str:
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(parsed_dict, f, ensure_ascii=False, indent=2)
 
-    _update_index(meta, json_filename)
+    sector = _detect_sector(parsed_dict)
+    _update_index(meta, json_filename, sector=sector)
     return json_filename
 
 
-def _update_index(metadata: dict, json_filename: str):
+def _detect_sector(parsed_dict: dict) -> str:
+    """Auto-detect sector from parsed data keys.
+
+    Returns:
+        "Banking" if bank sheets present,
+        "Insurance" if insurance sheets present,
+        "Standard" otherwise.
+    """
+    if "bank_balance_sheet" in parsed_dict or "bank_income_statement" in parsed_dict:
+        return "Banking"
+    if "insurance_balance_sheet" in parsed_dict or "insurance_income_statement" in parsed_dict:
+        return "Insurance"
+    return "Standard"
+
+
+def _update_index(metadata: dict, json_filename: str, sector: str = "Standard"):
     """Update index.json with the new file entry."""
     index = load_index()
 
@@ -50,6 +66,7 @@ def _update_index(metadata: dict, json_filename: str):
         "original_file": metadata["filename"],
         "company": metadata["company"],
         "year": metadata["year"],
+        "sector": sector,
         "sheets_parsed": metadata["sheets_parsed"],
         "parsed_at": metadata["parsed_at"],
     }

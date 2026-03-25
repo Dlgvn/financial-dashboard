@@ -1,9 +1,12 @@
-"""Company Health Analysis page — ratios, Piotroski, and Beneish display."""
+"""Company Health Analysis page — 5-tab layout with sector-aware ratios, charts, DuPont, and red flags."""
 
 import reflex as rx
 
 from ..components.layout import page_layout
 from ..state import AnalysisState, PortfolioState
+
+
+# ── Helper components (reused across tabs) ───────────────────────────────────
 
 
 def score_card(title: str, value: rx.Var, unit: str = "") -> rx.Component:
@@ -63,13 +66,450 @@ def piotroski_criterion(label: str, value: rx.Var) -> rx.Component:
     )
 
 
+def ratio_category_card(title: str, *rows) -> rx.Component:
+    """A category card with heading and a ratios table."""
+    return rx.box(
+        rx.text(title, class_name="text-slate-300 text-xs uppercase tracking-wider mb-2 font-semibold"),
+        rx.table.root(
+            rx.table.body(*rows),
+            variant="ghost",
+            class_name="w-full",
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+    )
+
+
+# ── Chart components ──────────────────────────────────────────────────────────
+
+
+def health_gauge() -> rx.Component:
+    """Semicircle arc gauge showing overall health score."""
+    s = AnalysisState
+    return rx.box(
+        rx.recharts.radial_bar_chart(
+            rx.recharts.radial_bar(
+                data_key="value",
+                min_angle=15,
+                background=True,
+            ),
+            data=s.company_gauge_data,
+            start_angle=180,
+            end_angle=0,
+            inner_radius="60%",
+            outer_radius="90%",
+            width=280,
+            height=160,
+        ),
+        rx.text(
+            s.company_score.to_string() + " / 100",
+            class_name="text-slate-100 text-xl font-bold text-center -mt-4",
+        ),
+        rx.text(
+            s.company_health_label,
+            class_name="text-slate-400 text-sm text-center",
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 flex flex-col items-center",
+    )
+
+
+def radar_chart_panel() -> rx.Component:
+    """Radar chart showing health breakdown by category."""
+    s = AnalysisState
+    return rx.box(
+        rx.text("Health Category Breakdown", class_name="text-slate-200 font-semibold mb-3"),
+        rx.recharts.radar_chart(
+            rx.recharts.polar_grid(),
+            rx.recharts.polar_angle_axis(data_key="category"),
+            rx.recharts.radar(
+                data_key="score",
+                name="Health",
+                fill="#22c55e",
+                fill_opacity=0.3,
+                stroke="#22c55e",
+            ),
+            data=s.company_radar_data,
+            width=300,
+            height=300,
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 flex flex-col items-center",
+    )
+
+
+# ── Tab content components ────────────────────────────────────────────────────
+
+
+def _standard_ratios_content() -> rx.Component:
+    """All 26 standard ratios in 6 category cards."""
+    s = AnalysisState
+    return rx.grid(
+        # Profitability (6)
+        ratio_category_card(
+            "Profitability",
+            ratio_row("Return on Assets (ROA)",  s.company_roa,              "%"),
+            ratio_row("Return on Equity (ROE)",  s.company_roe,              "%"),
+            ratio_row("Net Profit Margin",        s.company_net_margin,       "%"),
+            ratio_row("Gross Profit Margin",      s.company_gross_margin,     "%"),
+            ratio_row("Operating Margin",         s.company_operating_margin, "%"),
+            ratio_row("EBIT Margin",              s.company_ebit_margin,      "%"),
+        ),
+        # Liquidity (4)
+        ratio_category_card(
+            "Liquidity",
+            ratio_row("Current Ratio",   s.company_current_ratio,   "x"),
+            ratio_row("Quick Ratio",     s.company_quick_ratio,     "x"),
+            ratio_row("Cash Ratio",      s.company_cash_ratio,      "x"),
+            ratio_row("Working Capital", s.company_working_capital, "₮ thousands"),
+        ),
+        # Solvency (4)
+        ratio_category_card(
+            "Solvency",
+            ratio_row("Debt-to-Equity",   s.company_debt_equity,   "x"),
+            ratio_row("Debt-to-Assets",   s.company_debt_to_assets, "ratio"),
+            ratio_row("Equity Ratio",     s.company_equity_ratio,  "ratio"),
+            ratio_row("Interest Coverage",s.company_interest_cov,  "x"),
+        ),
+        # Activity (9)
+        ratio_category_card(
+            "Activity",
+            ratio_row("Total Asset Turnover",     s.company_asset_turnover,           "times"),
+            ratio_row("Fixed Asset Turnover",     s.company_fixed_asset_turnover,     "times"),
+            ratio_row("Inventory Turnover",       s.company_inventory_turnover,       "times"),
+            ratio_row("Days Inventory Outstanding", s.company_days_inventory,         "days"),
+            ratio_row("Receivables Turnover",     s.company_receivables_turnover,     "times"),
+            ratio_row("Days Sales Outstanding",   s.company_days_sales_outstanding,   "days"),
+            ratio_row("Payables Turnover",        s.company_payables_turnover,        "times"),
+            ratio_row("Days Payable Outstanding", s.company_days_payable_outstanding, "days"),
+            ratio_row("Cash Conversion Cycle",    s.company_cash_conversion_cycle,    "days"),
+        ),
+        # Performance (3)
+        ratio_category_card(
+            "Performance",
+            ratio_row("Operating CF Ratio",  s.company_ocf_ratio,          "x"),
+            ratio_row("Cash Flow to Debt",   s.company_cf_to_debt,         "x"),
+            ratio_row("Reinvestment Ratio",  s.company_reinvestment_ratio, "x"),
+        ),
+        # Altman Z-Score (6)
+        ratio_category_card(
+            "Altman Z-Score",
+            ratio_row("Altman Z-Score",                     s.company_z_score, "score"),
+            ratio_row("X1: Working Capital / Total Assets", s.company_z_x1,    "ratio"),
+            ratio_row("X2: Retained Earnings / Total Assets", s.company_z_x2,  "ratio"),
+            ratio_row("X3: EBIT / Total Assets",            s.company_z_x3,    "ratio"),
+            ratio_row("X4: Equity / Total Liabilities",     s.company_z_x4,    "ratio"),
+            ratio_row("X5: Revenue / Total Assets",         s.company_z_x5,    "ratio"),
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
+def _bank_ratios_content() -> rx.Component:
+    """Bank-specific ratios in 5 category sections."""
+    s = AnalysisState
+    return rx.grid(
+        # Profitability
+        ratio_category_card(
+            "Profitability",
+            ratio_row("Net Interest Margin (NIM)",   s.company_bank_nim,                  "%"),
+            ratio_row("Return on Assets (ROA)",      s.company_bank_roa,                  "%"),
+            ratio_row("Return on Equity (ROE)",      s.company_bank_roe,                  "%"),
+            ratio_row("Net Profit Margin",           s.company_bank_net_margin,           "%"),
+            ratio_row("Interest Income Ratio",       s.company_bank_interest_income_ratio,"%"),
+        ),
+        # Capital Adequacy
+        ratio_category_card(
+            "Capital Adequacy",
+            ratio_row("Capital Adequacy Ratio (CAR)", s.company_bank_car,               "%"),
+            ratio_row("Tier 1 Capital Ratio",         s.company_bank_tier1_ratio,        "%"),
+            ratio_row("Equity Multiplier",            s.company_bank_equity_multiplier,  "x"),
+            ratio_row("Equity to Assets",             s.company_bank_equity_to_assets,   "ratio"),
+        ),
+        # Asset Quality
+        ratio_category_card(
+            "Asset Quality",
+            ratio_row("NPL Ratio",               s.company_bank_npl_ratio,             "%"),
+            ratio_row("Coverage Ratio",          s.company_bank_coverage_ratio,        "x"),
+            ratio_row("Loan Loss Reserve Ratio", s.company_bank_loan_loss_reserve_ratio,"%"),
+            ratio_row("Provision to Loans",      s.company_bank_provision_to_loans,    "%"),
+        ),
+        # Liquidity
+        ratio_category_card(
+            "Liquidity",
+            ratio_row("Loan-to-Deposit Ratio (LDR)", s.company_bank_ldr,                "%"),
+            ratio_row("Cash to Deposits",            s.company_bank_cash_to_deposits,   "%"),
+            ratio_row("Loans to Total Assets",       s.company_bank_loans_to_assets,    "%"),
+            ratio_row("Securities to Total Assets",  s.company_bank_securities_to_assets,"%"),
+        ),
+        # Efficiency
+        ratio_category_card(
+            "Efficiency",
+            ratio_row("Cost-to-Income Ratio",      s.company_bank_cost_to_income,  "%"),
+            ratio_row("Non-Interest Income Ratio", s.company_bank_fee_income_ratio, "%"),
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
+def _insurance_ratios_content() -> rx.Component:
+    """Insurance-specific ratios in 5 category sections."""
+    s = AnalysisState
+    return rx.grid(
+        # Underwriting
+        ratio_category_card(
+            "Underwriting",
+            ratio_row("Loss Ratio",     s.company_ins_loss_ratio,     "%"),
+            ratio_row("Expense Ratio",  s.company_ins_expense_ratio,  "%"),
+            ratio_row("Combined Ratio", s.company_ins_combined_ratio, "%"),
+        ),
+        # Profitability
+        ratio_category_card(
+            "Profitability",
+            ratio_row("Return on Assets (ROA)",       s.company_ins_roa,                   "%"),
+            ratio_row("Return on Equity (ROE)",       s.company_ins_roe,                   "%"),
+            ratio_row("Net Profit Margin",            s.company_ins_net_margin,            "%"),
+            ratio_row("Investment Income Ratio",      s.company_ins_investment_income_ratio,"%"),
+            ratio_row("Underwriting Profit Margin",   s.company_ins_underwriting_margin,   "%"),
+        ),
+        # Solvency
+        ratio_category_card(
+            "Solvency",
+            ratio_row("Solvency Ratio",       s.company_ins_solvency_ratio,        "%"),
+            ratio_row("Leverage Ratio",       s.company_ins_leverage_ratio,        "x"),
+            ratio_row("Equity to Liabilities",s.company_ins_equity_to_liabilities, "ratio"),
+            ratio_row("Reserve Coverage Ratio",s.company_ins_reserve_coverage,     "x"),
+        ),
+        # Liquidity
+        ratio_category_card(
+            "Liquidity",
+            ratio_row("Operating Cash Flow Ratio", s.company_ins_ocf_ratio,              "x"),
+            ratio_row("Investment Ratio",          s.company_ins_investment_ratio,        "%"),
+            ratio_row("Cash to Liabilities",       s.company_ins_cash_to_liabilities,    "%"),
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
+def ratios_tab_content() -> rx.Component:
+    """Full ratio display with sector branching (bank / insurance / standard)."""
+    s = AnalysisState
+    return rx.cond(
+        s.company_is_bank,
+        _bank_ratios_content(),
+        rx.cond(
+            s.company_is_insurance,
+            _insurance_ratios_content(),
+            _standard_ratios_content(),
+        ),
+    )
+
+
+def forensic_tab_content() -> rx.Component:
+    """Piotroski F-Score criteria + Beneish M-Score horizontal bar chart and table."""
+    s = AnalysisState
+    return rx.grid(
+        # Left: Piotroski criteria
+        rx.box(
+            rx.text(
+                "Piotroski F-Score Criteria",
+                class_name="text-slate-200 font-semibold mb-3",
+            ),
+            rx.vstack(
+                piotroski_criterion("ROA Positive",                         s.company_f1),
+                piotroski_criterion("Operating Cash Flow Positive",         s.company_f2),
+                piotroski_criterion("ROA Improving YoY",                    s.company_f3),
+                piotroski_criterion("Cash Earnings Quality (OCF/Assets > ROA)", s.company_f4),
+                piotroski_criterion("Leverage Decreased",                   s.company_f5),
+                piotroski_criterion("Current Ratio Improved",               s.company_f6),
+                piotroski_criterion("Gross Margin Improving",               s.company_f8),
+                piotroski_criterion("Asset Turnover Improving",             s.company_f9),
+                spacing="0",
+                align="start",
+            ),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+        ),
+        # Right: Beneish M-Score chart + table
+        rx.box(
+            rx.text(
+                "Beneish M-Score Indices",
+                class_name="text-slate-200 font-semibold mb-3",
+            ),
+            rx.recharts.bar_chart(
+                rx.recharts.x_axis(type_="number"),
+                rx.recharts.y_axis(data_key="index", type_="category"),
+                rx.recharts.bar(data_key="value", fill="#60a5fa"),
+                rx.recharts.reference_line(x=1, stroke="#ef4444", stroke_dasharray="4 4"),
+                rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
+                data=s.company_beneish_chart_data,
+                layout="vertical",
+                width="100%",
+                height=240,
+            ),
+            rx.separator(class_name="border-slate-700 my-3"),
+            rx.table.root(
+                rx.table.body(
+                    ratio_row("DSRI (Receivables)", s.company_dsri, ""),
+                    ratio_row("GMI (Gross Margin)", s.company_gmi,  ""),
+                    ratio_row("AQI (Asset Quality)", s.company_aqi, ""),
+                    ratio_row("SGI (Sales Growth)", s.company_sgi,  ""),
+                    ratio_row("SGAI (SG&A)",         s.company_sgai,""),
+                    ratio_row("LVGI (Leverage)",     s.company_lvgi,""),
+                    ratio_row("TATA (Accruals)",     s.company_tata,""),
+                ),
+                variant="ghost",
+                class_name="w-full",
+            ),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
+def valuation_placeholder() -> rx.Component:
+    """Placeholder for Phase 3 valuation metrics."""
+    return rx.box(
+        rx.vstack(
+            rx.icon("line-chart", size=32, class_name="text-slate-600"),
+            rx.text("Valuation metrics coming in Phase 3", class_name="text-slate-400"),
+            rx.text("Price data and EV/EBITDA, FCF Yield, P/E, P/BV", class_name="text-slate-500 text-sm"),
+            spacing="2",
+            align="center",
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-12 w-full flex items-center justify-center",
+    )
+
+
+def dupont_tab_content() -> rx.Component:
+    """DuPont decomposition: ROE = Net Profit Margin × Asset Turnover × Equity Multiplier."""
+    s = AnalysisState
+
+    def dupont_row(year_label: str, net_margin: rx.Var, asset_turnover: rx.Var, eq_multiplier: rx.Var, roe: rx.Var) -> rx.Component:
+        return rx.hstack(
+            rx.box(
+                rx.text(year_label, class_name="text-slate-400 text-xs uppercase tracking-wider mb-1"),
+                class_name="w-24 flex-shrink-0",
+            ),
+            rx.box(
+                rx.text("Net Margin", class_name="text-slate-400 text-xs mb-1"),
+                rx.text(net_margin, class_name="text-slate-100 text-lg font-mono font-bold"),
+                rx.text("%", class_name="text-slate-500 text-xs"),
+                class_name="flex flex-col items-center flex-1",
+            ),
+            rx.text("×", class_name="text-slate-500 text-xl font-bold px-1"),
+            rx.box(
+                rx.text("Asset Turnover", class_name="text-slate-400 text-xs mb-1"),
+                rx.text(asset_turnover, class_name="text-slate-100 text-lg font-mono font-bold"),
+                rx.text("times", class_name="text-slate-500 text-xs"),
+                class_name="flex flex-col items-center flex-1",
+            ),
+            rx.text("×", class_name="text-slate-500 text-xl font-bold px-1"),
+            rx.box(
+                rx.text("Equity Multiplier", class_name="text-slate-400 text-xs mb-1"),
+                rx.text(eq_multiplier, class_name="text-slate-100 text-lg font-mono font-bold"),
+                rx.text("x", class_name="text-slate-500 text-xs"),
+                class_name="flex flex-col items-center flex-1",
+            ),
+            rx.text("=", class_name="text-green-400 text-xl font-bold px-1"),
+            rx.box(
+                rx.text("ROE", class_name="text-slate-400 text-xs mb-1"),
+                rx.text(roe, class_name="text-green-400 text-lg font-mono font-bold"),
+                rx.text("%", class_name="text-slate-500 text-xs"),
+                class_name="flex flex-col items-center flex-1",
+            ),
+            spacing="2",
+            align="center",
+            width="100%",
+            class_name="bg-slate-800/50 rounded-lg p-4",
+        )
+
+    return rx.box(
+        rx.text("DuPont Decomposition", class_name="text-slate-200 font-semibold mb-2"),
+        rx.text(
+            "ROE = Net Profit Margin × Asset Turnover × Equity Multiplier",
+            class_name="text-slate-400 text-sm mb-4 font-mono",
+        ),
+        rx.vstack(
+            dupont_row(
+                "Current Year",
+                s.company_net_margin_dupont,
+                s.company_asset_turnover_dupont,
+                s.company_equity_multiplier_curr,
+                s.company_roe_dupont,
+            ),
+            dupont_row(
+                "Prior Year",
+                s.company_net_margin_prev,
+                s.company_asset_turnover_prev,
+                s.company_equity_multiplier_prev,
+                s.company_roe_prev,
+            ),
+            spacing="3",
+            width="100%",
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 w-full",
+    )
+
+
+def red_flag_item(flag: dict) -> rx.Component:
+    """A single red flag or clear indicator item."""
+    is_clear = flag["flag"] == "No Major Red Flags"
+    return rx.box(
+        rx.hstack(
+            rx.cond(
+                is_clear,
+                rx.icon("check-circle", size=20, class_name="text-green-400"),
+                rx.icon("alert-triangle", size=20, class_name="text-amber-400"),
+            ),
+            rx.vstack(
+                rx.text(
+                    flag["flag"],
+                    class_name=rx.cond(
+                        is_clear,
+                        "text-green-400 font-semibold",
+                        "text-amber-400 font-semibold",
+                    ),
+                ),
+                rx.text(flag["explanation"], class_name="text-slate-400 text-sm"),
+                spacing="1",
+                align="start",
+            ),
+            spacing="3",
+            align="start",
+        ),
+        class_name=rx.cond(
+            is_clear,
+            "bg-slate-900 border border-green-900 rounded-lg p-4",
+            "bg-slate-900 border border-amber-900 rounded-lg p-4",
+        ),
+    )
+
+
+def red_flags_tab_content() -> rx.Component:
+    """Red flags tab using rx.foreach to render each flag."""
+    return rx.vstack(
+        rx.foreach(AnalysisState.company_red_flags, red_flag_item),
+        spacing="3",
+        width="100%",
+    )
+
+
+# ── Main page ─────────────────────────────────────────────────────────────────
+
+
 def company_page() -> rx.Component:
-    """Full company analysis page."""
+    """Full company analysis page with 5-tab layout."""
     s = AnalysisState
 
     return page_layout(
         rx.cond(
             s.selected_company_name == "",
+            # Empty state
             rx.box(
                 rx.vstack(
                     rx.icon("bar-chart-2", size=40, class_name="text-slate-600"),
@@ -87,6 +527,7 @@ def company_page() -> rx.Component:
                     "p-16 w-full flex items-center justify-center"
                 ),
             ),
+            # Company detail
             rx.vstack(
                 # Back link
                 rx.link(
@@ -125,90 +566,62 @@ def company_page() -> rx.Component:
                     width="100%",
                     align="center",
                 ),
-                # Hero score cards row
+                # Hero score cards row (4 cards)
                 rx.grid(
-                    score_card("Health Score", s.company_score.to_string(), "/100"),
-                    score_card("Piotroski F-Score", s.company_f_score_display, ""),
-                    score_card("M-Score", s.company_m_score_display, ""),
-                    score_card("M-Score Result", s.company_m_interp, ""),
+                    score_card("Health Score",     s.company_score.to_string(), "/100"),
+                    score_card("Piotroski F-Score",s.company_f_score_display,   ""),
+                    score_card("M-Score",          s.company_m_score_display,   ""),
+                    score_card("M-Score Result",   s.company_m_interp,          ""),
                     columns="4",
                     spacing="4",
                     width="100%",
                 ),
-                # Ratios + Forensics side by side
+                # Health gauge + Radar chart side by side
                 rx.grid(
-                    # ----- Financial Ratios table -----
-                    rx.box(
-                        rx.text(
-                            "Financial Ratios",
-                            class_name="text-slate-200 font-semibold mb-3",
-                        ),
-                        rx.table.root(
-                            rx.table.body(
-                                ratio_row("ROA",            s.company_roa,           "%"),
-                                ratio_row("ROE",            s.company_roe,           "%"),
-                                ratio_row("Net Margin",     s.company_net_margin,    "%"),
-                                ratio_row("Current Ratio",  s.company_current_ratio, "x"),
-                                ratio_row("Quick Ratio",    s.company_quick_ratio,   "x"),
-                                ratio_row("Debt/Equity",    s.company_debt_equity,   "x"),
-                                ratio_row("Interest Cov.",  s.company_interest_cov,  "x"),
-                                ratio_row("Asset Turnover", s.company_asset_turnover,"x"),
-                                ratio_row("Altman Z-Score", s.company_z_score,       ""),
-                            ),
-                            variant="ghost",
-                            class_name="w-full",
-                        ),
-                        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
-                    ),
-                    # ----- Forensic Analysis -----
-                    rx.box(
-                        rx.text(
-                            "Forensic Analysis",
-                            class_name="text-slate-200 font-semibold mb-3",
-                        ),
-                        rx.text(
-                            "Piotroski F-Score Criteria",
-                            class_name=(
-                                "text-slate-400 text-xs uppercase tracking-wider mb-2 mt-3"
-                            ),
-                        ),
-                        rx.vstack(
-                            piotroski_criterion("ROA Positive",           s.company_f1),
-                            piotroski_criterion("Operating CF Positive",  s.company_f2),
-                            piotroski_criterion("ROA Improving",          s.company_f3),
-                            piotroski_criterion("Cash Earnings Quality",  s.company_f4),
-                            piotroski_criterion("Leverage Decreased",     s.company_f5),
-                            piotroski_criterion("Liquidity Improved",     s.company_f6),
-                            piotroski_criterion("Gross Margin Improving", s.company_f8),
-                            piotroski_criterion("Asset Turnover Improving", s.company_f9),
-                            spacing="0",
-                            align="start",
-                        ),
-                        rx.separator(class_name="border-slate-700 my-3"),
-                        rx.text(
-                            "Beneish M-Score Indices",
-                            class_name=(
-                                "text-slate-400 text-xs uppercase tracking-wider mb-2"
-                            ),
-                        ),
-                        rx.table.root(
-                            rx.table.body(
-                                ratio_row("DSRI (Receivables)", s.company_dsri,  ""),
-                                ratio_row("GMI (Gross Margin)", s.company_gmi,   ""),
-                                ratio_row("AQI (Asset Quality)",s.company_aqi,   ""),
-                                ratio_row("SGI (Sales Growth)", s.company_sgi,   ""),
-                                ratio_row("SGAI (SG&A)",        s.company_sgai,  ""),
-                                ratio_row("LVGI (Leverage)",    s.company_lvgi,  ""),
-                                ratio_row("TATA (Accruals)",    s.company_tata,  ""),
-                            ),
-                            variant="ghost",
-                            class_name="w-full",
-                        ),
-                        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
-                    ),
+                    health_gauge(),
+                    radar_chart_panel(),
                     columns="2",
                     spacing="4",
                     width="100%",
+                ),
+                # 5-tab panel
+                rx.tabs.root(
+                    rx.tabs.list(
+                        rx.tabs.trigger(
+                            "Ratios",
+                            value="ratios",
+                            class_name="text-slate-400 data-[state=active]:text-green-400 data-[state=active]:border-b-2 data-[state=active]:border-green-400 px-4 py-2 text-sm font-medium",
+                        ),
+                        rx.tabs.trigger(
+                            "Forensic",
+                            value="forensic",
+                            class_name="text-slate-400 data-[state=active]:text-green-400 data-[state=active]:border-b-2 data-[state=active]:border-green-400 px-4 py-2 text-sm font-medium",
+                        ),
+                        rx.tabs.trigger(
+                            "Valuation",
+                            value="valuation",
+                            class_name="text-slate-400 data-[state=active]:text-green-400 data-[state=active]:border-b-2 data-[state=active]:border-green-400 px-4 py-2 text-sm font-medium",
+                        ),
+                        rx.tabs.trigger(
+                            "DuPont",
+                            value="dupont",
+                            class_name="text-slate-400 data-[state=active]:text-green-400 data-[state=active]:border-b-2 data-[state=active]:border-green-400 px-4 py-2 text-sm font-medium",
+                        ),
+                        rx.tabs.trigger(
+                            "Red Flags",
+                            value="redflags",
+                            class_name="text-slate-400 data-[state=active]:text-green-400 data-[state=active]:border-b-2 data-[state=active]:border-green-400 px-4 py-2 text-sm font-medium",
+                        ),
+                        class_name="border-b border-slate-800",
+                    ),
+                    rx.tabs.content(ratios_tab_content(),     value="ratios"),
+                    rx.tabs.content(forensic_tab_content(),   value="forensic"),
+                    rx.tabs.content(valuation_placeholder(),  value="valuation"),
+                    rx.tabs.content(dupont_tab_content(),     value="dupont"),
+                    rx.tabs.content(red_flags_tab_content(),  value="redflags"),
+                    default_value="ratios",
+                    width="100%",
+                    class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
                 ),
                 spacing="5",
                 width="100%",

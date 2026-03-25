@@ -27,6 +27,29 @@ def health_badge(score: rx.Var, label: rx.Var, color: rx.Var) -> rx.Component:
     )
 
 
+def sort_header(label: str, col: str) -> rx.Component:
+    """Clickable column header that triggers sort."""
+    return rx.table.column_header_cell(
+        rx.hstack(
+            rx.text(label, class_name="text-slate-400 text-xs uppercase tracking-wider"),
+            rx.cond(
+                AnalysisState.screener_sort_col == col,
+                rx.cond(
+                    AnalysisState.screener_sort_asc,
+                    rx.icon("chevron-up", size=12, class_name="text-green-400"),
+                    rx.icon("chevron-down", size=12, class_name="text-green-400"),
+                ),
+                rx.icon("chevrons-up-down", size=12, class_name="text-slate-600"),
+            ),
+            spacing="1",
+            align="center",
+            cursor="pointer",
+            on_click=AnalysisState.sort_screener(col),
+        ),
+        class_name="px-4 py-3",
+    )
+
+
 def company_row(company: dict) -> rx.Component:
     """Render a single table row for one company."""
     return rx.table.row(
@@ -40,6 +63,10 @@ def company_row(company: dict) -> rx.Component:
         ),
         rx.table.cell(
             rx.text(company["year"], class_name="text-slate-400 text-sm"),
+            class_name="py-3 px-4",
+        ),
+        rx.table.cell(
+            rx.text(company["sector"], class_name="text-slate-300 text-sm"),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
@@ -234,10 +261,20 @@ def screener_page() -> rx.Component:
                     size="6",
                     class_name="text-slate-100",
                 ),
-                rx.text(
-                    AnalysisState.all_companies.length().to_string()
-                    + " companies",
-                    class_name="text-slate-500 text-sm self-end",
+                rx.hstack(
+                    rx.text(
+                        AnalysisState.filtered_companies.length().to_string()
+                        + " companies",
+                        class_name="text-slate-500 text-sm self-end",
+                    ),
+                    rx.select(
+                        ["All", "Banking", "Insurance", "Manufacturing", "Food", "Textiles", "Holding"],
+                        value=AnalysisState.screener_filter,
+                        on_change=AnalysisState.set_screener_filter,
+                        class_name="bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-3 py-1 text-sm",
+                    ),
+                    spacing="3",
+                    align="center",
                 ),
                 justify="between",
                 width="100%",
@@ -272,26 +309,15 @@ def screener_page() -> rx.Component:
                     rx.table.root(
                         rx.table.header(
                             rx.table.row(
-                                rx.table.column_header_cell(
-                                    "Company",
-                                    class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                                ),
+                                sort_header("Company", "company"),
                                 rx.table.column_header_cell(
                                     "Year",
                                     class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
                                 ),
-                                rx.table.column_header_cell(
-                                    "Health Score",
-                                    class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                                ),
-                                rx.table.column_header_cell(
-                                    "F-Score",
-                                    class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                                ),
-                                rx.table.column_header_cell(
-                                    "ROE",
-                                    class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                                ),
+                                sort_header("Sector", "sector"),
+                                sort_header("Health Score", "score"),
+                                sort_header("F-Score", "f_score"),
+                                sort_header("ROE", "roe"),
                                 rx.table.column_header_cell(
                                     "",
                                     class_name="px-4 py-3",
@@ -301,7 +327,7 @@ def screener_page() -> rx.Component:
                         ),
                         rx.table.body(
                             rx.foreach(
-                                AnalysisState.all_companies,
+                                AnalysisState.filtered_companies,
                                 company_row,
                             ),
                         ),

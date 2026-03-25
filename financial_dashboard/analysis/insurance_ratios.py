@@ -56,11 +56,37 @@ def _get_premiums(inc: dict, bs: dict, suffix: str) -> float | None:
 
 
 def _get_claims(inc: dict, suffix: str) -> float | None:
-    """Get best available claims figure."""
-    return (
-        inc.get(f"claims_incurred{suffix}")
-        or inc.get(f"claims_paid{suffix}")
+    """Get best available claims figure.
+
+    Priority:
+      1. claims_incurred (direct field)
+      2. claims_paid
+      3. Derived: total_revenue - all_known_expenses - profit_before_tax
+         This works when the income statement has total_revenue and
+         admin/selling/financial expenses but no explicit claims line.
+    """
+    direct = inc.get(f"claims_incurred{suffix}") or inc.get(f"claims_paid{suffix}")
+    if direct is not None:
+        return direct
+
+    # Derive claims as the residual: revenue - expenses - profit = claims
+    revenue = inc.get(f"total_revenue{suffix}")
+    pbt = inc.get(f"profit_before_tax{suffix}")
+    if revenue is None or pbt is None:
+        return None
+
+    known_expenses = sum(
+        v for v in [
+            inc.get(f"general_and_admin_expenses{suffix}"),
+            inc.get(f"selling_expenses{suffix}"),
+            inc.get(f"financial_expense{suffix}"),
+            inc.get(f"other_expenses{suffix}"),
+        ]
+        if v is not None
     )
+    other_inc = inc.get(f"other_income{suffix}") or 0
+    derived = revenue - known_expenses + other_inc - pbt
+    return derived if derived > 0 else None
 
 
 def _get_investments(bs: dict, suffix: str) -> float | None:
@@ -74,8 +100,10 @@ def _get_investments(bs: dict, suffix: str) -> float | None:
         bs.get(f"bonds{suffix}"),
         bs.get(f"equity_investments{suffix}"),
         bs.get(f"term_deposits{suffix}"),
+        # Fallback: other_financial_assets is often where MSE parser puts investments
+        bs.get(f"other_financial_assets{suffix}"),
     ]
-    available = [v for v in components if v is not None]
+    available = [v for v in components if v is not None and v > 0]
     return sum(available) if available else None
 
 
@@ -122,10 +150,14 @@ def compute_insurance_ratios(parsed_data: dict) -> dict:
         retained_earnings   = bs.get(f"retained_earnings{period_suffix}")
         cash                = _get_cash(bs, cf, period_suffix)
         insurance_reserves  = bs.get(f"insurance_reserves{period_suffix}")
-        claim_reserves      = bs.get(f"claim_reserves{period_suffix}") or insurance_reserves
         unearned_premiums   = (
             bs.get(f"unearned_premium_reserve{period_suffix}")
             or bs.get(f"unearned_revenue{period_suffix}")  # fallback: generic field
+        )
+        claim_reserves      = (
+            bs.get(f"claim_reserves{period_suffix}")
+            or insurance_reserves
+            or unearned_premiums  # proxy: unearned premiums = future obligations
         )
         premium_receivables = (
             bs.get(f"premium_receivables{period_suffix}")
@@ -147,6 +179,7 @@ def compute_insurance_ratios(parsed_data: dict) -> dict:
         investment_income   = (
             inc.get(f"investment_income{period_suffix}")
             or inc.get(f"interest_income{period_suffix}")
+            or inc.get(f"other_income{period_suffix}")  # proxy: other_income often = investment returns
         )
         commission_expense  = (
             inc.get(f"commission_expense{period_suffix}")

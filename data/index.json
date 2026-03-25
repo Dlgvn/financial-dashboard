@@ -1,0 +1,95 @@
+{
+  "files": [
+    {
+      "filename": "Хаан_банк_2025.json",
+      "original_file": "56320254report.xls",
+      "company": "Хаан банк",
+      "year": "2025",
+      "sector": "Banking",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-23T14:16:29.168492"
+    },
+    {
+      "filename": "\"_Премиум_Нэксус_\"_ХК_2025.json",
+      "original_file": "_557 20253report.xls",
+      "company": "\" Премиум Нэксус \" ХК",
+      "year": "2025",
+      "sector": "Holding",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-23T14:18:02.662819"
+    },
+    {
+      "filename": "АПУ_2025.json",
+      "original_file": "_90 20252report.xls",
+      "company": "АПУ",
+      "year": "2025",
+      "sector": "Manufacturing",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-23T14:18:07.463559"
+    },
+    {
+      "filename": "Дархан_нэхий_ХК_2025.json",
+      "original_file": "_71 20252report.xls",
+      "company": "Дархан нэхий ХК",
+      "year": "2025",
+      "sector": "Textiles",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-24T11:45:15.358857"
+    },
+    {
+      "filename": "Сүү_2025.json",
+      "original_file": "_135 20253report.xls",
+      "company": "Сүү",
+      "year": "2025",
+      "sector": "Food",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-24T11:45:24.662943"
+    },
+    {
+      "filename": "Мандал_даатгал_2025.json",
+      "original_file": "_547 20253report.xls",
+      "company": "Мандал даатгал",
+      "year": "2025",
+      "sector": "Insurance",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-24T11:45:46.401750"
+    },
+    {
+      "filename": "Моносхүнс_2025.json",
+      "original_file": "_551 20253report.xls",
+      "company": "Моносхүнс",
+      "year": "2025",
+      "sector": "Food",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-02-24T11:46:14.358810"
+    }
+  ]
+}
