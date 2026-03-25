@@ -1,0 +1,968 @@
+[
+  {
+    "name": "Дархан нэхий ХК",
+    "mse_id": 71,
+    "ticker": "DRKN",
+    "tier": "I"
+  },
+  {
+    "name": "АПУ",
+    "mse_id": 90,
+    "ticker": "APU",
+    "tier": "I"
+  },
+  {
+    "name": "Сүү",
+    "mse_id": 135,
+    "ticker": "SUU",
+    "tier": "I"
+  },
+  {
+    "name": "Company_326",
+    "mse_id": 326,
+    "ticker": "MSE326",
+    "tier": "I"
+  },
+  {
+    "name": "Company_354",
+    "mse_id": 354,
+    "ticker": "MSE354",
+    "tier": "I"
+  },
+  {
+    "name": "Company_458",
+    "mse_id": 458,
+    "ticker": "MSE458",
+    "tier": "I"
+  },
+  {
+    "name": "Company_522",
+    "mse_id": 522,
+    "ticker": "MSE522",
+    "tier": "I"
+  },
+  {
+    "name": "Company_541",
+    "mse_id": 541,
+    "ticker": "MSE541",
+    "tier": "I"
+  },
+  {
+    "name": "Company_542",
+    "mse_id": 542,
+    "ticker": "MSE542",
+    "tier": "I"
+  },
+  {
+    "name": "Company_544",
+    "mse_id": 544,
+    "ticker": "MSE544",
+    "tier": "I"
+  },
+  {
+    "name": "Company_545",
+    "mse_id": 545,
+    "ticker": "MSE545",
+    "tier": "I"
+  },
+  {
+    "name": "Мандал даатгал",
+    "mse_id": 547,
+    "ticker": "MNDL",
+    "tier": "I"
+  },
+  {
+    "name": "Company_548",
+    "mse_id": 548,
+    "ticker": "MSE548",
+    "tier": "I"
+  },
+  {
+    "name": "Company_549",
+    "mse_id": 549,
+    "ticker": "MSE549",
+    "tier": "I"
+  },
+  {
+    "name": "Company_550",
+    "mse_id": 550,
+    "ticker": "MSE550",
+    "tier": "I"
+  },
+  {
+    "name": "Моносхүнс",
+    "mse_id": 551,
+    "ticker": "MNFZ",
+    "tier": "I"
+  },
+  {
+    "name": "Company_553",
+    "mse_id": 553,
+    "ticker": "MSE553",
+    "tier": "I"
+  },
+  {
+    "name": "Премиум Нэксус ХК",
+    "mse_id": 557,
+    "ticker": "PRMX",
+    "tier": "I"
+  },
+  {
+    "name": "Company_562",
+    "mse_id": 562,
+    "ticker": "MSE562",
+    "tier": "I"
+  },
+  {
+    "name": "Хаан банк",
+    "mse_id": 563,
+    "ticker": "KHAN",
+    "tier": "I"
+  },
+  {
+    "name": "Company_564",
+    "mse_id": 564,
+    "ticker": "MSE564",
+    "tier": "I"
+  },
+  {
+    "name": "Company_567",
+    "mse_id": 567,
+    "ticker": "MSE567",
+    "tier": "I"
+  },
+  {
+    "name": "Company_568",
+    "mse_id": 568,
+    "ticker": "MSE568",
+    "tier": "I"
+  },
+  {
+    "name": "Company_569",
+    "mse_id": 569,
+    "ticker": "MSE569",
+    "tier": "I"
+  },
+  {
+    "name": "Company_2",
+    "mse_id": 2,
+    "ticker": "MSE2",
+    "tier": "II"
+  },
+  {
+    "name": "Company_7",
+    "mse_id": 7,
+    "ticker": "MSE7",
+    "tier": "II"
+  },
+  {
+    "name": "Company_9",
+    "mse_id": 9,
+    "ticker": "MSE9",
+    "tier": "II"
+  },
+  {
+    "name": "Company_13",
+    "mse_id": 13,
+    "ticker": "MSE13",
+    "tier": "II"
+  },
+  {
+    "name": "Company_17",
+    "mse_id": 17,
+    "ticker": "MSE17",
+    "tier": "II"
+  },
+  {
+    "name": "Company_22",
+    "mse_id": 22,
+    "ticker": "MSE22",
+    "tier": "II"
+  },
+  {
+    "name": "Company_25",
+    "mse_id": 25,
+    "ticker": "MSE25",
+    "tier": "II"
+  },
+  {
+    "name": "Company_34",
+    "mse_id": 34,
+    "ticker": "MSE34",
+    "tier": "II"
+  },
+  {
+    "name": "Company_38",
+    "mse_id": 38,
+    "ticker": "MSE38",
+    "tier": "II"
+  },
+  {
+    "name": "Company_88",
+    "mse_id": 88,
+    "ticker": "MSE88",
+    "tier": "II"
+  },
+  {
+    "name": "Company_162",
+    "mse_id": 162,
+    "ticker": "MSE162",
+    "tier": "II"
+  },
+  {
+    "name": "Company_191",
+    "mse_id": 191,
+    "ticker": "MSE191",
+    "tier": "II"
+  },
+  {
+    "name": "Company_195",
+    "mse_id": 195,
+    "ticker": "MSE195",
+    "tier": "II"
+  },
+  {
+    "name": "Company_208",
+    "mse_id": 208,
+    "ticker": "MSE208",
+    "tier": "II"
+  },
+  {
+    "name": "Company_209",
+    "mse_id": 209,
+    "ticker": "MSE209",
+    "tier": "II"
+  },
+  {
+    "name": "Company_234",
+    "mse_id": 234,
+    "ticker": "MSE234",
+    "tier": "II"
+  },
+  {
+    "name": "Company_308",
+    "mse_id": 308,
+    "ticker": "MSE308",
+    "tier": "II"
+  },
+  {
+    "name": "Company_309",
+    "mse_id": 309,
+    "ticker": "MSE309",
+    "tier": "II"
+  },
+  {
+    "name": "Company_366",
+    "mse_id": 366,
+    "ticker": "MSE366",
+    "tier": "II"
+  },
+  {
+    "name": "Company_378",
+    "mse_id": 378,
+    "ticker": "MSE378",
+    "tier": "II"
+  },
+  {
+    "name": "Company_379",
+    "mse_id": 379,
+    "ticker": "MSE379",
+    "tier": "II"
+  },
+  {
+    "name": "Company_396",
+    "mse_id": 396,
+    "ticker": "MSE396",
+    "tier": "II"
+  },
+  {
+    "name": "Company_402",
+    "mse_id": 402,
+    "ticker": "MSE402",
+    "tier": "II"
+  },
+  {
+    "name": "Company_438",
+    "mse_id": 438,
+    "ticker": "MSE438",
+    "tier": "II"
+  },
+  {
+    "name": "Company_441",
+    "mse_id": 441,
+    "ticker": "MSE441",
+    "tier": "II"
+  },
+  {
+    "name": "Company_444",
+    "mse_id": 444,
+    "ticker": "MSE444",
+    "tier": "II"
+  },
+  {
+    "name": "Company_445",
+    "mse_id": 445,
+    "ticker": "MSE445",
+    "tier": "II"
+  },
+  {
+    "name": "Company_460",
+    "mse_id": 460,
+    "ticker": "MSE460",
+    "tier": "II"
+  },
+  {
+    "name": "Company_466",
+    "mse_id": 466,
+    "ticker": "MSE466",
+    "tier": "II"
+  },
+  {
+    "name": "Company_484",
+    "mse_id": 484,
+    "ticker": "MSE484",
+    "tier": "II"
+  },
+  {
+    "name": "Company_521",
+    "mse_id": 521,
+    "ticker": "MSE521",
+    "tier": "II"
+  },
+  {
+    "name": "Company_525",
+    "mse_id": 525,
+    "ticker": "MSE525",
+    "tier": "II"
+  },
+  {
+    "name": "Company_528",
+    "mse_id": 528,
+    "ticker": "MSE528",
+    "tier": "II"
+  },
+  {
+    "name": "Company_530",
+    "mse_id": 530,
+    "ticker": "MSE530",
+    "tier": "II"
+  },
+  {
+    "name": "Company_537",
+    "mse_id": 537,
+    "ticker": "MSE537",
+    "tier": "II"
+  },
+  {
+    "name": "Company_543",
+    "mse_id": 543,
+    "ticker": "MSE543",
+    "tier": "II"
+  },
+  {
+    "name": "Company_546",
+    "mse_id": 546,
+    "ticker": "MSE546",
+    "tier": "II"
+  },
+  {
+    "name": "Company_554",
+    "mse_id": 554,
+    "ticker": "MSE554",
+    "tier": "II"
+  },
+  {
+    "name": "Company_561",
+    "mse_id": 561,
+    "ticker": "MSE561",
+    "tier": "II"
+  },
+  {
+    "name": "Company_565",
+    "mse_id": 565,
+    "ticker": "MSE565",
+    "tier": "II"
+  },
+  {
+    "name": "Company_570",
+    "mse_id": 570,
+    "ticker": "MSE570",
+    "tier": "II"
+  },
+  {
+    "name": "Company_572",
+    "mse_id": 572,
+    "ticker": "MSE572",
+    "tier": "II"
+  },
+  {
+    "name": "Company_573",
+    "mse_id": 573,
+    "ticker": "MSE573",
+    "tier": "II"
+  },
+  {
+    "name": "Company_8",
+    "mse_id": 8,
+    "ticker": "MSE8",
+    "tier": "III"
+  },
+  {
+    "name": "Company_23",
+    "mse_id": 23,
+    "ticker": "MSE23",
+    "tier": "III"
+  },
+  {
+    "name": "Company_33",
+    "mse_id": 33,
+    "ticker": "MSE33",
+    "tier": "III"
+  },
+  {
+    "name": "Company_40",
+    "mse_id": 40,
+    "ticker": "MSE40",
+    "tier": "III"
+  },
+  {
+    "name": "Company_41",
+    "mse_id": 41,
+    "ticker": "MSE41",
+    "tier": "III"
+  },
+  {
+    "name": "Company_54",
+    "mse_id": 54,
+    "ticker": "MSE54",
+    "tier": "III"
+  },
+  {
+    "name": "Company_56",
+    "mse_id": 56,
+    "ticker": "MSE56",
+    "tier": "III"
+  },
+  {
+    "name": "Company_61",
+    "mse_id": 61,
+    "ticker": "MSE61",
+    "tier": "III"
+  },
+  {
+    "name": "Company_65",
+    "mse_id": 65,
+    "ticker": "MSE65",
+    "tier": "III"
+  },
+  {
+    "name": "Company_67",
+    "mse_id": 67,
+    "ticker": "MSE67",
+    "tier": "III"
+  },
+  {
+    "name": "Company_68",
+    "mse_id": 68,
+    "ticker": "MSE68",
+    "tier": "III"
+  },
+  {
+    "name": "Company_69",
+    "mse_id": 69,
+    "ticker": "MSE69",
+    "tier": "III"
+  },
+  {
+    "name": "Company_78",
+    "mse_id": 78,
+    "ticker": "MSE78",
+    "tier": "III"
+  },
+  {
+    "name": "Company_80",
+    "mse_id": 80,
+    "ticker": "MSE80",
+    "tier": "III"
+  },
+  {
+    "name": "Company_86",
+    "mse_id": 86,
+    "ticker": "MSE86",
+    "tier": "III"
+  },
+  {
+    "name": "Company_94",
+    "mse_id": 94,
+    "ticker": "MSE94",
+    "tier": "III"
+  },
+  {
+    "name": "Company_96",
+    "mse_id": 96,
+    "ticker": "MSE96",
+    "tier": "III"
+  },
+  {
+    "name": "Company_97",
+    "mse_id": 97,
+    "ticker": "MSE97",
+    "tier": "III"
+  },
+  {
+    "name": "Company_98",
+    "mse_id": 98,
+    "ticker": "MSE98",
+    "tier": "III"
+  },
+  {
+    "name": "Company_108",
+    "mse_id": 108,
+    "ticker": "MSE108",
+    "tier": "III"
+  },
+  {
+    "name": "Company_118",
+    "mse_id": 118,
+    "ticker": "MSE118",
+    "tier": "III"
+  },
+  {
+    "name": "Company_119",
+    "mse_id": 119,
+    "ticker": "MSE119",
+    "tier": "III"
+  },
+  {
+    "name": "Company_120",
+    "mse_id": 120,
+    "ticker": "MSE120",
+    "tier": "III"
+  },
+  {
+    "name": "Company_125",
+    "mse_id": 125,
+    "ticker": "MSE125",
+    "tier": "III"
+  },
+  {
+    "name": "Company_133",
+    "mse_id": 133,
+    "ticker": "MSE133",
+    "tier": "III"
+  },
+  {
+    "name": "Company_136",
+    "mse_id": 136,
+    "ticker": "MSE136",
+    "tier": "III"
+  },
+  {
+    "name": "Company_142",
+    "mse_id": 142,
+    "ticker": "MSE142",
+    "tier": "III"
+  },
+  {
+    "name": "Company_143",
+    "mse_id": 143,
+    "ticker": "MSE143",
+    "tier": "III"
+  },
+  {
+    "name": "Company_148",
+    "mse_id": 148,
+    "ticker": "MSE148",
+    "tier": "III"
+  },
+  {
+    "name": "Company_152",
+    "mse_id": 152,
+    "ticker": "MSE152",
+    "tier": "III"
+  },
+  {
+    "name": "Company_154",
+    "mse_id": 154,
+    "ticker": "MSE154",
+    "tier": "III"
+  },
+  {
+    "name": "Company_175",
+    "mse_id": 175,
+    "ticker": "MSE175",
+    "tier": "III"
+  },
+  {
+    "name": "Company_176",
+    "mse_id": 176,
+    "ticker": "MSE176",
+    "tier": "III"
+  },
+  {
+    "name": "Company_179",
+    "mse_id": 179,
+    "ticker": "MSE179",
+    "tier": "III"
+  },
+  {
+    "name": "Company_187",
+    "mse_id": 187,
+    "ticker": "MSE187",
+    "tier": "III"
+  },
+  {
+    "name": "Company_196",
+    "mse_id": 196,
+    "ticker": "MSE196",
+    "tier": "III"
+  },
+  {
+    "name": "Company_200",
+    "mse_id": 200,
+    "ticker": "MSE200",
+    "tier": "III"
+  },
+  {
+    "name": "Company_201",
+    "mse_id": 201,
+    "ticker": "MSE201",
+    "tier": "III"
+  },
+  {
+    "name": "Company_204",
+    "mse_id": 204,
+    "ticker": "MSE204",
+    "tier": "III"
+  },
+  {
+    "name": "Company_207",
+    "mse_id": 207,
+    "ticker": "MSE207",
+    "tier": "III"
+  },
+  {
+    "name": "Company_214",
+    "mse_id": 214,
+    "ticker": "MSE214",
+    "tier": "III"
+  },
+  {
+    "name": "Company_217",
+    "mse_id": 217,
+    "ticker": "MSE217",
+    "tier": "III"
+  },
+  {
+    "name": "Company_227",
+    "mse_id": 227,
+    "ticker": "MSE227",
+    "tier": "III"
+  },
+  {
+    "name": "Company_231",
+    "mse_id": 231,
+    "ticker": "MSE231",
+    "tier": "III"
+  },
+  {
+    "name": "Company_236",
+    "mse_id": 236,
+    "ticker": "MSE236",
+    "tier": "III"
+  },
+  {
+    "name": "Company_239",
+    "mse_id": 239,
+    "ticker": "MSE239",
+    "tier": "III"
+  },
+  {
+    "name": "Company_246",
+    "mse_id": 246,
+    "ticker": "MSE246",
+    "tier": "III"
+  },
+  {
+    "name": "Company_252",
+    "mse_id": 252,
+    "ticker": "MSE252",
+    "tier": "III"
+  },
+  {
+    "name": "Company_254",
+    "mse_id": 254,
+    "ticker": "MSE254",
+    "tier": "III"
+  },
+  {
+    "name": "Company_269",
+    "mse_id": 269,
+    "ticker": "MSE269",
+    "tier": "III"
+  },
+  {
+    "name": "Company_290",
+    "mse_id": 290,
+    "ticker": "MSE290",
+    "tier": "III"
+  },
+  {
+    "name": "Company_300",
+    "mse_id": 300,
+    "ticker": "MSE300",
+    "tier": "III"
+  },
+  {
+    "name": "Company_311",
+    "mse_id": 311,
+    "ticker": "MSE311",
+    "tier": "III"
+  },
+  {
+    "name": "Company_317",
+    "mse_id": 317,
+    "ticker": "MSE317",
+    "tier": "III"
+  },
+  {
+    "name": "Company_325",
+    "mse_id": 325,
+    "ticker": "MSE325",
+    "tier": "III"
+  },
+  {
+    "name": "Company_331",
+    "mse_id": 331,
+    "ticker": "MSE331",
+    "tier": "III"
+  },
+  {
+    "name": "Company_332",
+    "mse_id": 332,
+    "ticker": "MSE332",
+    "tier": "III"
+  },
+  {
+    "name": "Company_369",
+    "mse_id": 369,
+    "ticker": "MSE369",
+    "tier": "III"
+  },
+  {
+    "name": "Company_376",
+    "mse_id": 376,
+    "ticker": "MSE376",
+    "tier": "III"
+  },
+  {
+    "name": "Company_377",
+    "mse_id": 377,
+    "ticker": "MSE377",
+    "tier": "III"
+  },
+  {
+    "name": "Company_380",
+    "mse_id": 380,
+    "ticker": "MSE380",
+    "tier": "III"
+  },
+  {
+    "name": "Company_385",
+    "mse_id": 385,
+    "ticker": "MSE385",
+    "tier": "III"
+  },
+  {
+    "name": "Company_386",
+    "mse_id": 386,
+    "ticker": "MSE386",
+    "tier": "III"
+  },
+  {
+    "name": "Company_389",
+    "mse_id": 389,
+    "ticker": "MSE389",
+    "tier": "III"
+  },
+  {
+    "name": "Company_394",
+    "mse_id": 394,
+    "ticker": "MSE394",
+    "tier": "III"
+  },
+  {
+    "name": "Company_408",
+    "mse_id": 408,
+    "ticker": "MSE408",
+    "tier": "III"
+  },
+  {
+    "name": "Company_409",
+    "mse_id": 409,
+    "ticker": "MSE409",
+    "tier": "III"
+  },
+  {
+    "name": "Company_420",
+    "mse_id": 420,
+    "ticker": "MSE420",
+    "tier": "III"
+  },
+  {
+    "name": "Company_425",
+    "mse_id": 425,
+    "ticker": "MSE425",
+    "tier": "III"
+  },
+  {
+    "name": "Company_431",
+    "mse_id": 431,
+    "ticker": "MSE431",
+    "tier": "III"
+  },
+  {
+    "name": "Company_435",
+    "mse_id": 435,
+    "ticker": "MSE435",
+    "tier": "III"
+  },
+  {
+    "name": "Company_448",
+    "mse_id": 448,
+    "ticker": "MSE448",
+    "tier": "III"
+  },
+  {
+    "name": "Company_452",
+    "mse_id": 452,
+    "ticker": "MSE452",
+    "tier": "III"
+  },
+  {
+    "name": "Company_454",
+    "mse_id": 454,
+    "ticker": "MSE454",
+    "tier": "III"
+  },
+  {
+    "name": "Company_455",
+    "mse_id": 455,
+    "ticker": "MSE455",
+    "tier": "III"
+  },
+  {
+    "name": "Company_459",
+    "mse_id": 459,
+    "ticker": "MSE459",
+    "tier": "III"
+  },
+  {
+    "name": "Company_461",
+    "mse_id": 461,
+    "ticker": "MSE461",
+    "tier": "III"
+  },
+  {
+    "name": "Company_464",
+    "mse_id": 464,
+    "ticker": "MSE464",
+    "tier": "III"
+  },
+  {
+    "name": "Company_469",
+    "mse_id": 469,
+    "ticker": "MSE469",
+    "tier": "III"
+  },
+  {
+    "name": "Company_471",
+    "mse_id": 471,
+    "ticker": "MSE471",
+    "tier": "III"
+  },
+  {
+    "name": "Company_476",
+    "mse_id": 476,
+    "ticker": "MSE476",
+    "tier": "III"
+  },
+  {
+    "name": "Company_490",
+    "mse_id": 490,
+    "ticker": "MSE490",
+    "tier": "III"
+  },
+  {
+    "name": "Company_492",
+    "mse_id": 492,
+    "ticker": "MSE492",
+    "tier": "III"
+  },
+  {
+    "name": "Company_503",
+    "mse_id": 503,
+    "ticker": "MSE503",
+    "tier": "III"
+  },
+  {
+    "name": "Company_505",
+    "mse_id": 505,
+    "ticker": "MSE505",
+    "tier": "III"
+  },
+  {
+    "name": "Company_506",
+    "mse_id": 506,
+    "ticker": "MSE506",
+    "tier": "III"
+  },
+  {
+    "name": "Company_508",
+    "mse_id": 508,
+    "ticker": "MSE508",
+    "tier": "III"
+  },
+  {
+    "name": "Company_517",
+    "mse_id": 517,
+    "ticker": "MSE517",
+    "tier": "III"
+  },
+  {
+    "name": "Company_524",
+    "mse_id": 524,
+    "ticker": "MSE524",
+    "tier": "III"
+  },
+  {
+    "name": "Company_527",
+    "mse_id": 527,
+    "ticker": "MSE527",
+    "tier": "III"
+  },
+  {
+    "name": "Company_532",
+    "mse_id": 532,
+    "ticker": "MSE532",
+    "tier": "III"
+  },
+  {
+    "name": "Company_536",
+    "mse_id": 536,
+    "ticker": "MSE536",
+    "tier": "III"
+  },
+  {
+    "name": "Company_540",
+    "mse_id": 540,
+    "ticker": "MSE540",
+    "tier": "III"
+  },
+  {
+    "name": "Company_571",
+    "mse_id": 571,
+    "ticker": "MSE571",
+    "tier": "III"
+  }
+]
