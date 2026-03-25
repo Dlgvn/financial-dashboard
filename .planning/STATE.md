@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-03-25T03:36:24.156Z"
+status: Ready to execute
+stopped_at: Completed 02-04-PLAN.md (planning)
+last_updated: "2026-03-25"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
+  total_plans: 7
   completed_plans: 3
 ---
 
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Upload an MSE Excel file and get a complete fundamental analysis — ratios, forensic scores, valuation, and portfolio optimization — in one place, in one click.
-**Current focus:** Phase 01 — price-data-seed
+**Current focus:** Phase 02 — sector-routing-company-detail-screener
 
 ## Current Position
 
 Phase: 2
-Plan: Not started
+Plan: 4 plans ready (02-01 → 02-04), Wave 1 next
 
 ## Performance Metrics
 
@@ -81,10 +81,13 @@ None yet.
 
 - APU=90 confirmed; remaining 6 company MSE IDs must be discovered during Phase 1 scraping
 - Shares outstanding not in MSE Excel files — optional manual input unlocks P/E and P/BV (by design)
-- bank_ratios.py and insurance_ratios.py are BUILT but never imported/called in state.py — wired in Phase 2
+- bank_ratios.py and insurance_ratios.py are BUILT but never imported/called in state.py — wired in Phase 2 (planned)
+- `f_score` raw int must be added to `all_companies` dict (currently only `f_score_str` stored — string sort breaks SCREEN-02)
+- index.json needs `sector` field added for all 7 demo companies (02-01 handles this)
+- Recharts data vars (RadialBarChart, RadarChart, BarChart) must be state vars — never construct inline in components
 
 ## Session Continuity
 
-Last session: 2026-03-25T03:31:06.115Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-25
+Stopped at: Phase 2 planning complete — 4 plans in 3 waves, verified, ready to execute
 Resume file: None
