@@ -61,10 +61,12 @@ All sizes in px. Extracted from existing `class_name` patterns in company.py and
 | Label (card title) | 12px | 400 | 1.4 | `text-xs uppercase tracking-wider` |
 | Body (table rows, explanations) | 14px | 400 | 1.5 | `text-sm` |
 | Value (metric numbers) | 24px | 700 | 1.2 | `text-2xl font-bold` |
-| Heading (tab section headers) | 16px | 600 | 1.4 | `text-base font-semibold` |
+| Heading (tab section headers) | 16px | 700 | 1.4 | `text-base font-bold` |
 
-Two weights declared: regular (400) and bold/semibold (600/700).
+Two weights: regular (400) and bold (700).
 Mono font for numeric values: add `font-mono` to computed ratio display (consistent with existing `ratio_row()` pattern).
+
+Primary focal point: the 4 ratio value numbers (text-2xl font-bold) — the first element a user's eye reaches on tab load.
 
 ---
 
@@ -116,8 +118,11 @@ Card container: bg-slate-900 rounded-lg border border-slate-800 p-4
   Label: text-slate-400 text-xs uppercase tracking-wider mb-1
   Value row: rx.hstack(align="center", spacing="2")
     Value: text-2xl font-bold text-slate-500 font-mono — "N/A"
-    Edit icon: rx.icon("pencil", size=14, class_name="text-slate-500 hover:text-slate-300 cursor-pointer")
-      on_click: AnalysisState.toggle_shares_input()
+    Edit icon wrapper: rx.box(
+      rx.icon("pencil", size=14, class_name="text-slate-500 hover:text-slate-300 cursor-pointer"),
+      on_click=AnalysisState.toggle_shares_input(),
+      aria_label="Enter shares outstanding",
+    )
 ```
 
 **Inline edit mode (shares input open):**
@@ -204,7 +209,7 @@ rx.vstack(
   # Row 2: chart container
   rx.box(
     rx.hstack(
-      rx.text("Price History", class_name="text-slate-200 font-semibold"),
+      rx.text("Price History", class_name="text-slate-200 font-bold"),
       rx.spacer(),
       range_toggle_group(),
       align="center",
