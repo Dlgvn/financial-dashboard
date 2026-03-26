@@ -51,8 +51,8 @@ Upload an MSE Excel file and get a complete fundamental analysis — ratios, for
 - [ ] **SCRP-02**: System stores price history as JSON in data/prices/{company}.json
 - [ ] **SCRP-03**: System maps all 7 demo companies to their MSE company IDs
 - [ ] **SCRP-04**: User can trigger price refresh from the UI
-- [ ] **VAL-01**: User can view P/E, P/BV, P/S, FCF yield, EV/EBITDA on company page
-- [ ] **VAL-02**: User can view historical price line chart on company page
+- [x] **VAL-01**: User can view P/E, P/BV, P/S, FCF yield, EV/EBITDA on company page — Validated in Phase 3: valuation-metrics
+- [x] **VAL-02**: User can view historical price line chart on company page — Validated in Phase 3: valuation-metrics
 - [ ] **SECTOR-01**: System detects company sector (banking/insurance/standard) from metadata
 - [ ] **SECTOR-02**: Khan Bank loads bank ratio engine (NIM, NPL, CAR, LDR, Cost-to-Income)
 - [ ] **SECTOR-03**: Мандал даатгал loads insurance ratio engine (Loss Ratio, Combined Ratio, Solvency)
@@ -137,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 — Milestone v1.1 started*
+*Last updated: 2026-03-26
