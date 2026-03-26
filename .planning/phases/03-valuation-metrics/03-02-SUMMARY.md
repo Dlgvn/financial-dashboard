@@ -26,9 +26,9 @@ decisions:
   - "range_toggle() uses list comprehension over ['1M', '6M', '1Y', 'All'] for DRY button generation"
   - "shares_input_card() replaces the entire 4-card row when input is open (per UI-SPEC interaction contract)"
 metrics:
-  duration: "~2 minutes"
+  duration: "~10 minutes"
   completed: "2026-03-26"
-  tasks: 1
+  tasks: 2
   files: 1
 requirements: [VAL-01, VAL-02, VAL-03]
 ---
@@ -42,6 +42,7 @@ Valuation tab placeholder replaced with full production UI: 4 conditional ratio 
 | Task | Name | Commit | Key Files |
 |------|------|--------|-----------|
 | 1 | Build valuation tab UI components and replace placeholder | 483a427 | company.py |
+| 2 | Visual verification of Valuation tab | checkpoint | human-approved |
 
 ## What Was Built
 
@@ -84,17 +85,15 @@ None. All components are wired to real state vars from Plan 01:
 - Charts use `company_price_chart_data` and `company_volume_chart_data` populated by `_load_valuation_data()`
 - N/A state occurs legitimately when `company_shares_outstanding == ""` (no price file or no scraped shares)
 
-## Checkpoint: Human Verification Required
+## Checkpoint: Human Verification
 
-Task 2 is a `checkpoint:human-verify` gate. The app must be started and the Valuation tab visually verified by a human before this plan is fully complete.
+Task 2 was a `checkpoint:human-verify` gate. The user visually verified the Valuation tab and approved on 2026-03-26.
 
-**To verify:**
-1. `cd "/Users/dlgvnbyr/Documents/Hicheel/Capstone Project/financial-dashboard"` and `source venv/bin/activate && reflex run`
-2. Navigate to Screener → click any company → click "Valuation" tab
-3. Confirm: 4 ratio cards, Price History section, range toggle buttons, correct colors
+**Verified:** 4 ratio cards, Price History section with green line chart and blue volume bars, range toggle (1M/6M/1Y/All) buttons, and inline shares input — all rendered correctly per UI-SPEC.
 
 ## Self-Check: PASSED
 
 - File exists: `financial_dashboard/pages/company.py` — FOUND
 - Commit exists: `483a427` — verified
 - All automated assertions pass (Python syntax, function presence, color constants, state var bindings)
+- Human verification: approved 2026-03-26
