@@ -16,9 +16,9 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 ### [B] Valuation Metrics
 
-- [ ] **VAL-01**: User can view computed valuation metrics on the company page — EV/EBITDA and FCF yield (computable from existing data); P/E and P/BV shown if user provides shares outstanding
-- [ ] **VAL-02**: User can view a historical price line chart (Close price over time) on the company detail page
-- [ ] **VAL-03**: User can optionally input shares outstanding per company to unlock P/E and P/BV ratios (stored in company JSON)
+- [x] **VAL-01**: User can view computed valuation metrics on the company page — EV/EBITDA and FCF yield (computable from existing data); P/E and P/BV shown if user provides shares outstanding
+- [x] **VAL-02**: User can view a historical price line chart (Close price over time) on the company detail page
+- [x] **VAL-03**: User can optionally input shares outstanding per company to unlock P/E and P/BV ratios (stored in company JSON)
 
 ### [C] Sector Routing
 
@@ -105,9 +105,9 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 | COMP-07 | Phase 2 | Pending |
 | SCREEN-01 | Phase 2 | Pending |
 | SCREEN-02 | Phase 2 | Pending |
-| VAL-01 | Phase 3 | Pending |
-| VAL-02 | Phase 3 | Pending |
-| VAL-03 | Phase 3 | Pending |
+| VAL-01 | Phase 3 | Complete |
+| VAL-02 | Phase 3 | Complete |
+| VAL-03 | Phase 3 | Complete |
 | PORT-01 | Phase 4 | Pending |
 | PORT-02 | Phase 4 | Pending |
 | PORT-03 | Phase 4 | Pending |
