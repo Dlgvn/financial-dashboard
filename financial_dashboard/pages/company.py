@@ -371,17 +371,145 @@ def forensic_tab_content() -> rx.Component:
     )
 
 
-def valuation_placeholder() -> rx.Component:
-    """Placeholder for Phase 3 valuation metrics."""
-    return rx.box(
-        rx.vstack(
-            rx.icon("line-chart", size=32, class_name="text-slate-600"),
-            rx.text("Valuation metrics coming in Phase 3", class_name="text-slate-400"),
-            rx.text("Price data and EV/EBITDA, FCF Yield, P/E, P/BV", class_name="text-slate-500 text-sm"),
-            spacing="2",
-            align="center",
+def valuation_card(title: str, value: rx.Var, unit: str, has_shares: rx.Var) -> rx.Component:
+    """A valuation ratio card with conditional rendering based on shares availability."""
+    return rx.cond(
+        has_shares,
+        rx.box(
+            rx.text(title, class_name="text-slate-400 text-xs uppercase tracking-wider mb-1"),
+            rx.hstack(
+                rx.text(value, class_name="text-2xl font-bold text-slate-100 font-mono"),
+                rx.text(unit, class_name="text-slate-500 text-sm self-end mb-1"),
+                spacing="1",
+                align="end",
+            ),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
         ),
-        class_name="bg-slate-900 rounded-lg border border-slate-800 p-12 w-full flex items-center justify-center",
+        rx.box(
+            rx.text(title, class_name="text-slate-400 text-xs uppercase tracking-wider mb-1"),
+            rx.hstack(
+                rx.text("N/A", class_name="text-2xl font-bold text-slate-500 font-mono"),
+                rx.box(
+                    rx.icon("pencil", size=14, class_name="text-slate-500 hover:text-slate-300 cursor-pointer"),
+                    on_click=AnalysisState.toggle_shares_input,
+                ),
+                spacing="2",
+                align="center",
+            ),
+            rx.text("Enter shares outstanding to compute", class_name="text-slate-500 text-xs mt-1"),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+        ),
+    )
+
+
+def shares_input_card() -> rx.Component:
+    """Inline edit card for entering shares outstanding."""
+    return rx.box(
+        rx.text("Shares Outstanding", class_name="text-slate-400 text-xs uppercase tracking-wider mb-1"),
+        rx.input(
+            placeholder="e.g. 45,000,000",
+            value=AnalysisState.company_shares_input_value,
+            on_change=AnalysisState.set_shares_input_value,
+            class_name="text-sm bg-slate-800 border-slate-700 text-slate-100 rounded px-2 py-1 w-full mb-2",
+        ),
+        rx.hstack(
+            rx.text(
+                "Save Shares",
+                on_click=AnalysisState.save_shares_outstanding(AnalysisState.company_shares_input_value),
+                class_name="text-xs text-green-400 hover:text-green-300 cursor-pointer",
+            ),
+            rx.text(
+                "Discard changes",
+                on_click=AnalysisState.toggle_shares_input,
+                class_name="text-xs text-slate-500 hover:text-slate-400 ml-2 cursor-pointer",
+            ),
+            spacing="2",
+        ),
+        class_name="bg-slate-900 rounded-lg border border-green-800 p-4",
+    )
+
+
+def range_toggle() -> rx.Component:
+    """Range toggle button group for chart date filtering."""
+    s = AnalysisState
+    ranges = ["1M", "6M", "1Y", "All"]
+    return rx.hstack(
+        *[
+            rx.button(
+                r,
+                on_click=s.set_valuation_range(r),
+                class_name=rx.cond(
+                    s.valuation_range == r,
+                    "px-3 py-2 rounded text-xs font-medium bg-slate-700 text-green-400 border border-slate-600",
+                    "px-3 py-2 rounded text-xs font-medium bg-transparent text-slate-400 hover:text-slate-200 border border-transparent",
+                ),
+            )
+            for r in ranges
+        ],
+        spacing="1",
+    )
+
+
+def price_chart_section() -> rx.Component:
+    """Price history line chart and volume bar chart in a card container."""
+    s = AnalysisState
+    return rx.box(
+        rx.hstack(
+            rx.text("Price History", class_name="text-slate-200 font-bold"),
+            rx.spacer(),
+            range_toggle(),
+            align="center",
+            width="100%",
+            class_name="mb-3",
+        ),
+        rx.text("Close Price (MNT)", class_name="text-slate-400 text-xs mb-2"),
+        rx.recharts.line_chart(
+            rx.recharts.line(data_key="close", stroke="#4ade80", dot=False, stroke_width=2),
+            rx.recharts.x_axis(data_key="date", tick={"fontSize": 11, "fill": "#94a3b8"}),
+            rx.recharts.y_axis(tick={"fontSize": 11, "fill": "#94a3b8"}, width=60),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3", stroke="#1e293b"),
+            rx.recharts.tooltip(content_style={"backgroundColor": "#1e293b", "border": "1px solid #334155"}),
+            data=s.company_price_chart_data,
+            width="100%",
+            height=240,
+        ),
+        rx.text("Volume", class_name="text-slate-500 text-xs mt-2 mb-1"),
+        rx.recharts.bar_chart(
+            rx.recharts.bar(data_key="volume", fill="#60a5fa", opacity=0.7),
+            rx.recharts.x_axis(data_key="date", tick=False),
+            rx.recharts.y_axis(tick={"fontSize": 10, "fill": "#64748b"}, width=60),
+            data=s.company_volume_chart_data,
+            width="100%",
+            height=80,
+        ),
+        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 w-full",
+    )
+
+
+def valuation_tab_content() -> rx.Component:
+    """Full valuation tab: 4 ratio cards, inline shares input, price chart, volume chart."""
+    s = AnalysisState
+    has_shares = s.company_shares_outstanding != ""
+
+    cards_row = rx.grid(
+        valuation_card("EV / EBITDA", s.company_ev_ebitda, "x", has_shares),
+        valuation_card("FCF Yield", s.company_fcf_yield, "%", has_shares),
+        valuation_card("P / E", s.company_pe, "x", has_shares),
+        valuation_card("P / BV", s.company_pbv, "x", has_shares),
+        columns="4",
+        spacing="4",
+        width="100%",
+    )
+
+    return rx.vstack(
+        rx.cond(
+            s.company_shares_input_open,
+            shares_input_card(),
+            cards_row,
+        ),
+        price_chart_section(),
+        spacing="6",
+        width="100%",
     )
 
 
@@ -616,7 +744,7 @@ def company_page() -> rx.Component:
                     ),
                     rx.tabs.content(ratios_tab_content(),     value="ratios"),
                     rx.tabs.content(forensic_tab_content(),   value="forensic"),
-                    rx.tabs.content(valuation_placeholder(),  value="valuation"),
+                    rx.tabs.content(valuation_tab_content(),  value="valuation"),
                     rx.tabs.content(dupont_tab_content(),     value="dupont"),
                     rx.tabs.content(red_flags_tab_content(),  value="redflags"),
                     default_value="ratios",
