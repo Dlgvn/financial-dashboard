@@ -1,6 +1,7 @@
 """Upload state management for MSE Analytica."""
 
 import json
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import reflex as rx
@@ -14,7 +15,8 @@ from .analysis.ratios import (
 from .analysis.bank_ratios import compute_bank_ratios
 from .analysis.insurance_ratios import compute_insurance_ratios
 from .parser.excel_parser import parse_excel_file
-from .scraper.price_scraper import scrape_company_prices, save_price_data
+from .analysis.valuation import compute_valuation_metrics
+from .scraper.price_scraper import scrape_company_prices, save_price_data, PRICES_DIR, price_filename
 from .scraper.registry_loader import find_mse_id
 from .storage.json_store import (
     DATA_DIR,
@@ -487,6 +489,24 @@ class AnalysisState(UploadState):
     screener_sort_col: str = "score"
     screener_sort_asc: bool = False
 
+    # Valuation display vars
+    company_ev_ebitda: str = ""
+    company_fcf_yield: str = ""
+    company_pe: str = ""
+    company_pbv: str = ""
+    company_shares_outstanding: str = ""
+
+    # Shares input UI state
+    company_shares_input_open: bool = False
+    company_shares_input_value: str = ""
+
+    # Price chart data (list[dict[str, str]] per Reflex constraint)
+    company_price_chart_data: list[dict[str, str]] = []
+    company_volume_chart_data: list[dict[str, str]] = []
+
+    # Range toggle
+    valuation_range: str = "1Y"
+
     @rx.event
     def load_screener(self):
         """Load all companies with computed scores for screener page."""
@@ -797,6 +817,191 @@ class AnalysisState(UploadState):
 
         # --- Red flags ---
         self.company_red_flags = _compute_red_flags(self.company_ratios, self.company_beneish)
+
+        # --- Valuation data ---
+        self._load_valuation_data(company_name)
+
+    def _load_valuation_data(self, company_name: str):
+        """Load price JSON, compute valuation ratios, and slice chart data by range."""
+        price_file = PRICES_DIR / price_filename(company_name)
+        if not price_file.exists():
+            self.company_ev_ebitda = "N/A"
+            self.company_fcf_yield = "N/A"
+            self.company_pe = "N/A"
+            self.company_pbv = "N/A"
+            self.company_shares_outstanding = ""
+            self.company_price_chart_data = []
+            self.company_volume_chart_data = []
+            return
+
+        with open(price_file, encoding="utf-8") as f:
+            price_data = json.load(f)
+
+        records = price_data.get("records", [])
+
+        # Determine shares outstanding: scraped value from price JSON
+        scraped_shares = price_data.get("shares_outstanding")
+
+        # Check for manual override in the company's financial JSON
+        manual_shares = None
+        index_path = DATA_DIR / "index.json"
+        if index_path.exists():
+            with open(index_path) as f:
+                index = json.load(f)
+            entry = next(
+                (e for e in index.get("files", []) if e["company"] == company_name),
+                None,
+            )
+            if entry:
+                fin_file = DATA_DIR / entry["filename"]
+                if fin_file.exists():
+                    with open(fin_file, encoding="utf-8") as f:
+                        fin_data = json.load(f)
+                    manual_shares = fin_data.get("shares_outstanding_override")
+
+        # Manual override takes precedence over scraped value
+        effective_shares = manual_shares if manual_shares is not None else scraped_shares
+
+        self.company_shares_outstanding = str(effective_shares) if effective_shares is not None else ""
+
+        # Get last close price from most recent record
+        last_close_price = None
+        if records:
+            last_record = records[-1]
+            try:
+                last_close_price = float(last_record["close"])
+            except (ValueError, KeyError):
+                last_close_price = None
+
+        # Load the company's financial data for valuation computation
+        fin_data_for_valuation: dict = {}
+        index_path2 = DATA_DIR / "index.json"
+        if index_path2.exists():
+            with open(index_path2) as f:
+                index2 = json.load(f)
+            entry2 = next(
+                (e for e in index2.get("files", []) if e["company"] == company_name),
+                None,
+            )
+            if entry2:
+                fin_file2 = DATA_DIR / entry2["filename"]
+                if fin_file2.exists():
+                    with open(fin_file2, encoding="utf-8") as f:
+                        fin_data_for_valuation = json.load(f)
+
+        result = compute_valuation_metrics(fin_data_for_valuation, effective_shares, last_close_price)
+
+        # Format results for display
+        self.company_ev_ebitda = _fmt(result["ev_ebitda"], 1)
+        fcf = result["fcf_yield"]
+        self.company_fcf_yield = _fmt(fcf * 100 if fcf is not None else None, 1)
+        self.company_pe = _fmt(result["pe"], 1)
+        self.company_pbv = _fmt(result["pbv"], 1)
+
+        # Slice price records by selected range
+        self._slice_price_records(records)
+
+    def _slice_price_records(self, records: list[dict]):
+        """Filter records by valuation_range and populate chart data state vars."""
+        range_days = {
+            "1M": 30,
+            "6M": 180,
+            "1Y": 365,
+        }
+        cutoff_str: str | None = None
+        if self.valuation_range in range_days:
+            cutoff_date = datetime.now() - timedelta(days=range_days[self.valuation_range])
+            cutoff_str = cutoff_date.strftime("%Y-%m-%d")
+
+        if cutoff_str:
+            filtered = [r for r in records if r.get("date", "") >= cutoff_str]
+        else:
+            # "All" range — no cutoff
+            filtered = records
+
+        self.company_price_chart_data = [
+            {"date": r["date"], "close": r["close"]} for r in filtered
+        ]
+        self.company_volume_chart_data = [
+            {"date": r["date"], "volume": r["volume"]} for r in filtered
+        ]
+
+    @rx.event
+    def set_valuation_range(self, range_value: str):
+        """Set the price chart range and re-slice the chart data."""
+        self.valuation_range = range_value
+        # Re-read price JSON and re-slice
+        company_name = self.selected_company_name
+        if not company_name:
+            return
+        price_file = PRICES_DIR / price_filename(company_name)
+        if not price_file.exists():
+            self.company_price_chart_data = []
+            self.company_volume_chart_data = []
+            return
+        with open(price_file, encoding="utf-8") as f:
+            price_data = json.load(f)
+        records = price_data.get("records", [])
+        self._slice_price_records(records)
+
+    @rx.event
+    def toggle_shares_input(self):
+        """Toggle the manual shares outstanding input form."""
+        self.company_shares_input_open = not self.company_shares_input_open
+        if self.company_shares_input_open:
+            self.company_shares_input_value = ""
+
+    @rx.event
+    def set_shares_input_value(self, value: str):
+        """Update the shares input field value."""
+        self.company_shares_input_value = value
+
+    @rx.event
+    def save_shares_outstanding(self, value: str):
+        """Save a manually entered shares outstanding to the company's financial JSON.
+
+        Parses the input (strips commas and spaces), writes as
+        shares_outstanding_override to the financial JSON, then recomputes
+        valuation metrics and closes the input form.
+        """
+        company_name = self.selected_company_name
+        if not company_name:
+            return
+
+        # Normalize input: remove commas, spaces; parse to int
+        normalized = value.strip().replace(",", "").replace(" ", "")
+        try:
+            shares_int = int(normalized)
+        except ValueError:
+            return  # Invalid input — silently ignore
+
+        # Write override to the company's financial JSON
+        index_path = DATA_DIR / "index.json"
+        if not index_path.exists():
+            return
+        with open(index_path) as f:
+            index = json.load(f)
+        entry = next(
+            (e for e in index.get("files", []) if e["company"] == company_name),
+            None,
+        )
+        if not entry:
+            return
+        fin_file = DATA_DIR / entry["filename"]
+        if fin_file.exists():
+            with open(fin_file, encoding="utf-8") as f:
+                fin_data = json.load(f)
+        else:
+            fin_data = {}
+
+        fin_data["shares_outstanding_override"] = shares_int
+
+        with open(fin_file, "w", encoding="utf-8") as f:
+            json.dump(fin_data, f, ensure_ascii=False, indent=2)
+
+        # Recompute valuation metrics with new shares
+        self._load_valuation_data(company_name)
+        self.company_shares_input_open = False
 
     @rx.event
     def on_load_company(self):
