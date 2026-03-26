@@ -15,7 +15,7 @@ class TestScrapeCompanyPrices:
         mock_response.raise_for_status = MagicMock()
 
         with patch("requests.get", return_value=mock_response):
-            records = ps.scrape_company_prices(90, "АПУ")
+            records, shares = ps.scrape_company_prices(90, "АПУ")
 
         assert len(records) == 2
 
