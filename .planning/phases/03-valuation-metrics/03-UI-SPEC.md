@@ -45,7 +45,7 @@ Declared values (must be multiples of 4). Extracted from existing codebase patte
 | 3xl | 64px | Page-level padding (`p-16` on no-selection states) |
 
 Exceptions:
-- Range toggle buttons: internal padding `px-3 py-1.5` (12px/6px) for compact button group
+- Range toggle buttons: internal padding `px-3 py-2` (12px/8px) for compact button group
 - Edit icon touch target: minimum 32px inline, centered on card N/A value line
 - Page content area left margin: `ml-52` (208px, fixed sidebar width — do not change)
 - Card padding: `p-4` (16px) — consistent with all existing `score_card()` and `ratio_category_card()` instances
@@ -125,8 +125,8 @@ Card container: bg-slate-900 rounded-lg border border-slate-800 p-4
 Card container: bg-slate-900 rounded-lg border border-slate-800 border-green-800 p-4
   Label: text-slate-400 text-xs uppercase tracking-wider mb-1
   Input: rx.input(placeholder="e.g. 45,000,000", class_name="text-sm bg-slate-800 border-slate-700 text-slate-100 rounded px-2 py-1 w-full")
-  Save button: text-xs text-green-400 hover:text-green-300 cursor-pointer — "Save"
-  Cancel link: text-xs text-slate-500 hover:text-slate-400 ml-2 — "Cancel"
+  Save button: text-xs text-green-400 hover:text-green-300 cursor-pointer — "Save Shares"
+  Cancel link: text-xs text-slate-500 hover:text-slate-400 ml-2 — "Discard changes"
 ```
 
 Border changes to `border-green-800` when input is active to signal edit mode.
@@ -150,8 +150,8 @@ rx.hstack(spacing="1", class_name="mb-4")
       on_click=AnalysisState.set_valuation_range(range),
       class_name=rx.cond(
         AnalysisState.valuation_range == range,
-        "px-3 py-1.5 rounded text-xs font-medium bg-slate-700 text-green-400 border border-slate-600",
-        "px-3 py-1.5 rounded text-xs font-medium bg-transparent text-slate-400 hover:text-slate-200 border border-transparent",
+        "px-3 py-2 rounded text-xs font-medium bg-slate-700 text-green-400 border border-slate-600",
+        "px-3 py-2 rounded text-xs font-medium bg-transparent text-slate-400 hover:text-slate-200 border border-transparent",
       ),
     )
 ```
@@ -226,13 +226,13 @@ rx.vstack(
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | "Save" — inline shares input save button (verb only, context is clear from card label) |
+| Primary CTA | "Save Shares" — inline shares input save button (verb + noun, specific to shares entry context) |
 | Empty state heading | "No company selected." |
 | Empty state body | "Select a company from the Screener to view its valuation metrics." |
 | N/A card value | "N/A" |
 | N/A card tooltip / subtext | "Enter shares outstanding to compute" |
 | Shares input placeholder | "e.g. 45,000,000" |
-| Shares input cancel | "Cancel" |
+| Shares input cancel | "Discard changes" |
 | Chart section header | "Price History" |
 | Price y-axis label | "Close Price (MNT)" |
 | Volume section label | "Volume" |
@@ -249,8 +249,8 @@ rx.vstack(
 | Load valuation tab | User clicks Valuation tab | `AnalysisState.select_company()` or `load_valuation_data()` fires; ratio cards and chart populate from state vars |
 | Shares unavailable | `company_shares_outstanding` is empty string | All 4 cards show "N/A" + pencil icon |
 | Click pencil icon | `on_click=AnalysisState.toggle_shares_input()` | Card border changes to `border-green-800`; input field appears inline |
-| Save shares | User types number, clicks "Save" | `AnalysisState.save_shares_outstanding()` fires; input normalizes commas to int; card re-renders with computed value immediately (no page reload) |
-| Cancel edit | User clicks "Cancel" | Card returns to N/A display; no state change to shares |
+| Save shares | User types number, clicks "Save Shares" | `AnalysisState.save_shares_outstanding()` fires; input normalizes commas to int; card re-renders with computed value immediately (no page reload) |
+| Discard changes | User clicks "Discard changes" | Card returns to N/A display; no state change to shares |
 | Range toggle | User clicks 1M / 6M / 1Y / All | `AnalysisState.set_valuation_range(range)` fires; `company_price_chart_data` and `company_volume_chart_data` re-sliced; chart re-renders |
 | Default range | Tab load | "1Y" is active; chart shows last 365 days of data |
 
