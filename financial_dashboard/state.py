@@ -192,8 +192,8 @@ class UploadState(rx.State):
         for company in companies:
             try:
                 mse_id = find_mse_id(company)
-                records = scrape_company_prices(mse_id, company)
-                save_price_data(company, mse_id, records)
+                records, shares = scrape_company_prices(mse_id, company)
+                save_price_data(company, mse_id, records, shares_outstanding=shares)
                 log_entries.append({
                     "company": company,
                     "status": "ok",

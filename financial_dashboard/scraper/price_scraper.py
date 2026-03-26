@@ -34,7 +34,49 @@ def price_file_exists(company_name: str) -> bool:
     return (PRICES_DIR / price_filename(company_name)).exists()
 
 
-def scrape_company_prices(mse_id: int, company_name: str) -> list[dict]:
+def scrape_shares_outstanding(soup: BeautifulSoup) -> int | None:
+    """Extract shares outstanding from the MSE company page HTML.
+
+    Searches for a table row or element containing "share" (case-insensitive)
+    in the company info section of old.mse.mn/en/company/{id}.
+
+    Args:
+        soup: Parsed BeautifulSoup of the company page.
+
+    Returns:
+        Total shares outstanding as an integer, or None if not found.
+    """
+    try:
+        # Look for table rows with "share" in the label cell
+        for row in soup.find_all("tr"):
+            cells = row.find_all(["td", "th"])
+            for i, cell in enumerate(cells):
+                text = cell.get_text(strip=True).lower()
+                if "share" in text and i + 1 < len(cells):
+                    value_text = cells[i + 1].get_text(strip=True).replace(",", "").replace(" ", "")
+                    try:
+                        return int(value_text)
+                    except ValueError:
+                        pass
+
+        # Fallback: search all text nodes near "share" keyword
+        for tag in soup.find_all(string=re.compile(r"share", re.IGNORECASE)):
+            parent = tag.parent
+            if parent:
+                next_sib = parent.find_next_sibling()
+                if next_sib:
+                    value_text = next_sib.get_text(strip=True).replace(",", "").replace(" ", "")
+                    try:
+                        return int(value_text)
+                    except ValueError:
+                        pass
+    except Exception as e:
+        logger.warning("Error extracting shares_outstanding: %s", e)
+
+    return None
+
+
+def scrape_company_prices(mse_id: int, company_name: str) -> tuple[list[dict], int | None]:
     """Fetch and parse historical OHLCV data for a company from old.mse.mn.
 
     Args:
@@ -42,8 +84,9 @@ def scrape_company_prices(mse_id: int, company_name: str) -> list[dict]:
         company_name: The company's Mongolian name (used for logging).
 
     Returns:
-        List of dicts with keys: date, open, high, low, close, volume.
-        Sorted ascending by date.
+        Tuple of (records, shares_outstanding) where records is a list of dicts
+        with keys: date, open, high, low, close, volume (sorted ascending by date),
+        and shares_outstanding is an int or None if not found on the page.
 
     Raises:
         ValueError: If no trade_history_result table is found on the page.
@@ -56,6 +99,10 @@ def scrape_company_prices(mse_id: int, company_name: str) -> list[dict]:
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
+
+    # Extract shares outstanding from the same page response (no extra HTTP request)
+    shares_outstanding = scrape_shares_outstanding(soup)
+
     table = soup.find("table", class_="trade_history_result")
 
     if table is None:
@@ -97,16 +144,22 @@ def scrape_company_prices(mse_id: int, company_name: str) -> list[dict]:
     logger.info(
         "Scraped %d price records for %s (ID=%s)", len(records), company_name, mse_id
     )
-    return records
+    return records, shares_outstanding
 
 
-def save_price_data(company_name: str, mse_id: int, records: list[dict]) -> str:
+def save_price_data(
+    company_name: str,
+    mse_id: int,
+    records: list[dict],
+    shares_outstanding: int | None = None,
+) -> str:
     """Save price data to data/prices/{company_name}.json.
 
     Args:
         company_name: Mongolian company name (used as filename key).
         mse_id: The MSE company ID.
         records: List of OHLCV record dicts.
+        shares_outstanding: Total shares outstanding scraped from MSE page (optional).
 
     Returns:
         The filename (without directory path) that was written.
@@ -125,6 +178,9 @@ def save_price_data(company_name: str, mse_id: int, records: list[dict]) -> str:
         "scraped_at": datetime.now().isoformat(),
         "records": sorted_records,
     }
+
+    if shares_outstanding is not None:
+        data["shares_outstanding"] = shares_outstanding
 
     file_path.write_text(
         json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
