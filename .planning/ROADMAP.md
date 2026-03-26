@@ -62,7 +62,10 @@ Plans:
   1. The Valuation tab on any company page shows EV/EBITDA and FCF yield computed from existing financial data
   2. A historical Close price line chart is visible on the Valuation tab with dates on the x-axis
   3. When a user enters shares outstanding for a company and saves it, P/E and P/BV appear in the Valuation tab immediately (no page reload required)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Scraper extension, valuation computation module, state vars and event handlers
+- [ ] 03-02-PLAN.md — Valuation tab UI: ratio cards, price chart, volume bars, shares input
 **UI hint**: yes
 
 ### Phase 4: Portfolio Optimization
@@ -97,7 +100,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Price Scraper | 3/3 | Complete   | 2026-03-25 |
 | 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
-| 3. Valuation Metrics | 0/? | Not started | - |
+| 3. Valuation Metrics | 0/2 | Not started | - |
 | 4. Portfolio Optimization | 0/? | Not started | - |
 | 5. Deployment & Documentation | 0/? | Not started | - |
 
