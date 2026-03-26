@@ -11,7 +11,7 @@
 
 - [x] **Phase 1: Price Data Seed** — Scrape and store historical MSE price data for all 162 listed companies (Classification I, II, III) as a one-time data seed (completed 2026-03-25)
 - [ ] **Phase 2: Sector Routing, Company Detail & Screener** — Wire bank/insurance engines, expand company page to full ratios/tabs/charts, and add sector/valuation filters to screener
-- [ ] **Phase 3: Valuation Metrics** — Compute and display valuation ratios and historical price chart on company page
+- [x] **Phase 3: Valuation Metrics** — Compute and display valuation ratios and historical price chart on company page (completed 2026-03-26)
 - [ ] **Phase 4: Portfolio Optimization** — Add manual weights, risk metrics, mean-variance optimization, and efficient frontier
 - [ ] **Phase 5: Deployment & Documentation** — Deploy to production, bundle demo data, write comprehensive README
 
@@ -62,10 +62,10 @@ Plans:
   1. The Valuation tab on any company page shows EV/EBITDA and FCF yield computed from existing financial data
   2. A historical Close price line chart is visible on the Valuation tab with dates on the x-axis
   3. When a user enters shares outstanding for a company and saves it, P/E and P/BV appear in the Valuation tab immediately (no page reload required)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 03-01-PLAN.md — Scraper extension, valuation computation module, state vars and event handlers
-- [ ] 03-02-PLAN.md — Valuation tab UI: ratio cards, price chart, volume bars, shares input
+- [x] 03-02-PLAN.md — Valuation tab UI: ratio cards, price chart, volume bars, shares input
 **UI hint**: yes
 
 ### Phase 4: Portfolio Optimization
@@ -100,7 +100,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Price Scraper | 3/3 | Complete   | 2026-03-25 |
 | 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
-| 3. Valuation Metrics | 1/2 | In Progress|  |
+| 3. Valuation Metrics | 2/2 | Complete   | 2026-03-26 |
 | 4. Portfolio Optimization | 0/? | Not started | - |
 | 5. Deployment & Documentation | 0/? | Not started | - |
 
