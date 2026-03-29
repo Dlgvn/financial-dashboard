@@ -78,7 +78,11 @@ Plans:
   3. After adding at least 2 companies with scraped price data, the page displays suggested optimal weights from mean-variance optimization alongside the current weights
   4. Portfolio page shows Sortino Ratio, Maximum Drawdown, and CVaR (95%) computed from historical price returns
   5. An efficient frontier scatter plot is visible on the portfolio page with the current portfolio position highlighted
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 04-01-PLAN.md — TDD: test scaffold + portfolio_optimization.py pure math module
+- [ ] 04-02-PLAN.md — State extension + portfolio page UI rewrite with Holdings | Analysis tabs
+- [ ] 04-03-PLAN.md — Visual verification checkpoint
 **UI hint**: yes
 
 ### Phase 5: Deployment & Documentation
@@ -101,7 +105,7 @@ Plans:
 | 1. Price Scraper | 3/3 | Complete   | 2026-03-25 |
 | 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
 | 3. Valuation Metrics | 2/2 | Complete   | 2026-03-26 |
-| 4. Portfolio Optimization | 0/? | Not started | - |
+| 4. Portfolio Optimization | 0/3 | Not started | - |
 | 5. Deployment & Documentation | 0/? | Not started | - |
 
 ---
