@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-26T06:02:58.055Z"
+status: Ready to execute
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-30T02:01:01.079Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Upload an MSE Excel file and get a complete fundamental analysis — ratios, forensic scores, valuation, and portfolio optimization — in one place, in one click.
-**Current focus:** Phase 03 — valuation-metrics
+**Current focus:** Phase 04 — portfolio-optimization
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
+Phase: 04 (portfolio-optimization) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: Not started
 | Phase 03 P01 | 20 | 2 tasks | 3 files |
 | Phase 03 P02 | 2 | 1 tasks | 1 files |
 | Phase 03 P02 | 10 | 2 tasks | 1 files |
+| Phase 04 P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,7 @@ Plan: Not started
 - [Phase 03]: Manual shares_outstanding_override stored in financial JSON; takes precedence over scraped value
 - [Phase 03]: valuation_card() takes has_shares as rx.Var computed from company_shares_outstanding \!= '' to avoid re-computing in each card
 - [Phase 03]: valuation_card() takes has_shares as rx.Var computed from company_shares_outstanding \!= '' — passed from valuation_tab_content() to avoid re-computing in each card
+- [Phase 04]: portfolio_optimization.py: all Recharts-bound values stored as strings (list[dict[str,str]]); SLSQP optimizer with equal-weight fallback; CVaR 95% via historical simulation
 
 ### Known Reflex Gotchas
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T05:56:55.367Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-30T02:01:01.077Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
