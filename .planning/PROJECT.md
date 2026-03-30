@@ -65,12 +65,12 @@ Upload an MSE Excel file and get a complete fundamental analysis — ratios, for
 - [ ] **COMP-07**: Beneish M-Score horizontal bar chart
 - [ ] **SCREEN-01**: User can filter screener by sector
 - [ ] **SCREEN-02**: User can filter screener by valuation ratio (P/E, FCF yield)
-- [ ] **PORT-01**: User can input manual portfolio weights (beyond equal-weight)
-- [ ] **PORT-02**: Portfolio shows sector breakdown donut chart
-- [ ] **PORT-03**: System computes covariance matrix from scraped price history
-- [ ] **PORT-04**: System runs mean-variance optimization to suggest optimal weights
-- [ ] **PORT-05**: Portfolio shows PPMT risk metrics: Sortino ratio, Max Drawdown, CVaR
-- [ ] **PORT-06**: Efficient frontier scatter plot shown in portfolio page
+- [x] **PORT-01**: User can input manual portfolio weights (beyond equal-weight) — Validated in Phase 4: portfolio-optimization
+- [x] **PORT-02**: Portfolio shows sector breakdown donut chart — Validated in Phase 4: portfolio-optimization
+- [x] **PORT-03**: System computes covariance matrix from scraped price history — Validated in Phase 4: portfolio-optimization
+- [x] **PORT-04**: System runs mean-variance optimization to suggest optimal weights — Validated in Phase 4: portfolio-optimization
+- [x] **PORT-05**: Portfolio shows PPMT risk metrics: Sortino ratio, Max Drawdown, CVaR — Validated in Phase 4: portfolio-optimization
+- [x] **PORT-06**: Efficient frontier scatter plot shown in portfolio page — Validated in Phase 4: portfolio-optimization
 - [ ] **DEPLOY-01**: App deployed to Railway or Render with stable public HTTPS URL
 - [ ] **DEPLOY-02**: Demo data accessible on deployment without manual setup
 - [ ] **DOCS-01**: README covers what/why/how-to-run, at least 2 screenshots, data sources, setup, known issues
@@ -137,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26
+*Last updated: 2026-03-30
