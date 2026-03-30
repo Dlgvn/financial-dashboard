@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-30T02:01:01.079Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-30T02:09:44.496Z"
 progress:
   total_phases: 5
   completed_phases: 3
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 04 (portfolio-optimization) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: 2 of 3
 | Phase 03 P02 | 2 | 1 tasks | 1 files |
 | Phase 03 P02 | 10 | 2 tasks | 1 files |
 | Phase 04 P01 | 2 | 2 tasks | 3 files |
+| Phase 04 P02 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Plan: 2 of 3
 - [Phase 03]: valuation_card() takes has_shares as rx.Var computed from company_shares_outstanding \!= '' to avoid re-computing in each card
 - [Phase 03]: valuation_card() takes has_shares as rx.Var computed from company_shares_outstanding \!= '' — passed from valuation_tab_content() to avoid re-computing in each card
 - [Phase 04]: portfolio_optimization.py: all Recharts-bound values stored as strings (list[dict[str,str]]); SLSQP optimizer with equal-weight fallback; CVaR 95% via historical simulation
+- [Phase 04]: _run_portfolio_analysis is a plain method (not @rx.event) called internally by on_tab_change and apply_optimal_weights to avoid generator yield issues
+- [Phase 04]: lambda v: PortfolioState.set_holding_weight(company, v) pattern used for rx.input on_blur in portfolio holding_row
+- [Phase 04]: weight_pct and sector fields added to holdings dicts in add_to_portfolio and remove_from_portfolio for rx.input binding and sector chart aggregation
 
 ### Known Reflex Gotchas
 
@@ -98,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T02:01:01.077Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-30T02:09:44.493Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

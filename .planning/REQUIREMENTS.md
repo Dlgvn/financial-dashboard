@@ -43,10 +43,10 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 ### [F] Portfolio — Optimization & Risk
 
-- [ ] **PORT-01**: User can manually input portfolio weights per holding (not just equal-weight auto-assignment); weights auto-normalize to 100%
-- [ ] **PORT-02**: Portfolio page shows sector breakdown as a donut/pie chart
+- [x] **PORT-01**: User can manually input portfolio weights per holding (not just equal-weight auto-assignment); weights auto-normalize to 100%
+- [x] **PORT-02**: Portfolio page shows sector breakdown as a donut/pie chart
 - [x] **PORT-03**: System computes a return covariance matrix from scraped historical price data for portfolio companies
-- [ ] **PORT-04**: System runs mean-variance optimization and displays suggested optimal weights alongside current weights
+- [x] **PORT-04**: System runs mean-variance optimization and displays suggested optimal weights alongside current weights
 - [x] **PORT-05**: Portfolio page shows PPMT risk metrics: Sortino Ratio, Maximum Drawdown, Conditional Value at Risk (CVaR at 95%)
 - [x] **PORT-06**: Efficient frontier scatter plot shown on portfolio page — dots representing risk/return trade-offs with current portfolio highlighted
 
@@ -108,10 +108,10 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 | VAL-01 | Phase 3 | Complete |
 | VAL-02 | Phase 3 | Complete |
 | VAL-03 | Phase 3 | Complete |
-| PORT-01 | Phase 4 | Pending |
-| PORT-02 | Phase 4 | Pending |
+| PORT-01 | Phase 4 | Complete |
+| PORT-02 | Phase 4 | Complete |
 | PORT-03 | Phase 4 | Complete |
-| PORT-04 | Phase 4 | Pending |
+| PORT-04 | Phase 4 | Complete |
 | PORT-05 | Phase 4 | Complete |
 | PORT-06 | Phase 4 | Complete |
 | DEPLOY-01 | Phase 5 | Pending |
