@@ -1037,8 +1037,31 @@ class AnalysisState(UploadState):
 class PortfolioState(AnalysisState):
     """State for portfolio management."""
 
-    # List of { company, filename, weight, score, label, color }
+    # List of { company, filename, weight, weight_pct, weight_str, score, score_str, label, color, sector }
     holdings: list[dict] = []
+
+    # --- Phase 4: Portfolio Optimization vars ---
+    active_portfolio_tab: str = "holdings"
+
+    # Sector donut chart data (per D-20)
+    sector_chart_data: list[dict[str, str]] = []
+
+    # Efficient frontier scatter data (per D-15)
+    frontier_data: list[dict[str, str]] = []
+
+    # Current portfolio point on frontier (per D-18)
+    current_point_data: list[dict[str, str]] = []
+
+    # Optimization table rows (per D-09)
+    optimization_data: list[dict[str, str]] = []
+
+    # Risk metric display strings (per D-13, D-14)
+    sortino_str: str = "N/A"
+    max_drawdown_str: str = "N/A"
+    cvar_str: str = "N/A"
+
+    # Whether analysis can be shown (per D-04)
+    can_show_analysis: bool = False
 
     @rx.event
     def add_to_portfolio(self, company: str):
@@ -1056,7 +1079,7 @@ class PortfolioState(AnalysisState):
         new_weight = round(1 / n, 4)
         weight_str = f"{new_weight * 100:.1f}%"
         holdings = [
-            {**h, "weight": new_weight, "weight_str": weight_str}  # score_str preserved via **h
+            {**h, "weight": new_weight, "weight_str": weight_str, "weight_pct": f"{new_weight * 100:.1f}"}  # score_str preserved via **h
             for h in self.holdings
         ]
         holdings.append({
@@ -1065,10 +1088,12 @@ class PortfolioState(AnalysisState):
             "url":        entry.get("url", f"/company/{entry['company']}"),
             "weight":     new_weight,
             "weight_str": f"{new_weight * 100:.1f}%",
+            "weight_pct": f"{new_weight * 100:.1f}",
             "score":      entry["score"],
             "score_str":  str(entry["score"]),
             "label":      entry["label"],
             "color":      entry["color"],
+            "sector":     entry.get("sector", "Standard"),
         })
         self.holdings = holdings
 
@@ -1080,8 +1105,106 @@ class PortfolioState(AnalysisState):
         if n > 0:
             new_weight = round(1 / n, 4)
             weight_str = f"{new_weight * 100:.1f}%"
-            holdings = [{**h, "weight": new_weight, "weight_str": weight_str} for h in holdings]
+            holdings = [{**h, "weight": new_weight, "weight_str": weight_str, "weight_pct": f"{new_weight * 100:.1f}"} for h in holdings]
         self.holdings = holdings
+
+    @rx.event
+    def on_tab_change(self, tab: str):
+        """Handle portfolio tab change; trigger analysis when switching to analysis tab."""
+        self.active_portfolio_tab = tab
+        if tab == "analysis" and len(self.holdings) >= 2:
+            self._run_portfolio_analysis()
+
+    @rx.event
+    def set_holding_weight(self, company: str, new_value: str):
+        """Update a holding's weight and rebalance all others proportionally."""
+        from .analysis.portfolio_optimization import rebalance_weights, compute_sector_breakdown
+        self.holdings = rebalance_weights(self.holdings, company, new_value)
+        self.sector_chart_data = compute_sector_breakdown(self.holdings)
+
+    @rx.event
+    def apply_optimal_weights(self):
+        """Apply mean-variance optimal weights to all holdings."""
+        if not self.optimization_data:
+            return
+        opt_map = {row["company"]: row["optimal"] for row in self.optimization_data}
+        from .analysis.portfolio_optimization import rebalance_weights, compute_sector_breakdown
+        holdings = list(self.holdings)
+        for h in holdings:
+            opt_pct = float(opt_map.get(h["company"], h.get("weight_pct", "0")))
+            w = round(opt_pct / 100, 4)
+            h["weight"] = w
+            h["weight_pct"] = str(round(opt_pct, 1))
+            h["weight_str"] = f"{opt_pct:.1f}%"
+        self.holdings = holdings
+        self.sector_chart_data = compute_sector_breakdown(self.holdings)
+        self._run_portfolio_analysis()
+
+    def _run_portfolio_analysis(self):
+        """Internal: compute optimization, risk metrics, frontier, and sector breakdown."""
+        from .analysis.portfolio_optimization import (
+            load_price_returns, align_returns, compute_portfolio_returns,
+            compute_risk_metrics, mean_variance_optimize, sample_frontier,
+            compute_sector_breakdown,
+        )
+        import numpy as np
+
+        company_names = [h["company"] for h in self.holdings]
+        returns_map = load_price_returns(company_names)
+
+        # Guard: need >= 2 companies with price data (per D-04)
+        if len(returns_map) < 2:
+            self.can_show_analysis = False
+            self.sortino_str = "N/A"
+            self.max_drawdown_str = "N/A"
+            self.cvar_str = "N/A"
+            self.frontier_data = []
+            self.current_point_data = []
+            self.optimization_data = []
+            return
+
+        self.can_show_analysis = True
+        names, matrix = align_returns(returns_map)
+
+        # Current weights for companies with price data, normalized
+        weights_dict = {h["company"]: float(h["weight"]) for h in self.holdings}
+        current_weights = np.array([weights_dict.get(n, 0.0) for n in names])
+        total = current_weights.sum()
+        if total > 0:
+            current_weights = current_weights / total
+
+        # Risk metrics (PORT-05, D-12)
+        port_returns = compute_portfolio_returns(current_weights, matrix)
+        metrics = compute_risk_metrics(port_returns)
+        self.sortino_str = f"{metrics['sortino']:.2f}" if metrics["sortino"] is not None else "N/A"
+        self.max_drawdown_str = f"{metrics['max_drawdown'] * 100:.1f}%" if metrics["max_drawdown"] is not None else "N/A"
+        self.cvar_str = f"{metrics['cvar_95'] * 100:.2f}%" if metrics["cvar_95"] is not None else "N/A"
+
+        # Optimization (PORT-04, D-09)
+        opt = mean_variance_optimize(matrix, names)
+        opt_weights = opt["weights"]
+        self.optimization_data = [
+            {
+                "company": n,
+                "current": str(round(weights_dict.get(n, 0.0) * 100, 1)),
+                "optimal": str(opt_weights.get(n, 0.0)),
+                "arrow": "\u2191" if opt_weights.get(n, 0.0) > weights_dict.get(n, 0.0) * 100 else "\u2193",
+            }
+            for n in names
+        ]
+
+        # Frontier (PORT-06, D-15)
+        self.frontier_data = sample_frontier(matrix, n_samples=200)
+
+        # Current portfolio point (D-18)
+        mean_rets = np.mean(matrix, axis=0) * 252
+        cov_mat = np.cov(matrix.T) * 252
+        curr_ret = float(np.dot(current_weights, mean_rets) * 100)
+        curr_risk = float(np.sqrt(current_weights @ cov_mat @ current_weights) * 100)
+        self.current_point_data = [{"risk": str(round(curr_risk, 2)), "return": str(round(curr_ret, 2))}]
+
+        # Sector breakdown (PORT-02, D-20)
+        self.sector_chart_data = compute_sector_breakdown(self.holdings)
 
     @rx.var
     def portfolio_health(self) -> int:
