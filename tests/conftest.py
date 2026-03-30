@@ -1,4 +1,5 @@
 import json
+import random
 import sys
 import types
 from pathlib import Path
@@ -59,6 +60,57 @@ def sample_registry(tmp_path):
     registry_path = tmp_path / "company_registry.json"
     registry_path.write_text(json.dumps(registry, ensure_ascii=False), encoding="utf-8")
     return registry_path
+
+
+@pytest.fixture
+def sample_price_json(tmp_data_dir):
+    """Create 2 mock price JSON files in tmp_data_dir/prices/ for portfolio tests.
+
+    CompanyA: 100 records, close prices starting at 1000, seed=42.
+    CompanyB: 100 records, close prices starting at 500, seed=99.
+    All price values stored as STRINGS to match real MSE data format.
+    Returns tmp_data_dir (parent of prices/).
+    """
+    prices_dir = tmp_data_dir / "prices"
+    prices_dir.mkdir(exist_ok=True)
+
+    def _make_records(start_price: int, seed: int) -> list[dict]:
+        random.seed(seed)
+        records = []
+        price = float(start_price)
+        for i in range(100):
+            day = (i % 28) + 1
+            month = (i // 28) + 1
+            date_str = f"2025-{month:02d}-{day:02d}"
+            step = random.randint(-20, 20)
+            price = max(1.0, price + step)
+            close_str = str(int(price))
+            records.append({
+                "date": date_str,
+                "open": close_str,
+                "high": close_str,
+                "low": close_str,
+                "close": close_str,
+                "volume": "100",
+            })
+        return records
+
+    for company_name, start_price, seed in [
+        ("CompanyA", 1000, 42),
+        ("CompanyB", 500, 99),
+    ]:
+        data = {
+            "company": company_name,
+            "mse_id": 1,
+            "scraped_at": "2026-01-01",
+            "shares_outstanding": None,
+            "records": _make_records(start_price, seed),
+        }
+        (prices_dir / f"{company_name}.json").write_text(
+            json.dumps(data, ensure_ascii=False), encoding="utf-8"
+        )
+
+    return tmp_data_dir
 
 
 @pytest.fixture
