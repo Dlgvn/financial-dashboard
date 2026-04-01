@@ -3,7 +3,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = ""
 healthcheckPath = "/ping"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
