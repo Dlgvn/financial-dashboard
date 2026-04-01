@@ -8,3 +8,20 @@ assets/external/
 venv/
 data/*.json
 !data/company_registry.json
+!data/index.json
+!data/АПУ_2025.json
+!data/Хаан_банк_2025.json
+!data/Мандал_даатгал_2025.json
+!data/Сүү_2025.json
+!data/Моносхүнс_2025.json
+!data/Дархан_нэхий_ХК_2025.json
+!data/"_Премиум_Нэксус_"_ХК_2025.json
+
+data/prices/*.json
+!data/prices/АПУ.json
+!data/prices/Хаан банк.json
+!data/prices/Мандал даатгал.json
+!data/prices/Сүү.json
+!data/prices/Моносхүнс.json
+!data/prices/Дархан нэхий ХК.json
+!data/prices/Премиум Нэксус  ХК.json
