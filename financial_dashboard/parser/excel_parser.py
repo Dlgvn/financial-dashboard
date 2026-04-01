@@ -74,6 +74,10 @@ def _parse_xlsx(file_bytes: bytes, filename: str) -> dict:
             continue
 
         ws = wb[sheet_name]
+        # 7 separate dictionaries (one per statement type) prevent false matches:
+        # bank terminology overlaps with standard terminology in Mongolian. Merged into
+        # one dict, "зээл" (loans, bank-specific) would map to the wrong field for
+        # non-bank companies. Dispatcher selects the correct dict from detected sheet type.
         headers_dict = HEADERS_BY_TYPE[sheet_type]
         parsed_data = _parse_openpyxl_sheet(ws, headers_dict)
 
@@ -212,7 +216,13 @@ def _extract_company_from_xlrd_sheet(ws) -> str | None:
 
 
 def _detect_sheet_type(sheet_name: str) -> str | None:
-    """Detect the financial statement type from sheet name."""
+    """Detect the financial statement type from sheet name.
+
+    # Sheet type is detected from tab name patterns before header mapping:
+    # determines which of the 7 dictionaries (standard BS/IS/CF, bank BS/IS,
+    # insurance BS/IS) to apply. Companies filing under different regulatory
+    # frameworks use entirely different Mongolian account terminology.
+    """
     normalized = normalize_header(sheet_name)
     # Check longer patterns first for specificity
     for pattern, sheet_type in sorted(

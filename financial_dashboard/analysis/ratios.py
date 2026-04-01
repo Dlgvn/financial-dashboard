@@ -330,6 +330,8 @@ def compute_piotroski(parsed_data: dict) -> dict:
     f3 = None if (roa_curr is None or roa_prev is None) else _flag(roa_curr > roa_prev)
 
     # ── F4: Accruals — cash earnings quality (OCF/TA > ROA) ──────────────────
+    # F4: Accruals quality — tests whether cash earnings (OCF/TA) exceed accrual earnings (ROA).
+    # High accruals relative to cash earnings signal earnings quality risk (Sloan 1996, earnings persistence).
     ocf_ta = safe_div(ocf, ta)
     f4 = None if (ocf_ta is None or roa_curr is None) else _flag(ocf_ta > roa_curr)
 
@@ -344,6 +346,8 @@ def compute_piotroski(parsed_data: dict) -> dict:
     f6 = None if (cr is None or cr_prev is None) else _flag(cr > cr_prev)
 
     # ── F7: No share dilution — skip (shares_outstanding not in MSE data) ────
+    # F7: Share dilution signal — always None. MSE Excel financial statements do not include shares
+    # outstanding. Companies that issued new shares will not have this penalized in their F-Score.
     f7 = None
 
     # ── F8: Gross margin improving ────────────────────────────────────────────
@@ -456,12 +460,16 @@ def compute_beneish(parsed_data: dict) -> dict:
     indices = {}
     missing = []
 
+    # DSRI (Days Sales Receivables Index): rising AR relative to revenue suggests premature
+    # revenue recognition — a common earnings manipulation technique (Beneish 1999).
     # DSRI: Days Sales Receivables Index = (AR_t/Rev_t) / (AR_p/Rev_p)
     dsri = safe_div(safe_div(ar, rev), safe_div(ar_p, rev_p))
     indices["dsri"] = dsri
     if dsri is None:
         missing.append("dsri")
 
+    # GMI (Gross Margin Index): declining margin creates pressure and incentive to manipulate earnings.
+    # GMI > 1.0 means margins deteriorated year-over-year.
     # GMI: Gross Margin Index = (GM_p/Rev_p) / (GM_t/Rev_t)  — prev/curr
     gm   = safe_div(gp, rev)
     gm_p = safe_div(gp_p, rev_p)
@@ -470,6 +478,8 @@ def compute_beneish(parsed_data: dict) -> dict:
     if gmi is None:
         missing.append("gmi")
 
+    # AQI (Asset Quality Index): growth in non-current, non-PPE assets proxies off-balance-sheet risk
+    # and capitalization of future expenses as assets (a manipulation vehicle).
     # AQI: Asset Quality Index
     # = (1 - (CA_t + PPE_t)/TA_t) / (1 - (CA_p + PPE_p)/TA_p)
     def _aq(ca_v, ppe_v, ta_v):
@@ -492,6 +502,8 @@ def compute_beneish(parsed_data: dict) -> dict:
     if sgi is None:
         missing.append("sgi")
 
+    # DEPI (Depreciation Pattern Index): always None. MSE filings do not disclose depreciation
+    # as a separate line item. This index cannot be computed for any MSE company.
     # DEPI: Depreciation Index — skipped, depreciation not in MSE data
     indices["depi"] = None
     missing.append("depi")
@@ -526,6 +538,9 @@ def compute_beneish(parsed_data: dict) -> dict:
         missing.append("tata")
 
     # ── Compute M-Score ───────────────────────────────────────────────────────
+    # M-Score formula: Beneish (1999) probit regression. Intercept -4.84.
+    # Each coefficient is the log-odds contribution of that index to the probability of manipulation.
+    # M > -1.78: possible manipulation. M > -2.22: likely clean (conservative threshold).
     # Weights: -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI
     #          + 0.115*DEPI - 0.172*SGAI + 4.679*TATA - 0.327*LVGI
     available = 8 - len(missing)
@@ -669,6 +684,11 @@ def compute_composite_score(
     piotr_score = _clamp((f / mx) * 100) if f is not None and mx > 0 else None
 
     # -- Weighted aggregate ----------------------------------------------------
+    # Composite Health Score weights: profitability 25%, liquidity 20%, solvency 20%, activity 15%,
+    # Altman Z 10%, Piotroski 10% (total 100%). Beneish penalty (-10 pts) applied post-aggregation
+    # when M-Score is reliable (>=5 indices) and above -1.78 manipulation threshold.
+    # Available-data normalization: if a component has no data, its weight is redistributed
+    # proportionally to components that do have data.
     weights = {
         "profitability": (prof_score, 0.25),
         "liquidity":     (liq_score,  0.20),
