@@ -13,7 +13,7 @@
 - [ ] **Phase 2: Sector Routing, Company Detail & Screener** — Wire bank/insurance engines, expand company page to full ratios/tabs/charts, and add sector/valuation filters to screener
 - [x] **Phase 3: Valuation Metrics** — Compute and display valuation ratios and historical price chart on company page (completed 2026-03-26)
 - [ ] **Phase 4: Portfolio Optimization** — Add manual weights, risk metrics, mean-variance optimization, and efficient frontier
-- [ ] **Phase 5: Deployment & Documentation** — Deploy to production, bundle demo data, write comprehensive README
+- [x] **Phase 5: Deployment & Documentation** — Deploy to production, bundle demo data, write comprehensive README (completed 2026-04-01)
 
 ---
 
@@ -106,7 +106,7 @@ Plans:
 | 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
 | 3. Valuation Metrics | 2/2 | Complete   | 2026-03-26 |
 | 4. Portfolio Optimization | 1/3 | In Progress|  |
-| 5. Deployment & Documentation | 2/3 | In Progress|  |
+| 5. Deployment & Documentation | 3/3 | Complete   | 2026-04-01 |
 
 ---
 

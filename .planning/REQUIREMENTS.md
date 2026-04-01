@@ -52,8 +52,8 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 ### [G] Deployment
 
-- [ ] **DEPLOY-01**: App deployed to Railway or Render with a stable public HTTPS URL accessible without login
-- [ ] **DEPLOY-02**: Demo data (7 companies' financial JSONs) bundled into deployment so app is immediately usable without uploading files
+- [x] **DEPLOY-01**: App deployed to Railway or Render with a stable public HTTPS URL accessible without login
+- [x] **DEPLOY-02**: Demo data (7 companies' financial JSONs) bundled into deployment so app is immediately usable without uploading files
 
 ### [H] Documentation
 
@@ -114,8 +114,8 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 | PORT-04 | Phase 4 | Complete |
 | PORT-05 | Phase 4 | Complete |
 | PORT-06 | Phase 4 | Complete |
-| DEPLOY-01 | Phase 5 | Pending |
-| DEPLOY-02 | Phase 5 | Pending |
+| DEPLOY-01 | Phase 5 | Complete |
+| DEPLOY-02 | Phase 5 | Complete |
 | DOCS-01 | Phase 5 | Complete |
 | DOCS-02 | Phase 5 | Complete |
 | DOCS-03 | Phase 5 | Complete |

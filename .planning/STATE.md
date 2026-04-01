@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-04-01T03:41:47.851Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-01T03:50:52.612Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Plan: 3 of 3
 | Phase 04 P02 | 3 | 2 tasks | 2 files |
 | Phase 05 P02 | 2 | 1 tasks | 1 files |
 | Phase 05 P03 | 595 | 3 tasks | 4 files |
+| Phase 05 P01 | 20 | 3 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Plan: 3 of 3
 - [Phase 05]: Screenshots deferred per D-11; DOCS-01 partially satisfied — screenshots added post-deployment at Railway URL
 - [Phase 05]: Comment style: WHY not WHAT — every added comment explains formula source, statistical assumption, or design rationale (D-13, D-14)
 - [Phase 05]: Secrets posture: no hardcoded API keys or passwords in any Python file; .env confirmed in .gitignore; Railway deployment needs zero secrets (API_URL is public URL only)
+- [Phase 05]: Dockerfile + embedded Caddyfile for Railway deployment — avoids WebSocket disconnection with external Caddy
+- [Phase 05]: API_URL from os.environ.get in rxconfig.py with localhost:8000 fallback — backward compatible Railway deployment
+- [Phase 05]: Demo data (14 files) committed to git — Railway deployment works on first visit without manual setup (DEPLOY-02)
 
 ### Known Reflex Gotchas
 
@@ -107,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T03:41:47.849Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-04-01T03:50:52.610Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
