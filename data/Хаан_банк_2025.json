@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "filename": "56320254report.xls",
+    "company": "Хаан банк",
+    "year": "2025",
+    "parsed_at": "2026-02-23T14:16:29.168492",
+    "sheets_parsed": [
+      "balance_sheet",
+      "income_statement",
+      "cash_flow"
+    ]
+  },
+  "balance_sheet": {
+    "cash_and_equivalents": 6128917856.1644125,
+    "cash_and_equivalents_prev": 5387120262.705889,
+    "other_financial_assets": 77743147.88247,
+    "other_financial_assets_prev": 49345876.30228999,
+    "inventory": 10355811.84888,
+    "inventory_prev": 13789153.811549999,
+    "deferred_tax_asset": 0.0,
+    "deferred_tax_asset_prev": 0.0,
+    "fixed_assets": 542474454.42966,
+    "fixed_assets_prev": 473566293.21113,
+    "intangible_assets": 37582954.36794,
+    "intangible_assets_prev": 34377217.10051999,
+    "total_assets": 23942309277.14319,
+    "total_assets_prev": 20302724608.107704,
+    "total_liabilities": 21117469470.0241,
+    "total_liabilities_prev": 17838066360.762398,
+    "additional_paid_in_capital": 164257808.2,
+    "additional_paid_in_capital_prev": 164257808.2,
+    "retained_earnings": 2342390788.3437796,
+    "retained_earnings_prev": 2018390801.1172197
+  },
+  "income_statement": {
+    "other_income": 36023871.513809994,
+    "other_income_prev": 16028444.086889997,
+    "other_expenses": 14435042.443209998,
+    "other_expenses_prev": 13805720.455319999,
+    "profit_before_tax": 879046587.7604201,
+    "profit_before_tax_prev": 829931484.8455096,
+    "income_tax_expense": 184199370.68934,
+    "income_tax_expense_prev": 191417028.23115,
+    "net_income": 694847217.0710801,
+    "net_income_prev": 638514456.6143596
+  },
+  "cash_flow": {
+    "operating_cash_flow": 364145823.8747631,
+    "operating_cash_flow_prev": -20826574.375924803,
+    "investing_cash_flow": 142105445.70120987,
+    "investing_cash_flow_prev": 217812689.0373034,
+    "financing_cash_flow": 235546323.88255018,
+    "financing_cash_flow_prev": 296369023.31271,
+    "exchange_rate_effect": 0.0,
+    "exchange_rate_effect_prev": 0.0,
+    "net_change_in_cash": 741797593.458523,
+    "net_change_in_cash_prev": 493355137.9740885
+  },
+  "shares_outstanding_override": 1912198000
+}
