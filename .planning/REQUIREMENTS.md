@@ -57,7 +57,7 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 
 ### [H] Documentation
 
-- [ ] **DOCS-01**: README contains: project description, live demo URL, at least 2 screenshots, feature list, technology stack, data sources with links, step-by-step local setup, known issues, future improvements, author
+- [x] **DOCS-01**: README contains: project description, live demo URL, at least 2 screenshots, feature list, technology stack, data sources with links, step-by-step local setup, known issues, future improvements, author
 - [ ] **DOCS-02**: Code has inline comments for non-obvious logic (scraper parsing, BL optimization math, Beneish formula, composite score weights)
 - [ ] **DOCS-03**: No API keys or secrets committed to repository; .env confirmed in .gitignore
 
@@ -116,6 +116,6 @@ Transform the working MVP into a rubric-excellent (95–100%), fully-deployed, p
 | PORT-06 | Phase 4 | Complete |
 | DEPLOY-01 | Phase 5 | Pending |
 | DEPLOY-02 | Phase 5 | Pending |
-| DOCS-01 | Phase 5 | Pending |
+| DOCS-01 | Phase 5 | Complete |
 | DOCS-02 | Phase 5 | Pending |
 | DOCS-03 | Phase 5 | Pending |
