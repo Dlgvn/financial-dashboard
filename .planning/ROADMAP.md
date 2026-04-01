@@ -106,7 +106,7 @@ Plans:
 | 2. Sector Routing, Company Detail & Screener | 0/4 | In progress | - |
 | 3. Valuation Metrics | 2/2 | Complete   | 2026-03-26 |
 | 4. Portfolio Optimization | 1/3 | In Progress|  |
-| 5. Deployment & Documentation | 1/3 | In Progress|  |
+| 5. Deployment & Documentation | 2/3 | In Progress|  |
 
 ---
 
