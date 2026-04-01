@@ -74,7 +74,8 @@ def load_price_returns(company_names: list[str]) -> dict[str, np.ndarray]:
         if len(closes) < 2:
             continue
 
-        # Log returns: ln(P_t / P_{t-1})
+        # Log returns used instead of simple returns: log(P_t/P_{t-1}) is time-additive and approximately
+        # normally distributed — required assumption for mean-variance optimization (log-normality).
         log_returns = np.log(closes[1:] / closes[:-1])
         result[name] = log_returns
 
@@ -168,6 +169,8 @@ def compute_risk_metrics(portfolio_returns: np.ndarray) -> dict:
         if downside_std == 0.0:
             result["sortino"] = None
         else:
+            # Annualization convention: 252 trading days per year (standard for equities).
+            # Returns scale linearly (× 252); volatility scales by square root (× √252) per i.i.d. returns assumption.
             ann_return = mean_return * 252
             ann_downside_std = downside_std * math.sqrt(252)
             result["sortino"] = ann_return / ann_downside_std
@@ -181,8 +184,9 @@ def compute_risk_metrics(portfolio_returns: np.ndarray) -> dict:
     result["max_drawdown"] = float(np.min(drawdowns))
 
     # ------------------------------------------------------------------
-    # CVaR 95% (Expected Shortfall at 5th percentile)
-    # ------------------------------------------------------------------
+    # CVaR (Conditional Value at Risk) at 95% = Expected Shortfall = mean of returns below the 5th percentile.
+    # More conservative than VaR: captures the average magnitude of tail losses, not just the threshold.
+    # Historical simulation used — no parametric distribution assumed.
     threshold = float(np.percentile(portfolio_returns, 5))
     tail = portfolio_returns[portfolio_returns <= threshold]
     if len(tail) == 0:
@@ -225,6 +229,9 @@ def mean_variance_optimize(
         # Single asset edge case
         cov_matrix = np.array([[float(cov_matrix)]])
 
+    # Maximize Sharpe ratio by minimizing its negative (scipy.optimize.minimize minimizes by convention).
+    # SLSQP (Sequential Least Squares Programming): gradient-based constrained optimizer.
+    # Constraints: weights sum to exactly 1.0. Bounds: [0, 1] per asset enforces long-only (no shorting).
     def neg_sharpe(w: np.ndarray) -> float:
         port_return = float(w @ mean_returns)
         port_var = float(w @ cov_matrix @ w)
@@ -279,13 +286,16 @@ def sample_frontier(
         All values are strings (Reflex list[dict[str,str]] constraint per D-07).
     """
     n_assets = returns_matrix.shape[1]
-    rng = np.random.default_rng(seed=42)
+    rng = np.random.default_rng(seed=42)  # Fixed seed: deterministic frontier scatter across page loads
 
     mean_returns = np.mean(returns_matrix, axis=0) * 252
     cov_matrix = np.cov(returns_matrix.T) * 252
     if cov_matrix.ndim == 0:
         cov_matrix = np.array([[float(cov_matrix)]])
 
+    # Monte Carlo approximation of the efficient frontier: sample random normalized weight vectors,
+    # compute (risk, return) for each. Not a true Markowitz parametric sweep — but sufficient to
+    # visualize the frontier shape and locate the current portfolio relative to it.
     results = []
     for _ in range(n_samples):
         raw = rng.random(n_assets)
