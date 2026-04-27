@@ -11,12 +11,12 @@ def test_index_json_has_sector():
         assert "sector" in entry and entry["sector"], f"Missing sector: {entry}"
     known = {e["company"]: e["sector"] for e in idx["files"]}
     assert known["Хаан банк"] == "Banking"
-    assert known["Мандал даатгал"] == "Insurance"
+    assert known["Мандалженерал даатгал"] == "Insurance"
     assert known["АПУ"] == "Manufacturing"
     assert known["Сүү"] == "Food"
     assert known["Моносхүнс"] == "Food"
     assert known["Дархан нэхий ХК"] == "Textiles"
-    assert known['" Премиум Нэксус " ХК'] == "Holding"
+    assert known["Премиум нэксус ХК"] == "Holding"
 
 
 def test_detect_sector_from_data():
@@ -28,7 +28,7 @@ def test_detect_sector_from_data():
 
 def test_bank_routing():
     from financial_dashboard.analysis.bank_ratios import compute_bank_ratios
-    data_file = DATA_DIR / "Хаан_банк_2025.json"
+    data_file = DATA_DIR / "Хаан_банк_2024.json"
     data = json.loads(data_file.read_text())
     result = compute_bank_ratios(data)
     assert result.get("is_bank") == True
@@ -37,7 +37,7 @@ def test_bank_routing():
 
 def test_insurance_routing():
     from financial_dashboard.analysis.insurance_ratios import compute_insurance_ratios
-    data_file = DATA_DIR / "Мандал_даатгал_2025.json"
+    data_file = DATA_DIR / "Мандалженерал_даатгал_2024.json"
     data = json.loads(data_file.read_text())
     result = compute_insurance_ratios(data)
     assert result.get("is_insurance") == True
@@ -46,7 +46,7 @@ def test_insurance_routing():
 
 def test_all_ratios_present():
     from financial_dashboard.analysis.ratios import compute_ratios
-    data_file = DATA_DIR / "АПУ_2025.json"
+    data_file = DATA_DIR / "АПУ_2024.json"
     data = json.loads(data_file.read_text())
     result = compute_ratios(data)
     all_keys = set()
@@ -57,7 +57,7 @@ def test_all_ratios_present():
 
 def test_dupont_identity():
     from financial_dashboard.analysis.ratios import compute_ratios
-    data_file = DATA_DIR / "АПУ_2025.json"
+    data_file = DATA_DIR / "АПУ_2024.json"
     data = json.loads(data_file.read_text())
     result = compute_ratios(data)
     curr = result["current"]
@@ -75,7 +75,7 @@ def test_dupont_identity():
 def test_red_flags_baseline():
     from financial_dashboard.state import _compute_red_flags
     from financial_dashboard.analysis.ratios import compute_ratios, compute_beneish
-    data_file = DATA_DIR / "АПУ_2025.json"
+    data_file = DATA_DIR / "АПУ_2024.json"
     data = json.loads(data_file.read_text())
     ratios = compute_ratios(data)
     beneish = compute_beneish(data)

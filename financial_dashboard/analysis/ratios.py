@@ -78,7 +78,8 @@ def compute_ratios(parsed_data: dict) -> dict:
         short_term_loans = bs.get(f"short_term_loans{period_suffix}")
         long_term_loans = bs.get(f"long_term_loans{period_suffix}")
 
-        revenue = inc.get(f"revenue{period_suffix}")
+        # Some companies report "цэвэр борлуулалт" (net_revenue) instead of "борлуулалтын орлого" (revenue).
+        revenue = inc.get(f"revenue{period_suffix}") or inc.get(f"net_revenue{period_suffix}")
         cogs = inc.get(f"cost_of_goods_sold{period_suffix}")
         gross_profit = inc.get(f"gross_profit{period_suffix}")
         net_income = inc.get(f"net_income{period_suffix}")

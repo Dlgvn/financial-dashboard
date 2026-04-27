@@ -138,7 +138,8 @@ def scrape_company_prices(mse_id: int, company_name: str) -> tuple[list[dict], i
         }
         records.append(record)
 
-    # Sort ascending by date
+    # Filter to records from 2017-01-01 onwards and sort ascending by date
+    records = [r for r in records if r["date"] >= "2017-01-01"]
     records.sort(key=lambda r: r["date"])
 
     logger.info(

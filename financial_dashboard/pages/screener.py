@@ -263,12 +263,12 @@ def screener_page() -> rx.Component:
                 ),
                 rx.hstack(
                     rx.text(
-                        AnalysisState.filtered_companies.length().to_string()
-                        + " companies",
+                        AnalysisState.filtered_companies.length(),
+                        " companies",
                         class_name="text-slate-500 text-sm self-end",
                     ),
                     rx.select(
-                        ["All", "Banking", "Insurance", "Manufacturing", "Food", "Textiles", "Holding"],
+                        ["All", "Banking", "Insurance", "Finance", "Manufacturing", "Food", "Textiles", "Holding"],
                         value=AnalysisState.screener_filter,
                         on_change=AnalysisState.set_screener_filter,
                         class_name="bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-3 py-1 text-sm",
@@ -293,9 +293,9 @@ def screener_page() -> rx.Component:
                             class_name="text-slate-400",
                         ),
                         rx.link(
-                            "← Go to Upload and click Load Demo Data",
+                            "← Go to Upload",
                             href="/",
-                            class_name="text-green-400 hover:text-green-300 text-sm mt-1",
+                            class_name="text-blue-400 hover:text-blue-300 text-sm mt-1",
                         ),
                         spacing="2",
                         align="center",

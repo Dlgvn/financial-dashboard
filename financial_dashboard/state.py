@@ -14,6 +14,7 @@ from .analysis.ratios import (
 )
 from .analysis.bank_ratios import compute_bank_ratios
 from .analysis.insurance_ratios import compute_insurance_ratios
+from .analysis.finance_ratios import compute_finance_ratios
 from .parser.excel_parser import parse_excel_file
 from .analysis.valuation import compute_valuation_metrics
 from .scraper.price_scraper import scrape_company_prices, save_price_data, PRICES_DIR, price_filename
@@ -24,7 +25,6 @@ from .storage.json_store import (
     load_index,
     save_parsed_data,
 )
-
 
 def _detect_sector_from_data(data: dict) -> str:
     if "bank_balance_sheet" in data or "bank_income_statement" in data:
@@ -306,6 +306,41 @@ def _load_all_companies() -> list[dict]:
                 }
                 composite = compute_composite_score(compat_ratios, piotroski, beneish)
                 roe = ins_prof.get("roe")
+            elif sector == "Finance":
+                fin_result = compute_finance_ratios(data)
+                fin_curr = fin_result.get("current", {})
+                fin_prof = fin_curr.get("profitability", {})
+                fin_lev  = fin_curr.get("leverage", {})
+                fin_liq  = fin_curr.get("liquidity", {})
+                compat_ratios = {
+                    "current": {
+                        "profitability": {
+                            "roa": fin_prof.get("roa"),
+                            "roe": fin_prof.get("roe"),
+                            "net_margin": fin_prof.get("net_margin"),
+                        },
+                        "liquidity": {
+                            "current_ratio": None,
+                            "quick_ratio": None,
+                            "cash_ratio": fin_liq.get("cash_ratio"),
+                        },
+                        "solvency": {
+                            "debt_to_equity": fin_lev.get("debt_to_equity"),
+                            "debt_to_assets": fin_lev.get("debt_to_assets"),
+                            "equity_ratio": fin_lev.get("equity_ratio"),
+                            "interest_coverage": None,
+                        },
+                        "activity": {
+                            "total_asset_turnover": None,
+                            "days_sales_outstanding": None,
+                            "inventory_turnover": None,
+                        },
+                        "z_score": {"z_score": None},
+                    },
+                    "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
+                }
+                composite = compute_composite_score(compat_ratios, piotroski, beneish)
+                roe = fin_prof.get("roe")
             else:
                 ratios    = compute_ratios(data)
                 composite = compute_composite_score(ratios, piotroski, beneish)
@@ -403,6 +438,7 @@ class AnalysisState(UploadState):
     company_sector: str = ""
     company_is_bank: bool = False
     company_is_insurance: bool = False
+    company_is_finance: bool = False
 
     # Chart data vars (must be list[dict] for rx.recharts)
     company_gauge_data: list[dict] = []
@@ -447,9 +483,8 @@ class AnalysisState(UploadState):
     company_z_x4: str = ""
     company_z_x5: str = ""
 
-    # Bank ratio flat vars (19)
+    # Bank ratio flat vars (17)
     company_bank_nim: str = ""
-    company_bank_car: str = ""
     company_bank_npl_ratio: str = ""
     company_bank_ldr: str = ""
     company_bank_cost_to_income: str = ""
@@ -457,7 +492,6 @@ class AnalysisState(UploadState):
     company_bank_roe: str = ""
     company_bank_net_margin: str = ""
     company_bank_interest_income_ratio: str = ""
-    company_bank_tier1_ratio: str = ""
     company_bank_equity_multiplier: str = ""
     company_bank_equity_to_assets: str = ""
     company_bank_coverage_ratio: str = ""
@@ -467,6 +501,29 @@ class AnalysisState(UploadState):
     company_bank_loans_to_assets: str = ""
     company_bank_securities_to_assets: str = ""
     company_bank_fee_income_ratio: str = ""
+
+    # Finance / NBFI ratio flat vars (14)
+    company_fin_nim: str = ""
+    company_fin_yield_on_earning_assets: str = ""
+    company_fin_cost_of_funds: str = ""
+    company_fin_interest_spread: str = ""
+    company_fin_roa: str = ""
+    company_fin_roe: str = ""
+    company_fin_net_margin: str = ""
+    company_fin_cost_to_income: str = ""
+    company_fin_operating_expense_ratio: str = ""
+    company_fin_non_interest_income_ratio: str = ""
+    company_fin_asset_utilisation: str = ""
+    company_fin_debt_to_equity: str = ""
+    company_fin_debt_to_assets: str = ""
+    company_fin_equity_ratio: str = ""
+    company_fin_equity_multiplier: str = ""
+    company_fin_cash_ratio: str = ""
+    company_fin_ocf_ratio: str = ""
+    company_fin_loan_to_assets: str = ""
+    company_fin_npa_ratio: str = ""
+    company_fin_receivables_to_assets: str = ""
+    company_fin_provision_coverage: str = ""
 
     # Insurance ratio flat vars (15)
     company_ins_loss_ratio: str = ""
@@ -513,12 +570,6 @@ class AnalysisState(UploadState):
         self.all_companies = _load_all_companies()
 
     @rx.event
-    def load_demo_data(self):
-        """Pre-load all 7 MSE companies and redirect to screener (demo shortcut)."""
-        self.all_companies = _load_all_companies()
-        return rx.redirect("/screener")
-
-    @rx.event
     def load_company(self, company_name: str):
         """Load and compute full analysis for one company."""
         self.selected_company_name = company_name
@@ -546,6 +597,7 @@ class AnalysisState(UploadState):
         self.company_sector = sector
         self.company_is_bank = sector == "Banking"
         self.company_is_insurance = sector == "Insurance"
+        self.company_is_finance = sector == "Finance"
 
         # --- Compute ratios based on sector ---
         self.company_piotroski = compute_piotroski(data)
@@ -595,7 +647,6 @@ class AnalysisState(UploadState):
             bank_aq = bank_curr.get("asset_quality", {})
             bank_eff = bank_curr.get("efficiency", {})
             self.company_bank_nim = _fmt(bank_prof.get("nim"))
-            self.company_bank_car = _fmt(bank_cap.get("car"))
             self.company_bank_npl_ratio = _fmt(bank_aq.get("npl_ratio"))
             self.company_bank_ldr = _fmt(bank_liq.get("ldr"))
             self.company_bank_cost_to_income = _fmt(bank_eff.get("cost_to_income"))
@@ -603,7 +654,6 @@ class AnalysisState(UploadState):
             self.company_bank_roe = _fmt(bank_prof.get("roe"))
             self.company_bank_net_margin = _fmt(bank_prof.get("net_margin"))
             self.company_bank_interest_income_ratio = _fmt(bank_prof.get("interest_income_ratio"))
-            self.company_bank_tier1_ratio = _fmt(bank_cap.get("tier1_ratio"))
             self.company_bank_equity_multiplier = _fmt(bank_cap.get("equity_multiplier"))
             self.company_bank_equity_to_assets = _fmt(bank_cap.get("equity_to_assets"))
             self.company_bank_coverage_ratio = _fmt(bank_aq.get("coverage_ratio"))
@@ -685,6 +735,78 @@ class AnalysisState(UploadState):
             self.company_current_ratio = "N/A"
             self.company_quick_ratio = "N/A"
             self.company_debt_equity = _fmt(ins_solv.get("leverage_ratio"))
+            self.company_interest_cov = "N/A"
+            self.company_asset_turnover = "N/A"
+            self.company_z_score = "N/A"
+
+        elif sector == "Finance":
+            fin_result = compute_finance_ratios(data)
+            self.company_ratios = fin_result
+            fin_curr = fin_result.get("current", {})
+            fin_prof = fin_curr.get("profitability", {})
+            fin_eff  = fin_curr.get("efficiency", {})
+            fin_lev  = fin_curr.get("leverage", {})
+            fin_liq  = fin_curr.get("liquidity", {})
+            fin_aq   = fin_curr.get("asset_quality", {})
+            compat_ratios = {
+                "current": {
+                    "profitability": {
+                        "roa": fin_prof.get("roa"),
+                        "roe": fin_prof.get("roe"),
+                        "net_margin": fin_prof.get("net_margin"),
+                    },
+                    "liquidity": {
+                        "current_ratio": None,
+                        "quick_ratio": None,
+                        "cash_ratio": fin_liq.get("cash_ratio"),
+                    },
+                    "solvency": {
+                        "debt_to_equity": fin_lev.get("debt_to_equity"),
+                        "debt_to_assets": fin_lev.get("debt_to_assets"),
+                        "equity_ratio": fin_lev.get("equity_ratio"),
+                        "interest_coverage": None,
+                    },
+                    "activity": {
+                        "total_asset_turnover": None,
+                        "days_sales_outstanding": None,
+                        "inventory_turnover": None,
+                    },
+                    "z_score": {"z_score": None},
+                },
+                "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
+            }
+            self.company_composite = compute_composite_score(
+                compat_ratios, self.company_piotroski, self.company_beneish
+            )
+            # Populate Finance flat vars
+            self.company_fin_nim = _fmt(fin_prof.get("nim"))
+            self.company_fin_yield_on_earning_assets = _fmt(fin_prof.get("yield_on_earning_assets"))
+            self.company_fin_cost_of_funds = _fmt(fin_prof.get("cost_of_funds"))
+            self.company_fin_interest_spread = _fmt(fin_prof.get("interest_spread"))
+            self.company_fin_roa = _fmt(fin_prof.get("roa"))
+            self.company_fin_roe = _fmt(fin_prof.get("roe"))
+            self.company_fin_net_margin = _fmt(fin_prof.get("net_margin"))
+            self.company_fin_cost_to_income = _fmt(fin_eff.get("cost_to_income"))
+            self.company_fin_operating_expense_ratio = _fmt(fin_eff.get("operating_expense_ratio"))
+            self.company_fin_non_interest_income_ratio = _fmt(fin_eff.get("non_interest_income_ratio"))
+            self.company_fin_asset_utilisation = _fmt(fin_eff.get("asset_utilisation"))
+            self.company_fin_debt_to_equity = _fmt(fin_lev.get("debt_to_equity"))
+            self.company_fin_debt_to_assets = _fmt(fin_lev.get("debt_to_assets"))
+            self.company_fin_equity_ratio = _fmt(fin_lev.get("equity_ratio"))
+            self.company_fin_equity_multiplier = _fmt(fin_lev.get("equity_multiplier"))
+            self.company_fin_cash_ratio = _fmt(fin_liq.get("cash_ratio"))
+            self.company_fin_ocf_ratio = _fmt(fin_liq.get("ocf_ratio"))
+            self.company_fin_loan_to_assets = _fmt(fin_liq.get("loan_to_assets"))
+            self.company_fin_npa_ratio = _fmt(fin_aq.get("npa_ratio"))
+            self.company_fin_receivables_to_assets = _fmt(fin_aq.get("receivables_to_assets"))
+            self.company_fin_provision_coverage = _fmt(fin_aq.get("provision_coverage"))
+            # Standard display vars using Finance proxies
+            self.company_roa = _fmt(fin_prof.get("roa"))
+            self.company_roe = _fmt(fin_prof.get("roe"))
+            self.company_net_margin = _fmt(fin_prof.get("net_margin"))
+            self.company_current_ratio = "N/A"
+            self.company_quick_ratio = "N/A"
+            self.company_debt_equity = _fmt(fin_lev.get("debt_to_equity"))
             self.company_interest_cov = "N/A"
             self.company_asset_turnover = "N/A"
             self.company_z_score = "N/A"
@@ -1028,7 +1150,10 @@ class AnalysisState(UploadState):
             else [c for c in self.all_companies if c.get("sector") == self.screener_filter]
         col = self.screener_sort_col
         reverse = not self.screener_sort_asc
+        str_cols = {"company", "sector", "label", "color"}
         try:
+            if col in str_cols:
+                return sorted(companies, key=lambda c: (c.get(col) or "").lower(), reverse=reverse)
             return sorted(companies, key=lambda c: (c.get(col) or 0), reverse=reverse)
         except Exception:
             return companies

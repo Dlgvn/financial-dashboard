@@ -69,8 +69,6 @@ BANK_RATIO_LABELS: dict[str, tuple[str, str]] = {
     "net_margin":              ("Net Profit Margin",           "%"),
     "interest_income_ratio":   ("Interest Income Ratio",       "%"),
     # Capital Adequacy
-    "car":                     ("Capital Adequacy Ratio (CAR)", "%"),
-    "tier1_ratio":             ("Tier 1 Capital Ratio",        "%"),
     "equity_multiplier":       ("Equity Multiplier",           "x"),
     "equity_to_assets":        ("Equity to Assets",            "ratio"),
     # Asset Quality
@@ -92,8 +90,6 @@ BANK_BENCHMARKS: dict[str, tuple[float, str, str]] = {
     "nim":            (0.03, "above", "Target: >3%"),
     "roa":            (0.01, "above", "Target: >1%"),
     "roe":            (0.10, "above", "Target: >10%"),
-    "car":            (0.10, "above", "Basel III min: 10%"),
-    "tier1_ratio":    (0.08, "above", "Basel III min: 8%"),
     "npl_ratio":      (0.03, "below", "Target: <3%"),
     "coverage_ratio": (1.00, "above", "Target: >100%"),
     "ldr":            (0.90, "below", "Target: <90%"),
@@ -138,6 +134,50 @@ INSURANCE_BENCHMARKS: dict[str, tuple[float, str, str]] = {
     "leverage_ratio":   (4.00, "below", "Target: <4x for non-life insurers"),
     "reserve_coverage": (1.00, "above", "Target: >1x (reserves cover one year of premiums)"),
     "investment_ratio": (0.40, "above", "Target: >40% of assets productively invested"),
+}
+
+# ── Finance / NBFI ratios (finance_ratios.py) ────────────────────────────────
+
+FINANCE_RATIO_LABELS: dict[str, tuple[str, str]] = {
+    # Profitability
+    "nim":                        ("Net Interest Margin (NIM)",       "%"),
+    "yield_on_earning_assets":    ("Yield on Earning Assets",         "%"),
+    "cost_of_funds":              ("Cost of Funds",                   "%"),
+    "interest_spread":            ("Interest Spread",                 "%"),
+    "roa":                        ("Return on Assets (ROA)",          "%"),
+    "roe":                        ("Return on Equity (ROE)",          "%"),
+    "net_margin":                 ("Net Profit Margin",               "%"),
+    # Efficiency
+    "cost_to_income":             ("Cost-to-Income Ratio",            "%"),
+    "operating_expense_ratio":    ("Operating Expense Ratio",         "%"),
+    "non_interest_income_ratio":  ("Non-Interest Income Ratio",       "%"),
+    "asset_utilisation":          ("Asset Utilisation",               "x"),
+    # Leverage & Capital
+    "debt_to_equity":             ("Debt-to-Equity (Borrowings)",     "x"),
+    "debt_to_assets":             ("Debt-to-Assets (Borrowings)",     "ratio"),
+    "equity_ratio":               ("Equity Ratio",                    "ratio"),
+    "equity_multiplier":          ("Equity Multiplier",               "x"),
+    # Liquidity
+    "cash_ratio":                 ("Cash Ratio",                      "x"),
+    "ocf_ratio":                  ("Operating CF Ratio",              "x"),
+    "loan_to_assets":             ("Loan-to-Asset Ratio",             "ratio"),
+    # Asset Quality
+    "npa_ratio":                  ("NPA Ratio",                       "%"),
+    "receivables_to_assets":      ("Receivables-to-Assets",           "ratio"),
+    "provision_coverage":         ("Provision Coverage Ratio",        "x"),
+}
+
+FINANCE_BENCHMARKS: dict[str, tuple[float, str, str]] = {
+    "nim":                     (0.04,  "above", "Target: >4%. Microfinance typically 6–15%"),
+    "interest_spread":         (0.03,  "above", "Target: >3% positive spread"),
+    "roa":                     (0.013, "above", "Target: >1.3% good; >1.6% excellent (CARE Ratings)"),
+    "roe":                     (0.15,  "above", "Target: >15% good; >20% excellent"),
+    "cost_to_income":          (0.50,  "below", "Target: <50% good; <40% excellent (CARE Ratings)"),
+    "debt_to_equity":          (6.0,   "below", "Target: <6x for NBFIs (regulatory guidance)"),
+    "equity_ratio":            (0.10,  "above", "Target: >10% equity buffer"),
+    "npa_ratio":               (0.05,  "below", "Target: <2% excellent; <5% acceptable"),
+    "provision_coverage":      (0.70,  "above", "Target: >70% (regulatory minimum in most markets)"),
+    "loan_to_assets":          (0.60,  "above", "Target: >60% for mature lending NBFIs"),
 }
 
 # ── Piotroski F-Score labels ─────────────────────────────────────────────────

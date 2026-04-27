@@ -2,7 +2,7 @@
 
 Computes bank-specific ratios organized into categories:
   Profitability (5): NIM, ROA, ROE, Net Margin, Cost-to-Income
-  Capital Adequacy (4): CAR, Tier1 Ratio, Equity Multiplier, Equity/Assets
+  Capital Adequacy (2): Equity Multiplier, Equity/Assets
   Asset Quality (4): NPL Ratio, Coverage Ratio, Loan Loss Reserve Ratio, Net Charge-off Ratio
   Liquidity (4): LDR, Cash-to-Deposits, LCR, Loans-to-Assets
   Efficiency (2): Cost-to-Income, Non-Interest Income Ratio
@@ -55,9 +55,6 @@ def compute_bank_ratios(parsed_data: dict) -> dict:
         loan_loss_reserves = bs.get(f"loan_loss_reserves{period_suffix}")
         non_performing_loans = bs.get(f"non_performing_loans{period_suffix}")
         investment_sec     = bs.get(f"investment_securities{period_suffix}") or other_fin_assets
-        tier1_capital      = bs.get(f"tier1_capital{period_suffix}")
-        tier2_capital      = bs.get(f"tier2_capital{period_suffix}")
-        risk_weighted_assets = bs.get(f"risk_weighted_assets{period_suffix}")
 
         # Derive equity if missing
         if total_equity is None and total_assets is not None and total_liabilities is not None:
@@ -75,7 +72,10 @@ def compute_bank_ratios(parsed_data: dict) -> dict:
         net_interest_income = inc.get(f"net_interest_income{period_suffix}")
         fee_income         = inc.get(f"fee_income{period_suffix}")
         loan_loss_provision = inc.get(f"loan_loss_provision{period_suffix}")
-        admin_expenses     = inc.get(f"admin_expenses{period_suffix}")
+        # Standard headers map "ерөнхий ба удирдлагын зардал" → general_and_admin_expenses;
+        # bank headers map the same term → admin_expenses. Check both for banks parsed
+        # before sector-aware parsing was in place.
+        admin_expenses     = inc.get(f"admin_expenses{period_suffix}") or inc.get(f"general_and_admin_expenses{period_suffix}")
         operating_expenses = inc.get(f"operating_expenses{period_suffix}")
         total_revenue      = inc.get(f"total_revenue{period_suffix}")
 
@@ -120,13 +120,11 @@ def compute_bank_ratios(parsed_data: dict) -> dict:
         profitability = {}
 
         # 1. Net Interest Margin = Net Interest Income / Earning Assets
-        #    Proxy when interest income not available: net banking income / total assets
-        if net_interest_income is not None and earning_assets is not None:
-            profitability["nim"] = safe_div(net_interest_income, earning_assets)
-        elif net_banking_income is not None and total_assets is not None:
-            profitability["nim"] = safe_div(net_banking_income, total_assets)
-        else:
-            profitability["nim"] = None
+        # NIM requires actual interest income and expense data. Using profit_before_tax
+        # as a proxy is incorrect — it is net of ALL expenses (provisions, opex, etc.)
+        # and would produce a misleadingly low figure (~ROA level) instead of true NIM
+        # (~12-15% for Mongolian banks). Return None when data is absent.
+        profitability["nim"] = safe_div(net_interest_income, earning_assets) if net_interest_income is not None else None
 
         # 2. ROA = Net Income / Total Assets
         profitability["roa"] = safe_div(net_income, total_assets)
@@ -149,19 +147,10 @@ def compute_bank_ratios(parsed_data: dict) -> dict:
         # ── Capital Adequacy ──────────────────────────────────────────────
         capital = {}
 
-        # 1. CAR = (Tier1 + Tier2) / Risk-Weighted Assets
-        if tier1_capital is not None and tier2_capital is not None and risk_weighted_assets is not None:
-            capital["car"] = safe_div(tier1_capital + tier2_capital, risk_weighted_assets)
-        else:
-            capital["car"] = None
-
-        # 2. Tier 1 Capital Ratio
-        capital["tier1_ratio"] = safe_div(tier1_capital, risk_weighted_assets)
-
-        # 3. Equity Multiplier = Total Assets / Total Equity
+        # 1. Equity Multiplier = Total Assets / Total Equity
         capital["equity_multiplier"] = safe_div(total_assets, total_equity)
 
-        # 4. Equity to Assets
+        # 2. Equity to Assets
         capital["equity_to_assets"] = safe_div(total_equity, total_assets)
 
         # ── Asset Quality ─────────────────────────────────────────────────

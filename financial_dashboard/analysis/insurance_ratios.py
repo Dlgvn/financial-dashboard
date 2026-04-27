@@ -176,10 +176,11 @@ def compute_insurance_ratios(parsed_data: dict) -> dict:
         total_revenue       = inc.get(f"total_revenue{period_suffix}")
         premiums            = _get_premiums(inc, bs, period_suffix)
         claims              = _get_claims(inc, period_suffix)
+        # other_income is NOT a valid proxy for investment_income — it includes non-recurring items
+        # unrelated to investment returns. Return None when no real investment income line is mapped.
         investment_income   = (
             inc.get(f"investment_income{period_suffix}")
             or inc.get(f"interest_income{period_suffix}")
-            or inc.get(f"other_income{period_suffix}")  # proxy: other_income often = investment returns
         )
         commission_expense  = (
             inc.get(f"commission_expense{period_suffix}")

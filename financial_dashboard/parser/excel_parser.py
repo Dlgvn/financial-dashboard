@@ -27,18 +27,49 @@ from .header_mappings import (
     normalize_header,
 )
 
+# Lazy import to avoid circular deps — only used for sector-aware header selection
+def _lookup_sector(company_name: str, filename: str = "") -> str:
+    try:
+        from ..scraper.registry_loader import find_sector as _fs, find_sector_from_filename as _fsf
+        return _fs(company_name) or (filename and _fsf(filename)) or ""
+    except Exception:
+        return ""
+
+# Sector → which sheet types to use when standard sheet names are detected
+_SECTOR_SHEET_OVERRIDES: dict[str, dict[str, str]] = {
+    "Banking": {
+        "balance_sheet":   "bank_balance_sheet",
+        "income_statement": "bank_income_statement",
+    },
+    "Insurance": {
+        "balance_sheet":   "insurance_balance_sheet",
+        "income_statement": "insurance_income_statement",
+    },
+    # Finance / NBFI (ББСБ, securities, investment companies) use the same
+    # regulatory reporting format as banks — ХҮҮГИЙН ОРЛОГО on IS, loan portfolio
+    # terminology on BS — so we reuse the bank header dictionaries.
+    "Finance": {
+        "balance_sheet":   "bank_balance_sheet",
+        "income_statement": "bank_income_statement",
+    },
+}
+
 # Column indices in MSE financial statement files
 HEADER_COL = 2   # Column C: Mongolian header text
 PREV_COL = 3     # Column D: Previous year value
 CURR_COL = 4     # Column E: Current year value
 
 
-def parse_excel_file(file_bytes: bytes, filename: str) -> dict:
+def parse_excel_file(file_bytes: bytes, filename: str, sector: str = "") -> dict:
     """Parse an Excel file containing MSE financial statements.
 
     Args:
         file_bytes: Raw bytes of the uploaded Excel file.
         filename: Original filename (used to extract company/year metadata).
+        sector: Optional sector hint ("Banking", "Insurance", or ""). When supplied,
+            standard sheet names (balance_sheet / income_statement) are redirected to
+            the sector-specific header dictionaries so bank/insurance-specific line
+            items are captured.
 
     Returns:
         Structured dict with metadata and parsed financial data.
@@ -49,12 +80,12 @@ def parse_excel_file(file_bytes: bytes, filename: str) -> dict:
     is_xls = filename.lower().endswith(".xls")
 
     if is_xls:
-        return _parse_xls(file_bytes, filename)
+        return _parse_xls(file_bytes, filename, sector)
     else:
-        return _parse_xlsx(file_bytes, filename)
+        return _parse_xlsx(file_bytes, filename, sector)
 
 
-def _parse_xlsx(file_bytes: bytes, filename: str) -> dict:
+def _parse_xlsx(file_bytes: bytes, filename: str, sector: str = "") -> dict:
     """Parse a .xlsx file using openpyxl."""
     try:
         wb = load_workbook(
@@ -68,22 +99,46 @@ def _parse_xlsx(file_bytes: bytes, filename: str) -> dict:
     company, year = _extract_metadata_from_filename(filename)
     result = _make_result_dict(filename, company, year)
 
+    # Pre-scan sheets for company name so sector lookup works even when the
+    # filename is an opaque MSE code (e.g. "56320254report.xls").
+    if not sector:
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            extracted = _extract_company_from_openpyxl_sheet(ws)
+            if extracted:
+                company = extracted
+                result["metadata"]["company"] = extracted
+                break
+
+    resolved_sector = sector or _lookup_sector(company, filename)
+    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector, {})
+
     for sheet_name in wb.sheetnames:
         sheet_type = _detect_sheet_type(sheet_name)
         if not sheet_type:
             continue
+
+        # Redirect standard sheet types to sector-specific ones when sector is known.
+        # E.g., a bank's "баланс" sheet is parsed with BANK_BALANCE_SHEET_HEADERS so
+        # bank-specific terms like "зээлийн багц" (loan portfolio) are captured.
+        effective_type = sector_overrides.get(sheet_type, sheet_type)
 
         ws = wb[sheet_name]
         # 7 separate dictionaries (one per statement type) prevent false matches:
         # bank terminology overlaps with standard terminology in Mongolian. Merged into
         # one dict, "зээл" (loans, bank-specific) would map to the wrong field for
         # non-bank companies. Dispatcher selects the correct dict from detected sheet type.
-        headers_dict = HEADERS_BY_TYPE[sheet_type]
+        headers_dict = HEADERS_BY_TYPE[effective_type]
         parsed_data = _parse_openpyxl_sheet(ws, headers_dict)
 
         if parsed_data:
-            result[sheet_type] = parsed_data
-            result["metadata"]["sheets_parsed"].append(sheet_type)
+            # Merge into existing data (don't overwrite) so a supplementary sheet like
+            # Тодруулга (notes) adds new fields without clobbering the primary balance sheet.
+            existing = result.get(effective_type, {})
+            existing.update({k: v for k, v in parsed_data.items() if k not in existing})
+            result[effective_type] = existing
+            if effective_type not in result["metadata"]["sheets_parsed"]:
+                result["metadata"]["sheets_parsed"].append(effective_type)
 
         # Extract company name from sheet content (always prefer over filename)
         extracted = _extract_company_from_openpyxl_sheet(ws)
@@ -102,7 +157,7 @@ def _parse_xlsx(file_bytes: bytes, filename: str) -> dict:
     return result
 
 
-def _parse_xls(file_bytes: bytes, filename: str) -> dict:
+def _parse_xls(file_bytes: bytes, filename: str, sector: str = "") -> dict:
     """Parse a .xls file using xlrd."""
     try:
         wb = xlrd.open_workbook(file_contents=file_bytes)
@@ -112,18 +167,42 @@ def _parse_xls(file_bytes: bytes, filename: str) -> dict:
     company, year = _extract_metadata_from_filename(filename)
     result = _make_result_dict(filename, company, year)
 
+    # Pre-scan sheets for company name so sector lookup works even when the
+    # filename is an opaque MSE code (e.g. "56320254report.xls").
+    if not sector:
+        for sheet_name in wb.sheet_names():
+            ws = wb.sheet_by_name(sheet_name)
+            extracted = _extract_company_from_xlrd_sheet(ws)
+            if extracted:
+                company = extracted
+                result["metadata"]["company"] = extracted
+                break
+
+    resolved_sector = sector or _lookup_sector(company, filename)
+    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector, {})
+
     for sheet_name in wb.sheet_names():
         sheet_type = _detect_sheet_type(sheet_name)
         if not sheet_type:
             continue
 
+        effective_type = sector_overrides.get(sheet_type, sheet_type)
+
         ws = wb.sheet_by_name(sheet_name)
-        headers_dict = HEADERS_BY_TYPE[sheet_type]
-        parsed_data = _parse_xlrd_sheet(ws, headers_dict)
+        headers_dict = HEADERS_BY_TYPE[effective_type]
+        debug_mode = effective_type in (
+            "insurance_balance_sheet", "insurance_income_statement",
+            "bank_balance_sheet", "bank_income_statement",
+        )
+        parsed_data = _parse_xlrd_sheet(ws, headers_dict, debug=debug_mode)
 
         if parsed_data:
-            result[sheet_type] = parsed_data
-            result["metadata"]["sheets_parsed"].append(sheet_type)
+            # Merge: don't overwrite existing keys so Тодруулга adds new fields only.
+            existing = result.get(effective_type, {})
+            existing.update({k: v for k, v in parsed_data.items() if k not in existing})
+            result[effective_type] = existing
+            if effective_type not in result["metadata"]["sheets_parsed"]:
+                result["metadata"]["sheets_parsed"].append(effective_type)
 
         # Extract company name from sheet content (always prefer over filename)
         extracted = _extract_company_from_xlrd_sheet(ws)
@@ -257,20 +336,25 @@ def _parse_openpyxl_sheet(ws, headers_dict: dict[str, str]) -> dict:
         prev_val = _safe_cell_value(row, PREV_COL)
         curr_val = _safe_cell_value(row, CURR_COL)
 
-        if curr_val is not None:
+        # First-match-wins: the total/summary row always appears before sub-items in
+        # MSE filing format. Sub-items contain the same Mongolian phrase as the parent
+        # (e.g. "зээлийн хүүгийн орлого" matches both the total and each loan category),
+        # so we keep the first (total) value and ignore subsequent sub-item matches.
+        if curr_val is not None and english_key not in parsed:
             parsed[english_key] = curr_val
-        if prev_val is not None:
+        if prev_val is not None and f"{english_key}_prev" not in parsed:
             parsed[f"{english_key}_prev"] = prev_val
 
     return parsed
 
 
-def _parse_xlrd_sheet(ws, headers_dict: dict[str, str]) -> dict:
+def _parse_xlrd_sheet(ws, headers_dict: dict[str, str], debug: bool = False) -> dict:
     """Parse an xlrd worksheet (.xls).
 
     Scans column C (index 2) for Mongolian headers, reads values
     from columns D (index 3 = prev year) and E (index 4 = current year).
     """
+    import logging
     parsed = {}
 
     for row_idx in range(ws.nrows):
@@ -283,15 +367,21 @@ def _parse_xlrd_sheet(ws, headers_dict: dict[str, str]) -> dict:
 
         english_key = match_header(header_val, headers_dict)
         if english_key is None:
+            if debug:
+                prev_val = ws.cell_value(row_idx, PREV_COL) if ws.ncols > PREV_COL else ""
+                curr_val = ws.cell_value(row_idx, CURR_COL) if ws.ncols > CURR_COL else ""
+                logging.warning("UNMATCHED HEADER: %r | prev=%r | curr=%r", header_val, prev_val, curr_val)
             continue
 
         # Read previous year (col D) and current year (col E)
         prev_val = _safe_xlrd_value(ws, row_idx, PREV_COL)
         curr_val = _safe_xlrd_value(ws, row_idx, CURR_COL)
 
-        if curr_val is not None:
+        # First-match-wins: keeps the total/summary row and ignores subsequent sub-items
+        # that share the same Mongolian phrase (see openpyxl variant for full explanation).
+        if curr_val is not None and english_key not in parsed:
             parsed[english_key] = curr_val
-        if prev_val is not None:
+        if prev_val is not None and f"{english_key}_prev" not in parsed:
             parsed[f"{english_key}_prev"] = prev_val
 
     return parsed

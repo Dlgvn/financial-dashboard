@@ -220,8 +220,6 @@ def _bank_ratios_content() -> rx.Component:
         # Capital Adequacy
         ratio_category_card(
             "Capital Adequacy",
-            ratio_row("Capital Adequacy Ratio (CAR)", s.company_bank_car,               "%"),
-            ratio_row("Tier 1 Capital Ratio",         s.company_bank_tier1_ratio,        "%"),
             ratio_row("Equity Multiplier",            s.company_bank_equity_multiplier,  "x"),
             ratio_row("Equity to Assets",             s.company_bank_equity_to_assets,   "ratio"),
         ),
@@ -294,8 +292,59 @@ def _insurance_ratios_content() -> rx.Component:
     )
 
 
+def _finance_ratios_content() -> rx.Component:
+    """Finance / NBFI specific ratios in 5 category sections."""
+    s = AnalysisState
+    return rx.grid(
+        # Profitability
+        ratio_category_card(
+            "Profitability",
+            ratio_row("Net Interest Margin (NIM)",       s.company_fin_nim,                      "%"),
+            ratio_row("Yield on Earning Assets",         s.company_fin_yield_on_earning_assets,   "%"),
+            ratio_row("Cost of Funds",                   s.company_fin_cost_of_funds,             "%"),
+            ratio_row("Interest Spread",                 s.company_fin_interest_spread,           "%"),
+            ratio_row("Return on Assets (ROA)",          s.company_fin_roa,                       "%"),
+            ratio_row("Return on Equity (ROE)",          s.company_fin_roe,                       "%"),
+            ratio_row("Net Profit Margin",               s.company_fin_net_margin,                "%"),
+        ),
+        # Efficiency
+        ratio_category_card(
+            "Efficiency",
+            ratio_row("Cost-to-Income Ratio",            s.company_fin_cost_to_income,            "%"),
+            ratio_row("Operating Expense Ratio",         s.company_fin_operating_expense_ratio,   "%"),
+            ratio_row("Non-Interest Income Ratio",       s.company_fin_non_interest_income_ratio, "%"),
+            ratio_row("Asset Utilisation",               s.company_fin_asset_utilisation,         "%"),
+        ),
+        # Leverage
+        ratio_category_card(
+            "Leverage",
+            ratio_row("Debt-to-Equity (Borrowings)",     s.company_fin_debt_to_equity,            "x"),
+            ratio_row("Debt-to-Assets",                  s.company_fin_debt_to_assets,            "%"),
+            ratio_row("Equity Ratio",                    s.company_fin_equity_ratio,              "%"),
+            ratio_row("Equity Multiplier",               s.company_fin_equity_multiplier,         "x"),
+        ),
+        # Liquidity
+        ratio_category_card(
+            "Liquidity",
+            ratio_row("Cash Ratio",                      s.company_fin_cash_ratio,                "%"),
+            ratio_row("Operating Cash Flow Ratio",       s.company_fin_ocf_ratio,                 "x"),
+            ratio_row("Loan-to-Assets",                  s.company_fin_loan_to_assets,            "%"),
+        ),
+        # Asset Quality
+        ratio_category_card(
+            "Asset Quality",
+            ratio_row("NPA Ratio",                       s.company_fin_npa_ratio,                 "%"),
+            ratio_row("Receivables-to-Assets",           s.company_fin_receivables_to_assets,     "%"),
+            ratio_row("Provision Coverage",              s.company_fin_provision_coverage,        "%"),
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
 def ratios_tab_content() -> rx.Component:
-    """Full ratio display with sector branching (bank / insurance / standard)."""
+    """Full ratio display with sector branching (bank / insurance / finance / standard)."""
     s = AnalysisState
     return rx.cond(
         s.company_is_bank,
@@ -303,7 +352,11 @@ def ratios_tab_content() -> rx.Component:
         rx.cond(
             s.company_is_insurance,
             _insurance_ratios_content(),
-            _standard_ratios_content(),
+            rx.cond(
+                s.company_is_finance,
+                _finance_ratios_content(),
+                _standard_ratios_content(),
+            ),
         ),
     )
 

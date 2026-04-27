@@ -1,6 +1,7 @@
 """Registry loader for MSE company data from data/company_registry.json."""
 
 import json
+import re
 from pathlib import Path
 
 _REGISTRY_PATH = Path(__file__).parent.parent.parent / "data" / "company_registry.json"
@@ -18,11 +19,27 @@ def _load() -> list[dict]:
 
 def _normalize(name: str) -> str:
     """Normalize a company name for lookup: remove all quotes, collapse spaces, lowercase."""
-    # Remove all quote characters
     result = name.replace('"', "").replace("'", "")
-    # Collapse multiple spaces into one, strip leading/trailing whitespace
     result = " ".join(result.split())
     return result.lower()
+
+
+def _mse_id_from_filename(filename: str) -> int | None:
+    """Extract MSE company ID from an MSE filename.
+
+    Supports two formats from members.mse.mn downloads:
+      _565 20244report.xls   → 565
+      52220244report.xls     → 522
+    """
+    # Format 1: underscore prefix + space separator
+    m = re.match(r"_(\d+)\s", filename)
+    if m:
+        return int(m.group(1))
+    # Format 2: id directly concatenated with year (20XX) — strip year suffix
+    m = re.match(r"^(\d+?)(20\d{2})", filename)
+    if m:
+        return int(m.group(1))
+    return None
 
 
 def find_mse_id(company_name: str) -> int:
@@ -45,9 +62,54 @@ def find_mse_id(company_name: str) -> int:
     for entry in registry:
         if _normalize(entry["name"]) == query:
             return entry["mse_id"]
+        for alias in entry.get("aliases", []):
+            if _normalize(alias) == query:
+                return entry["mse_id"]
     raise KeyError(
         f"Company not found in registry: {company_name!r} (normalized: {query!r})"
     )
+
+
+def find_sector(company_name: str) -> str | None:
+    """Look up the sector for a company by name (or alias).
+
+    Returns the sector string, or None if not found.
+    """
+    if not company_name or company_name.lower() == "unknown":
+        return None
+    registry = _load()
+    query = _normalize(company_name)
+    for entry in registry:
+        if _normalize(entry["name"]) == query:
+            return entry.get("sector") or None
+        for alias in entry.get("aliases", []):
+            if _normalize(alias) == query:
+                return entry.get("sector") or None
+    return None
+
+
+def find_sector_by_mse_id(mse_id: int) -> str | None:
+    """Look up the sector for a company by its MSE numeric ID.
+
+    Useful when the company name in the file doesn't match the registry name
+    (e.g., Mongolian name in file vs English name in registry).
+    """
+    registry = _load()
+    for entry in registry:
+        if entry.get("mse_id") == mse_id:
+            return entry.get("sector") or None
+    return None
+
+
+def find_sector_from_filename(filename: str) -> str | None:
+    """Extract sector by parsing the MSE ID from a filename.
+
+    Fallback for when company name lookup returns None.
+    """
+    mse_id = _mse_id_from_filename(filename)
+    if mse_id is not None:
+        return find_sector_by_mse_id(mse_id)
+    return None
 
 
 def all_companies() -> list[dict]:
