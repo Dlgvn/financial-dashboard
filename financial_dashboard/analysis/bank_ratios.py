@@ -139,10 +139,17 @@ def compute_bank_ratios(parsed_data: dict) -> dict:
         )
 
         # 5. Interest Income to Total Revenue (or operating income proxy)
-        profitability["interest_income_ratio"] = safe_div(
-            interest_income or net_interest_income or net_banking_income,
-            total_revenue or operating_income or net_banking_income
-        )
+        # Guard: if neither a real interest figure nor a real revenue figure is
+        # available and both sides would fall back to net_banking_income, the
+        # ratio would always be 1.0 (100%) — meaningless.  Return None instead.
+        _int_numerator = interest_income or net_interest_income
+        _rev_denominator = total_revenue or operating_income
+        if _int_numerator is not None and _rev_denominator is not None:
+            profitability["interest_income_ratio"] = safe_div(_int_numerator, _rev_denominator)
+        elif _int_numerator is not None and net_banking_income is not None:
+            profitability["interest_income_ratio"] = safe_div(_int_numerator, net_banking_income)
+        else:
+            profitability["interest_income_ratio"] = None
 
         # ── Capital Adequacy ──────────────────────────────────────────────
         capital = {}

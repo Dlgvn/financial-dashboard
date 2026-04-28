@@ -297,6 +297,11 @@ def _fmt(v, decimals: int = 2) -> str:
     return f"{v:.{decimals}f}" if v is not None else "N/A"
 
 
+def _pct(v, decimals: int = 2) -> str:
+    """Format a ratio (0–1 decimal) as a percentage string, or 'N/A' if None."""
+    return f"{v * 100:.{decimals}f}" if v is not None else "N/A"
+
+
 def _crit(v) -> int:
     """Convert Piotroski criterion (1/0/None) to int (-1 for None)."""
     if v is None:
@@ -546,27 +551,27 @@ class AnalysisState(UploadState):
             # Populate bank flat vars
             bank_aq = bank_curr.get("asset_quality", {})
             bank_eff = bank_curr.get("efficiency", {})
-            self.company_bank_nim = _fmt(bank_prof.get("nim"))
-            self.company_bank_npl_ratio = _fmt(bank_aq.get("npl_ratio"))
-            self.company_bank_ldr = _fmt(bank_liq.get("ldr"))
-            self.company_bank_cost_to_income = _fmt(bank_eff.get("cost_to_income"))
-            self.company_bank_roa = _fmt(bank_prof.get("roa"))
-            self.company_bank_roe = _fmt(bank_prof.get("roe"))
-            self.company_bank_net_margin = _fmt(bank_prof.get("net_margin"))
-            self.company_bank_interest_income_ratio = _fmt(bank_prof.get("interest_income_ratio"))
+            self.company_bank_nim = _pct(bank_prof.get("nim"))
+            self.company_bank_npl_ratio = _pct(bank_aq.get("npl_ratio"))
+            self.company_bank_ldr = _pct(bank_liq.get("ldr"))
+            self.company_bank_cost_to_income = _pct(bank_eff.get("cost_to_income"))
+            self.company_bank_roa = _pct(bank_prof.get("roa"))
+            self.company_bank_roe = _pct(bank_prof.get("roe"))
+            self.company_bank_net_margin = _pct(bank_prof.get("net_margin"))
+            self.company_bank_interest_income_ratio = _pct(bank_prof.get("interest_income_ratio"))
             self.company_bank_equity_multiplier = _fmt(bank_cap.get("equity_multiplier"))
-            self.company_bank_equity_to_assets = _fmt(bank_cap.get("equity_to_assets"))
+            self.company_bank_equity_to_assets = _pct(bank_cap.get("equity_to_assets"))
             self.company_bank_coverage_ratio = _fmt(bank_aq.get("coverage_ratio"))
-            self.company_bank_loan_loss_reserve_ratio = _fmt(bank_aq.get("loan_loss_reserve_ratio"))
-            self.company_bank_provision_to_loans = _fmt(bank_aq.get("provision_to_loans"))
-            self.company_bank_cash_to_deposits = _fmt(bank_liq.get("cash_to_deposits"))
-            self.company_bank_loans_to_assets = _fmt(bank_liq.get("loans_to_assets"))
-            self.company_bank_securities_to_assets = _fmt(bank_liq.get("securities_to_assets"))
-            self.company_bank_fee_income_ratio = _fmt(bank_eff.get("fee_income_ratio"))
+            self.company_bank_loan_loss_reserve_ratio = _pct(bank_aq.get("loan_loss_reserve_ratio"))
+            self.company_bank_provision_to_loans = _pct(bank_aq.get("provision_to_loans"))
+            self.company_bank_cash_to_deposits = _pct(bank_liq.get("cash_to_deposits"))
+            self.company_bank_loans_to_assets = _pct(bank_liq.get("loans_to_assets"))
+            self.company_bank_securities_to_assets = _pct(bank_liq.get("securities_to_assets"))
+            self.company_bank_fee_income_ratio = _pct(bank_eff.get("fee_income_ratio"))
             # Standard display vars using bank proxies
-            self.company_roa = _fmt(bank_prof.get("roa"))
-            self.company_roe = _fmt(bank_prof.get("roe"))
-            self.company_net_margin = _fmt(bank_prof.get("net_margin"))
+            self.company_roa = _pct(bank_prof.get("roa"))
+            self.company_roe = _pct(bank_prof.get("roe"))
+            self.company_net_margin = _pct(bank_prof.get("net_margin"))
             self.company_current_ratio = _fmt(bank_liq.get("ldr"))
             self.company_quick_ratio = "N/A"
             self.company_debt_equity = "N/A"
@@ -588,25 +593,25 @@ class AnalysisState(UploadState):
             ins_uw = ins_curr.get("underwriting", {})
             self.company_composite = compute_insurance_composite_score(ins_result)
             # Populate insurance flat vars
-            self.company_ins_loss_ratio = _fmt(ins_uw.get("loss_ratio"))
-            self.company_ins_expense_ratio = _fmt(ins_uw.get("expense_ratio"))
-            self.company_ins_combined_ratio = _fmt(ins_uw.get("combined_ratio"))
-            self.company_ins_roa = _fmt(ins_prof.get("roa"))
-            self.company_ins_roe = _fmt(ins_prof.get("roe"))
-            self.company_ins_net_margin = _fmt(ins_prof.get("net_margin"))
-            self.company_ins_investment_income_ratio = _fmt(ins_prof.get("investment_income_ratio"))
-            self.company_ins_underwriting_margin = _fmt(ins_prof.get("underwriting_margin"))
-            self.company_ins_solvency_ratio = _fmt(ins_solv.get("solvency_ratio"))
+            self.company_ins_loss_ratio = _pct(ins_uw.get("loss_ratio"))
+            self.company_ins_expense_ratio = _pct(ins_uw.get("expense_ratio"))
+            self.company_ins_combined_ratio = _pct(ins_uw.get("combined_ratio"))
+            self.company_ins_roa = _pct(ins_prof.get("roa"))
+            self.company_ins_roe = _pct(ins_prof.get("roe"))
+            self.company_ins_net_margin = _pct(ins_prof.get("net_margin"))
+            self.company_ins_investment_income_ratio = _pct(ins_prof.get("investment_income_ratio"))
+            self.company_ins_underwriting_margin = _pct(ins_prof.get("underwriting_margin"))
+            self.company_ins_solvency_ratio = _pct(ins_solv.get("solvency_ratio"))
             self.company_ins_leverage_ratio = _fmt(ins_solv.get("leverage_ratio"))
             self.company_ins_equity_to_liabilities = _fmt(ins_solv.get("equity_to_liabilities"))
             self.company_ins_reserve_coverage = _fmt(ins_solv.get("reserve_coverage"))
-            self.company_ins_ocf_ratio = _fmt(ins_liq.get("ocf_ratio"))
-            self.company_ins_investment_ratio = _fmt(ins_liq.get("investment_ratio"))
-            self.company_ins_cash_to_liabilities = _fmt(ins_liq.get("cash_to_liabilities"))
+            self.company_ins_ocf_ratio = _pct(ins_liq.get("ocf_ratio"))
+            self.company_ins_investment_ratio = _pct(ins_liq.get("investment_ratio"))
+            self.company_ins_cash_to_liabilities = _pct(ins_liq.get("cash_to_liabilities"))
             # Standard display vars using insurance proxies
-            self.company_roa = _fmt(ins_prof.get("roa"))
-            self.company_roe = _fmt(ins_prof.get("roe"))
-            self.company_net_margin = _fmt(ins_prof.get("net_margin"))
+            self.company_roa = _pct(ins_prof.get("roa"))
+            self.company_roe = _pct(ins_prof.get("roe"))
+            self.company_net_margin = _pct(ins_prof.get("net_margin"))
             self.company_current_ratio = "N/A"
             self.company_quick_ratio = "N/A"
             self.company_debt_equity = _fmt(ins_solv.get("leverage_ratio"))
@@ -629,31 +634,31 @@ class AnalysisState(UploadState):
             fin_aq   = fin_curr.get("asset_quality", {})
             self.company_composite = compute_finance_composite_score(fin_result)
             # Populate Finance flat vars
-            self.company_fin_nim = _fmt(fin_prof.get("nim"))
-            self.company_fin_yield_on_earning_assets = _fmt(fin_prof.get("yield_on_earning_assets"))
-            self.company_fin_cost_of_funds = _fmt(fin_prof.get("cost_of_funds"))
-            self.company_fin_interest_spread = _fmt(fin_prof.get("interest_spread"))
-            self.company_fin_roa = _fmt(fin_prof.get("roa"))
-            self.company_fin_roe = _fmt(fin_prof.get("roe"))
-            self.company_fin_net_margin = _fmt(fin_prof.get("net_margin"))
-            self.company_fin_cost_to_income = _fmt(fin_eff.get("cost_to_income"))
-            self.company_fin_operating_expense_ratio = _fmt(fin_eff.get("operating_expense_ratio"))
-            self.company_fin_non_interest_income_ratio = _fmt(fin_eff.get("non_interest_income_ratio"))
-            self.company_fin_asset_utilisation = _fmt(fin_eff.get("asset_utilisation"))
+            self.company_fin_nim = _pct(fin_prof.get("nim"))
+            self.company_fin_yield_on_earning_assets = _pct(fin_prof.get("yield_on_earning_assets"))
+            self.company_fin_cost_of_funds = _pct(fin_prof.get("cost_of_funds"))
+            self.company_fin_interest_spread = _pct(fin_prof.get("interest_spread"))
+            self.company_fin_roa = _pct(fin_prof.get("roa"))
+            self.company_fin_roe = _pct(fin_prof.get("roe"))
+            self.company_fin_net_margin = _pct(fin_prof.get("net_margin"))
+            self.company_fin_cost_to_income = _pct(fin_eff.get("cost_to_income"))
+            self.company_fin_operating_expense_ratio = _pct(fin_eff.get("operating_expense_ratio"))
+            self.company_fin_non_interest_income_ratio = _pct(fin_eff.get("non_interest_income_ratio"))
+            self.company_fin_asset_utilisation = _pct(fin_eff.get("asset_utilisation"))
             self.company_fin_debt_to_equity = _fmt(fin_lev.get("debt_to_equity"))
-            self.company_fin_debt_to_assets = _fmt(fin_lev.get("debt_to_assets"))
-            self.company_fin_equity_ratio = _fmt(fin_lev.get("equity_ratio"))
+            self.company_fin_debt_to_assets = _pct(fin_lev.get("debt_to_assets"))
+            self.company_fin_equity_ratio = _pct(fin_lev.get("equity_ratio"))
             self.company_fin_equity_multiplier = _fmt(fin_lev.get("equity_multiplier"))
-            self.company_fin_cash_ratio = _fmt(fin_liq.get("cash_ratio"))
+            self.company_fin_cash_ratio = _pct(fin_liq.get("cash_ratio"))
             self.company_fin_ocf_ratio = _fmt(fin_liq.get("ocf_ratio"))
-            self.company_fin_loan_to_assets = _fmt(fin_liq.get("loan_to_assets"))
-            self.company_fin_npa_ratio = _fmt(fin_aq.get("npa_ratio"))
-            self.company_fin_receivables_to_assets = _fmt(fin_aq.get("receivables_to_assets"))
+            self.company_fin_loan_to_assets = _pct(fin_liq.get("loan_to_assets"))
+            self.company_fin_npa_ratio = _pct(fin_aq.get("npa_ratio"))
+            self.company_fin_receivables_to_assets = _pct(fin_aq.get("receivables_to_assets"))
             self.company_fin_provision_coverage = _fmt(fin_aq.get("provision_coverage"))
             # Standard display vars using Finance proxies
-            self.company_roa = _fmt(fin_prof.get("roa"))
-            self.company_roe = _fmt(fin_prof.get("roe"))
-            self.company_net_margin = _fmt(fin_prof.get("net_margin"))
+            self.company_roa = _pct(fin_prof.get("roa"))
+            self.company_roe = _pct(fin_prof.get("roe"))
+            self.company_net_margin = _pct(fin_prof.get("net_margin"))
             self.company_current_ratio = "N/A"
             self.company_quick_ratio = "N/A"
             self.company_debt_equity = _fmt(fin_lev.get("debt_to_equity"))
@@ -682,9 +687,9 @@ class AnalysisState(UploadState):
             zs   = curr.get("z_score", {})
             perf = curr.get("performance", {})
 
-            self.company_roa          = _fmt(prof.get("roa"))
-            self.company_roe          = _fmt(prof.get("roe"))
-            self.company_net_margin   = _fmt(prof.get("net_margin"))
+            self.company_roa          = _pct(prof.get("roa"))
+            self.company_roe          = _pct(prof.get("roe"))
+            self.company_net_margin   = _pct(prof.get("net_margin"))
             self.company_current_ratio = _fmt(liq.get("current_ratio"))
             self.company_quick_ratio  = _fmt(liq.get("quick_ratio"))
             self.company_debt_equity  = _fmt(solv.get("debt_to_equity"))
@@ -693,9 +698,9 @@ class AnalysisState(UploadState):
             self.company_z_score      = _fmt(zs.get("z_score"))
 
             # Additional standard ratio vars
-            self.company_gross_margin = _fmt(prof.get("gross_margin"))
-            self.company_operating_margin = _fmt(prof.get("operating_margin"))
-            self.company_ebit_margin = _fmt(prof.get("ebit_margin"))
+            self.company_gross_margin = _pct(prof.get("gross_margin"))
+            self.company_operating_margin = _pct(prof.get("operating_margin"))
+            self.company_ebit_margin = _pct(prof.get("ebit_margin"))
             self.company_cash_ratio = _fmt(liq.get("cash_ratio"))
             wc = liq.get("working_capital")
             self.company_working_capital = _fmt(wc)
@@ -724,8 +729,8 @@ class AnalysisState(UploadState):
             prev_act  = prev_data.get("activity", {})
             prev_solv = prev_data.get("solvency", {})
 
-            self.company_net_margin_dupont = _fmt(prof.get("net_margin"))
-            self.company_net_margin_prev   = _fmt(prev_prof.get("net_margin"))
+            self.company_net_margin_dupont = _pct(prof.get("net_margin"))
+            self.company_net_margin_prev   = _pct(prev_prof.get("net_margin"))
             self.company_asset_turnover_dupont = _fmt(act.get("total_asset_turnover"))
             self.company_asset_turnover_prev   = _fmt(prev_act.get("total_asset_turnover"))
 
@@ -734,8 +739,8 @@ class AnalysisState(UploadState):
             d2e_prev = prev_solv.get("debt_to_equity")
             self.company_equity_multiplier_prev = _fmt(1 + d2e_prev if d2e_prev is not None else None)
 
-            self.company_roe_dupont = _fmt(prof.get("roe"))
-            self.company_roe_prev   = _fmt(prev_prof.get("roe"))
+            self.company_roe_dupont = _pct(prof.get("roe"))
+            self.company_roe_prev   = _pct(prev_prof.get("roe"))
 
         # --- Populate flat display vars (common to all sectors) ---
         comp  = self.company_composite
@@ -870,7 +875,8 @@ class AnalysisState(UploadState):
         # Determine shares outstanding: scraped value from price JSON
         scraped_shares = price_data.get("shares_outstanding")
 
-        # Check for manual override in the company's financial JSON
+        # Load financial data once: used for both shares override and valuation computation
+        fin_data_for_valuation: dict = {}
         manual_shares = None
         index_path = DATA_DIR / "index.json"
         if index_path.exists():
@@ -884,8 +890,8 @@ class AnalysisState(UploadState):
                 fin_file = DATA_DIR / entry["filename"]
                 if fin_file.exists():
                     with open(fin_file, encoding="utf-8") as f:
-                        fin_data = json.load(f)
-                    manual_shares = fin_data.get("shares_outstanding_override")
+                        fin_data_for_valuation = json.load(f)
+                    manual_shares = fin_data_for_valuation.get("shares_outstanding_override")
 
         # Manual override takes precedence over scraped value
         effective_shares = manual_shares if manual_shares is not None else scraped_shares
@@ -900,22 +906,6 @@ class AnalysisState(UploadState):
                 last_close_price = float(last_record["close"])
             except (ValueError, KeyError):
                 last_close_price = None
-
-        # Load the company's financial data for valuation computation
-        fin_data_for_valuation: dict = {}
-        index_path2 = DATA_DIR / "index.json"
-        if index_path2.exists():
-            with open(index_path2) as f:
-                index2 = json.load(f)
-            entry2 = next(
-                (e for e in index2.get("files", []) if e["company"] == company_name),
-                None,
-            )
-            if entry2:
-                fin_file2 = DATA_DIR / entry2["filename"]
-                if fin_file2.exists():
-                    with open(fin_file2, encoding="utf-8") as f:
-                        fin_data_for_valuation = json.load(f)
 
         result = compute_valuation_metrics(fin_data_for_valuation, effective_shares, last_close_price)
 
@@ -951,7 +941,8 @@ class AnalysisState(UploadState):
             {"date": r["date"], "close": r["close"]} for r in filtered
         ]
         self.company_volume_chart_data = [
-            {"date": r["date"], "volume": r["volume"]} for r in filtered
+            {"date": r["date"], "volume": int(r["volume"]) if r.get("volume") is not None else 0}
+            for r in filtered
         ]
 
     @rx.event

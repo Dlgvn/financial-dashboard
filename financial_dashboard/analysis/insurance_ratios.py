@@ -303,9 +303,10 @@ def compute_insurance_ratios(parsed_data: dict) -> dict:
         # 3. Equity to Liabilities
         solvency["equity_to_liabilities"] = safe_div(total_equity, total_liabilities)
 
-        # 4. Reserve Coverage = Claim Reserves / Net Premiums Earned
-        #    Measures if the company has enough reserves for outstanding claims
-        solvency["reserve_coverage"] = safe_div(claim_reserves, premiums)
+        # 4. Reserve Coverage = Claim Reserves / Claims Incurred
+        #    Measures if reserves are adequate to cover outstanding claims.
+        #    Use actual claims when available; fall back to premiums as a proxy.
+        solvency["reserve_coverage"] = safe_div(claim_reserves, claims or premiums)
 
         # ══════════════════════════════════════════════════════════════════════
         # LIQUIDITY RATIOS
