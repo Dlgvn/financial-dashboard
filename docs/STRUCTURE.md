@@ -167,15 +167,17 @@ Entry point: `parse_excel_file(file_bytes, filename, sector="") → dict`
 
 ### `header_mappings.py` — Mongolian → English Dictionaries
 
-7 header dictionaries (one per statement type) + `SHEET_TYPE_PATTERNS` for tab-name detection:
+9 header dictionaries (one per statement type) + `SHEET_TYPE_PATTERNS` for tab-name detection:
 
 1. `balance_sheet` — standard
 2. `income_statement` — standard
 3. `cash_flow`
 4. `bank_balance_sheet`
-5. `bank_income_statement` — also used by Finance/NBFI companies that follow the banking IS format (e.g. securities firms); maps `admin_expenses` among others
+5. `bank_income_statement` — also used by Finance/NBFI companies that follow the banking IS format; maps `admin_expenses` among others
 6. `insurance_balance_sheet`
 7. `insurance_income_statement`
+8. `securities_balance_sheet` — FRC-format securities/investment companies; superset of `balance_sheet` with broker receivables, investment securities, and client account payables
+9. `securities_income_statement` — FRC-format; covers fee/commission income, trading income, and OCI rows; handles Cyrillic/Latin homoglyph variants in header text
 
 `match_header(cell_text, headers_dict)` — normalizes Mongolian text and matches to English key.
 

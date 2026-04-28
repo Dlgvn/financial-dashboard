@@ -46,8 +46,14 @@ def compute_ratios(parsed_data: dict) -> dict:
             "prev": { category: { ratio_name: value, ... }, ... },
         }
     """
-    bs = parsed_data.get("balance_sheet", {})
-    inc = parsed_data.get("income_statement", {})
+    bs = (parsed_data.get("balance_sheet")
+          or parsed_data.get("bank_balance_sheet")
+          or parsed_data.get("insurance_balance_sheet")
+          or {})
+    inc = (parsed_data.get("income_statement")
+           or parsed_data.get("bank_income_statement")
+           or parsed_data.get("insurance_income_statement")
+           or {})
     cf = parsed_data.get("cash_flow", {})
     company = parsed_data.get("metadata", {}).get("company", "Unknown")
 
@@ -79,12 +85,25 @@ def compute_ratios(parsed_data: dict) -> dict:
         long_term_loans = bs.get(f"long_term_loans{period_suffix}")
 
         # Some companies report "цэвэр борлуулалт" (net_revenue) instead of "борлуулалтын орлого" (revenue).
-        revenue = inc.get(f"revenue{period_suffix}") or inc.get(f"net_revenue{period_suffix}")
+        revenue = (inc.get(f"revenue{period_suffix}")
+                   or inc.get(f"net_revenue{period_suffix}")
+                   or inc.get(f"total_revenue{period_suffix}")
+                   or inc.get(f"net_premiums_earned{period_suffix}")
+                   or inc.get(f"gross_premiums_written{period_suffix}"))
         cogs = inc.get(f"cost_of_goods_sold{period_suffix}")
         gross_profit = inc.get(f"gross_profit{period_suffix}")
         net_income = inc.get(f"net_income{period_suffix}")
         profit_before_tax = inc.get(f"profit_before_tax{period_suffix}")
         income_tax = inc.get(f"income_tax_expense{period_suffix}")
+        profit_after_tax = inc.get(f"profit_after_tax{period_suffix}")
+        # Fallback: net_income may be 0.0 from a section-header parse artefact.
+        # Use profit_after_tax or compute from profit_before_tax when available.
+        if (net_income is None or net_income == 0) and profit_after_tax:
+            net_income = profit_after_tax
+        elif (net_income is None or net_income == 0) and profit_before_tax is not None and income_tax is not None:
+            net_income = profit_before_tax - income_tax
+        elif (net_income is None or net_income == 0) and profit_before_tax:
+            net_income = profit_before_tax
         selling_expenses = inc.get(f"selling_expenses{period_suffix}")
         admin_expenses = inc.get(f"general_and_admin_expenses{period_suffix}")
         financial_expense = inc.get(f"financial_expense{period_suffix}")
@@ -96,8 +115,27 @@ def compute_ratios(parsed_data: dict) -> dict:
         financing_cf = cf.get(f"financing_cash_flow{period_suffix}")
 
         # Derived values
-        if total_equity is None and total_assets is not None and total_liabilities is not None:
-            total_equity = total_assets - total_liabilities
+        if (total_equity is None or total_equity == 0) and total_assets is not None and total_liabilities is not None:
+            computed = total_assets - total_liabilities
+            if total_equity is None or computed != 0:
+                total_equity = computed
+        elif total_equity is not None and total_assets is not None and total_liabilities is not None and total_assets > 0:
+            # Override when parser captured a sub-line instead of the actual equity total.
+            # Two cases:
+            #   (1) Sign mismatch — parser clearly hit wrong row (e.g. Монложистикс: -212k vs +48.6M)
+            #   (2) Parsed magnitude << derived magnitude — sub-line capture (e.g. Дархан нэхий:
+            #       10.4M vs 66M; Мон-Ит: 266k vs 11M; Премиум нэксус: 318k vs 102.8M)
+            # Do NOT override if parsed is larger in magnitude — that means accumulated losses or
+            # comprehensive-income items are correctly included in parsed equity (УлсынИхДэлгүүр).
+            derived = total_assets - total_liabilities
+            if derived != 0:
+                sign_mismatch = (total_equity >= 0) != (derived >= 0)
+                sub_line_capture = (
+                    abs(total_equity) < abs(derived) * 0.8
+                    and abs(total_equity - derived) / total_assets > 0.05
+                )
+                if sign_mismatch or sub_line_capture:
+                    total_equity = derived
 
         working_capital = None
         if total_current_assets is not None and total_current_liabilities is not None:
@@ -290,8 +328,14 @@ def compute_piotroski(parsed_data: dict) -> dict:
             "interpretation": "Strong"|"Neutral"|"Weak",
         }
     """
-    bs  = parsed_data.get("balance_sheet", {})
-    inc = parsed_data.get("income_statement", {})
+    bs  = (parsed_data.get("balance_sheet")
+           or parsed_data.get("bank_balance_sheet")
+           or parsed_data.get("insurance_balance_sheet")
+           or {})
+    inc = (parsed_data.get("income_statement")
+           or parsed_data.get("bank_income_statement")
+           or parsed_data.get("insurance_income_statement")
+           or {})
     cf  = parsed_data.get("cash_flow", {})
 
     # ── Extract fields ────────────────────────────────────────────────────────
@@ -411,8 +455,14 @@ def compute_beneish(parsed_data: dict) -> dict:
             "reliable": bool,   # False if < 5 indices computable
         }
     """
-    bs  = parsed_data.get("balance_sheet", {})
-    inc = parsed_data.get("income_statement", {})
+    bs  = (parsed_data.get("balance_sheet")
+           or parsed_data.get("bank_balance_sheet")
+           or parsed_data.get("insurance_balance_sheet")
+           or {})
+    inc = (parsed_data.get("income_statement")
+           or parsed_data.get("bank_income_statement")
+           or parsed_data.get("insurance_income_statement")
+           or {})
     cf  = parsed_data.get("cash_flow", {})
 
     # ── Extract current year fields ───────────────────────────────────────────
@@ -713,7 +763,7 @@ def compute_composite_score(
         raw_score = 0
     else:
         # Re-normalise weights for available components
-        raw_score = weighted_sum / total_weight * 100 / 100
+        raw_score = weighted_sum / total_weight
 
     # -- Beneish penalty -------------------------------------------------------
     m = beneish.get("m_score")
@@ -734,6 +784,403 @@ def compute_composite_score(
         "color":           color,
         "breakdown":       breakdown,
         "beneish_penalty": penalty,
+    }
+
+
+def compute_bank_composite_score(bank_ratios: dict) -> dict:
+    """Composite health score (0–100) for banks using a CAMELS-inspired framework.
+
+    Framework basis
+    ---------------
+    CAMELS (Capital adequacy, Asset quality, Management/Efficiency, Earnings,
+    Liquidity, Sensitivity) is the global standard used by bank regulators (Fed,
+    FDIC, IMF, World Bank).  Each pillar is scored 0–100 then weighted.
+
+    Weights (sum to 1.0)
+    --------------------
+    Capital adequacy  25% — core buffer against insolvency
+    Asset quality     25% — NPL and reserve coverage drive credit risk
+    Earnings          20% — profitability: ROA, ROE, NIM
+    Liquidity         20% — LDR and cash coverage
+    Efficiency        10% — cost-to-income (management quality proxy)
+
+    Sensitivity (market risk) is omitted — MSE-listed banks do not disclose
+    interest-rate sensitivity or VaR data in their public filings.
+
+    Benchmarks: IMF FSI thresholds, CARE Ratings "Banks" methodology (2020),
+    Bank of Mongolia prudential norms, BIS Basel III capital standards.
+    """
+
+    def _clamp(v, lo=0.0, hi=100.0):
+        return max(lo, min(hi, v)) if v is not None else None
+
+    def _interp(v, lo_v, hi_v, lo_s=0.0, hi_s=100.0):
+        if v is None or hi_v == lo_v:
+            return None
+        ratio = (v - lo_v) / (hi_v - lo_v)
+        return _clamp(lo_s + ratio * (hi_s - lo_s))
+
+    def _avg(parts):
+        valid = [x for x in parts if x is not None]
+        return sum(valid) / len(valid) if valid else None
+
+    curr = bank_ratios.get("current", {})
+    prof = curr.get("profitability", {})
+    cap  = curr.get("capital_adequacy", {})
+    aq   = curr.get("asset_quality", {})
+    liq  = curr.get("liquidity", {})
+    eff  = curr.get("efficiency", {})
+
+    # ── Capital Adequacy (25%) ────────────────────────────────────────────────
+    # equity_to_assets: BIS Basel III minimum 8%; >12% strong; >15% excellent
+    # equity_multiplier: lower is safer; <8x excellent, 8-15x normal, >20x risky
+    eq_to_assets     = cap.get("equity_to_assets")
+    eq_multiplier    = cap.get("equity_multiplier")
+    cap_score = _avg([
+        _interp(eq_to_assets,  0.04, 0.15, 0, 100),
+        _interp(eq_multiplier, 20,   6,    0, 100),   # inverted: lower multiplier = better
+    ])
+
+    # ── Asset Quality (25%) ──────────────────────────────────────────────────
+    # npl_ratio: <2% excellent, 2-5% acceptable, >10% distress (BoM norms)
+    # coverage_ratio: >150% excellent, 70-150% acceptable, <50% poor (Basel guidance)
+    # loan_loss_reserve_ratio: <1% low risk, 1-3% moderate, >5% high (IMF FSI)
+    npl      = aq.get("npl_ratio")
+    coverage = aq.get("coverage_ratio")
+    llr      = aq.get("loan_loss_reserve_ratio")
+    aq_score = _avg([
+        _interp(npl,      0.10, 0.00, 0, 100),   # inverted: lower NPL = better
+        _interp(coverage, 0.50, 2.00, 0, 100),   # higher coverage = better
+        _interp(llr,      0.05, 0.00, 0, 100),   # inverted: lower reserve ratio = cleaner book
+    ])
+
+    # ── Earnings (20%) ───────────────────────────────────────────────────────
+    # ROA: <0.5% poor, 0.5-1% adequate, >1.5% excellent (IMF FSI / CARE Ratings)
+    # ROE: <10% poor, 10-20% adequate, >25% excellent
+    # NIM: <2% compressed, 2-4% adequate, >5% strong (varies by market)
+    roa = prof.get("roa")
+    roe = prof.get("roe")
+    nim = prof.get("nim")
+    earn_score = _avg([
+        _interp(roa, 0,    0.020, 0, 100),
+        _interp(roe, 0,    0.25,  0, 100),
+        _interp(nim, 0,    0.08,  0, 100),   # Mongolian banks: typical 6-15%
+    ])
+
+    # ── Liquidity (20%) ──────────────────────────────────────────────────────
+    # LDR (loan-to-deposit): <80% conservative, 80-100% normal, >120% stretched
+    #   Score: inverted around 90% optimum — too low (idle) or too high (risky) both bad
+    #   Simplified: penalise above 1.0, reward below 0.9
+    # cash_to_deposits: >20% strong, 10-20% adequate, <5% tight
+    ldr       = liq.get("ldr")
+    cash_dep  = liq.get("cash_to_deposits")
+    # LDR sweet-spot scoring: 60%-90% = full score, then decreasing
+    ldr_score = None
+    if ldr is not None:
+        if ldr <= 0.90:
+            ldr_score = _interp(ldr, 0.50, 0.90, 60, 100)
+        else:
+            ldr_score = _interp(ldr, 0.90, 1.30, 100, 0)
+    liq_score = _avg([
+        ldr_score,
+        _interp(cash_dep, 0.02, 0.25, 0, 100),
+    ])
+
+    # ── Efficiency (10%) ─────────────────────────────────────────────────────
+    # cost_to_income: <40% excellent, 40-60% adequate, >80% poor (CARE Ratings)
+    cti = eff.get("cost_to_income")
+    eff_score = _interp(cti, 0.80, 0.30, 0, 100)   # inverted
+
+    # ── Weighted composite ────────────────────────────────────────────────────
+    weights = {
+        "capital":    (cap_score,  0.25),
+        "asset_quality": (aq_score, 0.25),
+        "earnings":   (earn_score, 0.20),
+        "liquidity":  (liq_score,  0.20),
+        "efficiency": (eff_score,  0.10),
+    }
+
+    total_weight = weighted_sum = 0.0
+    breakdown = {}
+    for cat, (score, w) in weights.items():
+        breakdown[cat] = round(score, 1) if score is not None else None
+        if score is not None:
+            weighted_sum += score * w
+            total_weight += w
+
+    raw_score = weighted_sum / total_weight if total_weight > 0 else 0
+    final_score = int(_clamp(raw_score))
+
+    if final_score >= 70:
+        label, color = "Healthy",  "green"
+    elif final_score >= 40:
+        label, color = "Caution",  "amber"
+    else:
+        label, color = "Distress", "red"
+
+    return {
+        "score":     final_score,
+        "label":     label,
+        "color":     color,
+        "breakdown": breakdown,
+        "beneish_penalty": 0,
+    }
+
+
+def compute_insurance_composite_score(ins_ratios: dict) -> dict:
+    """Composite health score (0–100) for insurance companies.
+
+    Framework basis
+    ---------------
+    Combines IRIS (Insurance Regulatory Information System) ratio screening,
+    Solvency II capital adequacy concepts, and standard underwriting profitability
+    metrics used by rating agencies (A.M. Best, S&P Insurance Criteria).
+
+    Weights (sum to 1.0)
+    --------------------
+    Underwriting quality  30% — combined ratio drives insurance core business
+    Solvency / capital    25% — solvency ratio and leverage (regulatory focus)
+    Profitability         25% — ROA, ROE, net margin
+    Liquidity             20% — cash and investment coverage
+
+    Benchmarks: NAIC IRIS thresholds, A.M. Best criteria, Mongolia Financial
+    Regulatory Commission (FRC) solvency standards (>20% equity/assets).
+    """
+
+    def _clamp(v, lo=0.0, hi=100.0):
+        return max(lo, min(hi, v)) if v is not None else None
+
+    def _interp(v, lo_v, hi_v, lo_s=0.0, hi_s=100.0):
+        if v is None or hi_v == lo_v:
+            return None
+        ratio = (v - lo_v) / (hi_v - lo_v)
+        return _clamp(lo_s + ratio * (hi_s - lo_s))
+
+    def _avg(parts):
+        valid = [x for x in parts if x is not None]
+        return sum(valid) / len(valid) if valid else None
+
+    curr = ins_ratios.get("current", {})
+    uw   = curr.get("underwriting", {})
+    prof = curr.get("profitability", {})
+    solv = curr.get("solvency", {})
+    liq  = curr.get("liquidity", {})
+
+    # ── Underwriting Quality (30%) ────────────────────────────────────────────
+    # combined_ratio: <90% excellent, 90-100% profitable, 100-110% marginal, >110% loss
+    # loss_ratio: <55% excellent, 55-70% good, 70-85% moderate, >85% poor
+    # expense_ratio: <25% excellent, 25-35% adequate, >40% poor
+    combined = uw.get("combined_ratio")
+    loss_r   = uw.get("loss_ratio")
+    expense_r = uw.get("expense_ratio")
+    # combined_ratio: 0.85 maps to 100, 1.10 maps to 0
+    uw_score = _avg([
+        _interp(combined,  1.15, 0.85, 0, 100),   # inverted
+        _interp(loss_r,    0.90, 0.50, 0, 100),   # inverted
+        _interp(expense_r, 0.45, 0.20, 0, 100),   # inverted
+    ])
+    # If combined_ratio is None but others available, use partial
+    # If all underwriting data is absent (old format companies), fall back to profitability only
+    if uw_score is None:
+        uw_weight = 0.0
+    else:
+        uw_weight = 0.30
+
+    # ── Solvency / Capital (25%) ──────────────────────────────────────────────
+    # solvency_ratio (equity/assets): FRC minimum 20%; >30% strong; >40% excellent
+    # leverage_ratio (liabilities/equity): <2x strong, 2-4x adequate, >6x risky
+    solvency_r  = solv.get("solvency_ratio")
+    leverage_r  = solv.get("leverage_ratio")
+    reserve_cov = solv.get("reserve_coverage")
+    solv_score = _avg([
+        _interp(solvency_r,  0.10, 0.40, 0, 100),
+        _interp(leverage_r,  6.0,  1.0,  0, 100),   # inverted
+        _interp(reserve_cov, 0.0,  1.5,  0, 100),
+    ])
+
+    # ── Profitability (25%) ───────────────────────────────────────────────────
+    # ROA: >3% excellent for insurers (lower asset base vs banks)
+    # ROE: >15% good, >20% excellent
+    # net_margin: >10% adequate, >20% good for insurance
+    roa = prof.get("roa")
+    roe = prof.get("roe")
+    npm = prof.get("net_margin")
+    prof_score = _avg([
+        _interp(roa, -0.02, 0.05,  0, 100),
+        _interp(roe, -0.05, 0.25,  0, 100),
+        _interp(npm, -0.05, 0.25,  0, 100),
+    ])
+
+    # ── Liquidity (20%) ──────────────────────────────────────────────────────
+    # investment_ratio (investments/assets): >60% adequate, >75% strong
+    # cash_to_liabilities: >5% adequate, >15% strong
+    # ocf_ratio: positive is good; >10% strong
+    inv_r   = liq.get("investment_ratio")
+    cash_l  = liq.get("cash_to_liabilities")
+    ocf_r   = liq.get("ocf_ratio")
+    liq_score = _avg([
+        _interp(inv_r,  0.30, 0.80, 0, 100),
+        _interp(cash_l, 0.00, 0.20, 0, 100),
+        _interp(ocf_r, -0.05, 0.15, 0, 100),
+    ])
+
+    # ── Weighted composite ────────────────────────────────────────────────────
+    # Redistribute underwriting weight to profitability when data unavailable
+    remaining = 0.30 - uw_weight  # weight freed up from missing underwriting
+    weights = {
+        "underwriting": (uw_score,   uw_weight),
+        "solvency":     (solv_score, 0.25),
+        "profitability": (prof_score, 0.25 + remaining),
+        "liquidity":    (liq_score,  0.20),
+    }
+
+    total_weight = weighted_sum = 0.0
+    breakdown = {}
+    for cat, (score, w) in weights.items():
+        breakdown[cat] = round(score, 1) if score is not None else None
+        if score is not None:
+            weighted_sum += score * w
+            total_weight += w
+
+    raw_score = weighted_sum / total_weight if total_weight > 0 else 0
+    final_score = int(_clamp(raw_score))
+
+    if final_score >= 70:
+        label, color = "Healthy",  "green"
+    elif final_score >= 40:
+        label, color = "Caution",  "amber"
+    else:
+        label, color = "Distress", "red"
+
+    return {
+        "score":     final_score,
+        "label":     label,
+        "color":     color,
+        "breakdown": breakdown,
+        "beneish_penalty": 0,
+    }
+
+
+def compute_finance_composite_score(fin_ratios: dict) -> dict:
+    """Composite health score (0–100) for Finance / NBFI companies.
+
+    Framework basis
+    ---------------
+    Adapted CAMEL framework for NBFIs as recommended by CARE Ratings "Rating
+    Methodology – NBFC" (Oct 2020), IMF NBFI supervision framework, and
+    BankBI microfinance KPIs.  Weights reflect that NBFIs are primarily assessed
+    on profitability and capital adequacy (no deposit insurance, higher leverage risk).
+
+    Weights (sum to 1.0)
+    --------------------
+    Profitability   30% — NIM, ROA, ROE, net margin are the primary signals
+    Capital/Leverage 25% — D/E, equity ratio (NBFIs leverage up to 6x normally)
+    Efficiency      25% — cost-to-income and asset utilisation
+    Liquidity       20% — cash ratio and loan-to-assets deployment
+
+    Benchmarks: CARE Ratings NBFC methodology, Sanjay Meena NBFI analysis,
+    BankBI microfinance benchmarks, IMF FSAP NBFI indicators.
+    """
+
+    def _clamp(v, lo=0.0, hi=100.0):
+        return max(lo, min(hi, v)) if v is not None else None
+
+    def _interp(v, lo_v, hi_v, lo_s=0.0, hi_s=100.0):
+        if v is None or hi_v == lo_v:
+            return None
+        ratio = (v - lo_v) / (hi_v - lo_v)
+        return _clamp(lo_s + ratio * (hi_s - lo_s))
+
+    def _avg(parts):
+        valid = [x for x in parts if x is not None]
+        return sum(valid) / len(valid) if valid else None
+
+    curr = fin_ratios.get("current", {})
+    prof = curr.get("profitability", {})
+    eff  = curr.get("efficiency", {})
+    lev  = curr.get("leverage", {})
+    liq  = curr.get("liquidity", {})
+
+    # ── Profitability (30%) ───────────────────────────────────────────────────
+    # NIM: >6% strong for microfinance/ББСБ; 2-4% for securities/investment firms
+    #   Use a unified range covering both: 0 → 0, 10% → 100
+    # ROA: >1.3% good, >1.6% excellent (CARE Ratings 2020)
+    # ROE: >15% good, >20% excellent (CARE Ratings)
+    # net_margin: >20% good for NBFIs
+    nim = prof.get("nim")
+    roa = prof.get("roa")
+    roe = prof.get("roe")
+    npm = prof.get("net_margin")
+    prof_score = _avg([
+        _interp(nim, 0,     0.12, 0, 100),
+        _interp(roa, 0,     0.03, 0, 100),
+        _interp(roe, 0,     0.25, 0, 100),
+        _interp(npm, -0.10, 0.35, 0, 100),
+    ])
+
+    # ── Capital / Leverage (25%) ──────────────────────────────────────────────
+    # debt_to_equity (borrowings-based): <3x strong, 3-6x normal, >8x stretched
+    #   NBFIs operate at higher leverage than industrials — 6x is acceptable cap
+    # equity_ratio: >15% strong, 10-15% adequate, <8% tight
+    d2e      = lev.get("debt_to_equity")
+    eq_ratio = lev.get("equity_ratio")
+    cap_score = _avg([
+        _interp(d2e,      8.0,  1.0,  0, 100),   # inverted: lower D/E = better
+        _interp(eq_ratio, 0.05, 0.25, 0, 100),
+    ])
+
+    # ── Efficiency (25%) ─────────────────────────────────────────────────────
+    # cost_to_income: <40% excellent, 40-60% adequate, >80% poor (CARE Ratings)
+    # asset_utilisation (total_income/assets): >8% strong, 4-8% adequate, <2% poor
+    cti     = eff.get("cost_to_income")
+    asset_u = eff.get("asset_utilisation")
+    eff_score = _avg([
+        _interp(cti,     0.80, 0.25, 0, 100),   # inverted
+        _interp(asset_u, 0.01, 0.12, 0, 100),
+    ])
+
+    # ── Liquidity (20%) ──────────────────────────────────────────────────────
+    # cash_ratio (cash/liabilities): >5% adequate, >15% strong
+    # loan_to_assets: >60% productive deployment; <30% underutilised
+    cash_r     = liq.get("cash_ratio")
+    loan_to_a  = liq.get("loan_to_assets")
+    liq_score = _avg([
+        _interp(cash_r,    0.00, 0.20, 0, 100),
+        _interp(loan_to_a, 0.10, 0.80, 0, 100),
+    ])
+
+    # ── Weighted composite ────────────────────────────────────────────────────
+    weights = {
+        "profitability": (prof_score, 0.30),
+        "capital":       (cap_score,  0.25),
+        "efficiency":    (eff_score,  0.25),
+        "liquidity":     (liq_score,  0.20),
+    }
+
+    total_weight = weighted_sum = 0.0
+    breakdown = {}
+    for cat, (score, w) in weights.items():
+        breakdown[cat] = round(score, 1) if score is not None else None
+        if score is not None:
+            weighted_sum += score * w
+            total_weight += w
+
+    raw_score = weighted_sum / total_weight if total_weight > 0 else 0
+    final_score = int(_clamp(raw_score))
+
+    if final_score >= 70:
+        label, color = "Healthy",  "green"
+    elif final_score >= 40:
+        label, color = "Caution",  "amber"
+    else:
+        label, color = "Distress", "red"
+
+    return {
+        "score":     final_score,
+        "label":     label,
+        "color":     color,
+        "breakdown": breakdown,
+        "beneish_penalty": 0,
     }
 
 

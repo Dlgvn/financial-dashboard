@@ -47,12 +47,29 @@ def _get_premiums(inc: dict, bs: dict, suffix: str) -> float | None:
       1. net_premiums_earned  (most accurate for ratio computation)
       2. gross_premiums_written (before reinsurance cession)
       3. total_revenue as proxy (when no insurance-specific mapping exists)
+      4. Sum of investment income components (interest + rental + dividend +
+         license + other) for insurers whose primary income is investment-based
+         (e.g. Монгол даатгал ХК old IS format with no premium rows).
     """
-    return (
+    direct = (
         inc.get(f"net_premiums_earned{suffix}")
         or inc.get(f"gross_premiums_written{suffix}")
         or inc.get(f"total_revenue{suffix}")
     )
+    if direct:
+        return direct
+    # Investment-income proxy for insurers with no premium rows
+    investment_components = [
+        inc.get(f"interest_income{suffix}"),
+        inc.get(f"rental_income{suffix}"),
+        inc.get(f"dividend_income{suffix}"),
+        inc.get(f"license_income{suffix}"),
+        inc.get(f"other_income{suffix}"),
+        inc.get(f"investment_income{suffix}"),
+        inc.get(f"fee_income{suffix}"),
+    ]
+    positive = [v for v in investment_components if v is not None and v > 0]
+    return sum(positive) if positive else None
 
 
 def _get_claims(inc: dict, suffix: str) -> float | None:
@@ -263,7 +280,7 @@ def compute_insurance_ratios(parsed_data: dict) -> dict:
 
         # 5. Underwriting Profit Margin
         #    = (Premiums - Claims - Underwriting Expenses) / Premiums
-        if premiums and claims is not None and underwriting_expenses is not None:
+        if premiums is not None and claims is not None and underwriting_expenses is not None:
             underwriting_profit = premiums - claims - underwriting_expenses
             profitability["underwriting_margin"] = safe_div(underwriting_profit, premiums)
         else:

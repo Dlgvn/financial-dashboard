@@ -74,6 +74,10 @@ def load_price_returns(company_names: list[str]) -> dict[str, np.ndarray]:
         if len(closes) < 2:
             continue
 
+        # Guard: zero or negative prices make log returns undefined
+        if np.any(closes <= 0):
+            continue
+
         # Log returns used instead of simple returns: log(P_t/P_{t-1}) is time-additive and approximately
         # normally distributed — required assumption for mean-variance optimization (log-normality).
         log_returns = np.log(closes[1:] / closes[:-1])

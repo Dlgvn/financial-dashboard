@@ -58,9 +58,15 @@ def compute_valuation_metrics(
     market_cap = shares_outstanding * last_close_price
     result["market_cap"] = market_cap
 
-    # Extract financial sub-dicts (handle missing keys gracefully)
-    balance_sheet = parsed_data.get("balance_sheet", {}) or {}
-    income_statement = parsed_data.get("income_statement", {}) or {}
+    # Extract financial sub-dicts — try sector-specific keys before standard ones
+    balance_sheet = (parsed_data.get("balance_sheet")
+                     or parsed_data.get("bank_balance_sheet")
+                     or parsed_data.get("insurance_balance_sheet")
+                     or {})
+    income_statement = (parsed_data.get("income_statement")
+                        or parsed_data.get("bank_income_statement")
+                        or parsed_data.get("insurance_income_statement")
+                        or {})
     cash_flow = parsed_data.get("cash_flow", {}) or {}
 
     # ------------------------------------------------------------------

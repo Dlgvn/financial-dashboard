@@ -14,6 +14,7 @@ Uses openpyxl for .xlsx files and xlrd for .xls files.
 """
 
 import io
+import logging
 import re
 from datetime import datetime
 
@@ -28,14 +29,36 @@ from .header_mappings import (
 )
 
 # Lazy import to avoid circular deps — only used for sector-aware header selection
-def _lookup_sector(company_name: str, filename: str = "") -> str:
+def _lookup_sector_key(company_name: str, filename: str = "") -> str:
+    """Return a sector key for _SECTOR_SHEET_OVERRIDES lookup.
+
+    For Finance companies with a sub_sector, returns "Finance:{sub_sector}"
+    (e.g. "Finance:Securities").  Otherwise returns the plain sector string.
+    """
     try:
-        from ..scraper.registry_loader import find_sector as _fs, find_sector_from_filename as _fsf
-        return _fs(company_name) or (filename and _fsf(filename)) or ""
+        from ..scraper.registry_loader import (
+            find_sector as _fs,
+            find_sub_sector as _fss,
+            find_sector_from_filename as _fsf,
+        )
+        sector = _fs(company_name) or (filename and _fsf(filename)) or ""
+        if sector == "Finance":
+            sub = _fss(company_name)
+            if sub:
+                return f"Finance:{sub}"
+        return sector
     except Exception:
         return ""
 
-# Sector → which sheet types to use when standard sheet names are detected
+
+# Back-compat alias used by tests / external callers
+def _lookup_sector(company_name: str, filename: str = "") -> str:
+    key = _lookup_sector_key(company_name, filename)
+    return key.split(":")[0]  # strip sub-sector
+
+
+# Sector key → which sheet types to use when standard sheet names are detected.
+# Keys may be plain sector ("Banking") or composite ("Finance:Securities").
 _SECTOR_SHEET_OVERRIDES: dict[str, dict[str, str]] = {
     "Banking": {
         "balance_sheet":   "bank_balance_sheet",
@@ -45,12 +68,17 @@ _SECTOR_SHEET_OVERRIDES: dict[str, dict[str, str]] = {
         "balance_sheet":   "insurance_balance_sheet",
         "income_statement": "insurance_income_statement",
     },
-    # Finance / NBFI (ББСБ, securities, investment companies) use the same
-    # regulatory reporting format as banks — ХҮҮГИЙН ОРЛОГО on IS, loan portfolio
-    # terminology on BS — so we reuse the bank header dictionaries.
+    # Lending NBFIs (ББСБ, MIK mortgage, etc.) use BoM reporting format —
+    # same terminology as banks — so bank header dictionaries apply.
     "Finance": {
         "balance_sheet":   "bank_balance_sheet",
         "income_statement": "bank_income_statement",
+    },
+    # Securities brokers and investment companies file under FRC format which
+    # uses standard Mongolian BS/IS terminology plus securities-specific items.
+    "Finance:Securities": {
+        "balance_sheet":   "securities_balance_sheet",
+        "income_statement": "securities_income_statement",
     },
 }
 
@@ -110,42 +138,48 @@ def _parse_xlsx(file_bytes: bytes, filename: str, sector: str = "") -> dict:
                 result["metadata"]["company"] = extracted
                 break
 
-    resolved_sector = sector or _lookup_sector(company, filename)
-    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector, {})
+    resolved_sector_key = _lookup_sector_key(company, filename) if not sector else sector
+    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector_key, {})
 
-    for sheet_name in wb.sheetnames:
-        sheet_type = _detect_sheet_type(sheet_name)
-        if not sheet_type:
-            continue
+    try:
+        for sheet_name in wb.sheetnames:
+            sheet_type = _detect_sheet_type(sheet_name)
+            if not sheet_type:
+                continue
 
-        # Redirect standard sheet types to sector-specific ones when sector is known.
-        # E.g., a bank's "баланс" sheet is parsed with BANK_BALANCE_SHEET_HEADERS so
-        # bank-specific terms like "зээлийн багц" (loan portfolio) are captured.
-        effective_type = sector_overrides.get(sheet_type, sheet_type)
+            # Redirect standard sheet types to sector-specific ones when sector is known.
+            # E.g., a bank's "баланс" sheet is parsed with BANK_BALANCE_SHEET_HEADERS so
+            # bank-specific terms like "зээлийн багц" (loan portfolio) are captured.
+            effective_type = sector_overrides.get(sheet_type, sheet_type)
 
-        ws = wb[sheet_name]
-        # 7 separate dictionaries (one per statement type) prevent false matches:
-        # bank terminology overlaps with standard terminology in Mongolian. Merged into
-        # one dict, "зээл" (loans, bank-specific) would map to the wrong field for
-        # non-bank companies. Dispatcher selects the correct dict from detected sheet type.
-        headers_dict = HEADERS_BY_TYPE[effective_type]
-        parsed_data = _parse_openpyxl_sheet(ws, headers_dict)
+            ws = wb[sheet_name]
+            # 7 separate dictionaries (one per statement type) prevent false matches:
+            # bank terminology overlaps with standard terminology in Mongolian. Merged into
+            # one dict, "зээл" (loans, bank-specific) would map to the wrong field for
+            # non-bank companies. Dispatcher selects the correct dict from detected sheet type.
+            headers_dict = HEADERS_BY_TYPE[effective_type]
+            debug_mode = effective_type in (
+                "insurance_balance_sheet", "insurance_income_statement",
+                "bank_balance_sheet", "bank_income_statement",
+                "securities_balance_sheet", "securities_income_statement",
+            )
+            parsed_data = _parse_openpyxl_sheet(ws, headers_dict, debug=debug_mode)
 
-        if parsed_data:
-            # Merge into existing data (don't overwrite) so a supplementary sheet like
-            # Тодруулга (notes) adds new fields without clobbering the primary balance sheet.
-            existing = result.get(effective_type, {})
-            existing.update({k: v for k, v in parsed_data.items() if k not in existing})
-            result[effective_type] = existing
-            if effective_type not in result["metadata"]["sheets_parsed"]:
-                result["metadata"]["sheets_parsed"].append(effective_type)
+            if parsed_data:
+                # Merge into existing data (don't overwrite) so a supplementary sheet like
+                # Тодруулга (notes) adds new fields without clobbering the primary balance sheet.
+                existing = result.get(effective_type, {})
+                existing.update({k: v for k, v in parsed_data.items() if k not in existing})
+                result[effective_type] = existing
+                if effective_type not in result["metadata"]["sheets_parsed"]:
+                    result["metadata"]["sheets_parsed"].append(effective_type)
 
-        # Extract company name from sheet content (always prefer over filename)
-        extracted = _extract_company_from_openpyxl_sheet(ws)
-        if extracted:
-            result["metadata"]["company"] = extracted
-
-    wb.close()
+            # Extract company name from sheet content (always prefer over filename)
+            extracted = _extract_company_from_openpyxl_sheet(ws)
+            if extracted:
+                result["metadata"]["company"] = extracted
+    finally:
+        wb.close()
 
     if not result["metadata"]["sheets_parsed"]:
         raise ValueError(
@@ -178,8 +212,8 @@ def _parse_xls(file_bytes: bytes, filename: str, sector: str = "") -> dict:
                 result["metadata"]["company"] = extracted
                 break
 
-    resolved_sector = sector or _lookup_sector(company, filename)
-    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector, {})
+    resolved_sector_key = _lookup_sector_key(company, filename) if not sector else sector
+    sector_overrides = _SECTOR_SHEET_OVERRIDES.get(resolved_sector_key, {})
 
     for sheet_name in wb.sheet_names():
         sheet_type = _detect_sheet_type(sheet_name)
@@ -193,6 +227,7 @@ def _parse_xls(file_bytes: bytes, filename: str, sector: str = "") -> dict:
         debug_mode = effective_type in (
             "insurance_balance_sheet", "insurance_income_statement",
             "bank_balance_sheet", "bank_income_statement",
+            "securities_balance_sheet", "securities_income_statement",
         )
         parsed_data = _parse_xlrd_sheet(ws, headers_dict, debug=debug_mode)
 
@@ -229,9 +264,6 @@ def _make_result_dict(filename: str, company: str, year: str) -> dict:
             "parsed_at": datetime.now().isoformat(),
             "sheets_parsed": [],
         },
-        "balance_sheet": {},
-        "income_statement": {},
-        "cash_flow": {},
     }
 
 
@@ -312,7 +344,7 @@ def _detect_sheet_type(sheet_name: str) -> str | None:
     return None
 
 
-def _parse_openpyxl_sheet(ws, headers_dict: dict[str, str]) -> dict:
+def _parse_openpyxl_sheet(ws, headers_dict: dict[str, str], debug: bool = False) -> dict:
     """Parse an openpyxl worksheet (.xlsx).
 
     Scans column C (index 2) for Mongolian headers, reads values
@@ -330,6 +362,10 @@ def _parse_openpyxl_sheet(ws, headers_dict: dict[str, str]) -> dict:
 
         english_key = match_header(header_cell.value, headers_dict)
         if english_key is None:
+            if debug:
+                prev_val = row[PREV_COL].value if len(row) > PREV_COL else ""
+                curr_val = row[CURR_COL].value if len(row) > CURR_COL else ""
+                logging.warning("UNMATCHED HEADER: %r | prev=%r | curr=%r", header_cell.value, prev_val, curr_val)
             continue
 
         # Read previous year (col D) and current year (col E)
@@ -340,10 +376,16 @@ def _parse_openpyxl_sheet(ws, headers_dict: dict[str, str]) -> dict:
         # MSE filing format. Sub-items contain the same Mongolian phrase as the parent
         # (e.g. "зээлийн хүүгийн орлого" matches both the total and each loan category),
         # so we keep the first (total) value and ignore subsequent sub-item matches.
-        if curr_val is not None and english_key not in parsed:
-            parsed[english_key] = curr_val
-        if prev_val is not None and f"{english_key}_prev" not in parsed:
-            parsed[f"{english_key}_prev"] = prev_val
+        # Exception: a section-header row that lands as 0.0 (placeholder) may appear
+        # before the real total row (e.g. "Эздийн өмч" before "Эздийн өмчийн дүн").
+        # Allow a non-zero value to override a previously stored 0.0 so the real total wins.
+        if curr_val is not None:
+            if english_key not in parsed or (parsed[english_key] == 0.0 and curr_val != 0.0):
+                parsed[english_key] = curr_val
+        prev_key = f"{english_key}_prev"
+        if prev_val is not None:
+            if prev_key not in parsed or (parsed.get(prev_key) == 0.0 and prev_val != 0.0):
+                parsed[prev_key] = prev_val
 
     return parsed
 
@@ -354,7 +396,6 @@ def _parse_xlrd_sheet(ws, headers_dict: dict[str, str], debug: bool = False) -> 
     Scans column C (index 2) for Mongolian headers, reads values
     from columns D (index 3 = prev year) and E (index 4 = current year).
     """
-    import logging
     parsed = {}
 
     for row_idx in range(ws.nrows):
@@ -379,10 +420,14 @@ def _parse_xlrd_sheet(ws, headers_dict: dict[str, str], debug: bool = False) -> 
 
         # First-match-wins: keeps the total/summary row and ignores subsequent sub-items
         # that share the same Mongolian phrase (see openpyxl variant for full explanation).
-        if curr_val is not None and english_key not in parsed:
-            parsed[english_key] = curr_val
-        if prev_val is not None and f"{english_key}_prev" not in parsed:
-            parsed[f"{english_key}_prev"] = prev_val
+        # Exception: allow non-zero to override a 0.0 placeholder from a section header row.
+        if curr_val is not None:
+            if english_key not in parsed or (parsed[english_key] == 0.0 and curr_val != 0.0):
+                parsed[english_key] = curr_val
+        prev_key = f"{english_key}_prev"
+        if prev_val is not None:
+            if prev_key not in parsed or (parsed.get(prev_key) == 0.0 and prev_val != 0.0):
+                parsed[prev_key] = prev_val
 
     return parsed
 

@@ -61,7 +61,8 @@
     "mse_id": 522,
     "ticker": "BDS",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Монгол шуудан",
@@ -357,7 +358,8 @@
     "mse_id": 308,
     "ticker": "CNF",
     "tier": "II",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Шарын гол",
@@ -413,7 +415,8 @@
     "mse_id": 438,
     "ticker": "VIK",
     "tier": "II",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Техникимпорт",
@@ -525,7 +528,8 @@
     "mse_id": 570,
     "ticker": "QPAY",
     "tier": "II",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "МГЛ Аква",
@@ -773,7 +777,8 @@
     "mse_id": 148,
     "ticker": "GFG",
     "tier": "III",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Глобал лайф технологи",
@@ -805,7 +810,8 @@
     "mse_id": 176,
     "ticker": "BSKY",
     "tier": "III",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Хархорин",
@@ -1213,7 +1219,8 @@
     "mse_id": 503,
     "ticker": "MSC",
     "tier": "III",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Securities"
   },
   {
     "name": "Дархан ус сувaг",

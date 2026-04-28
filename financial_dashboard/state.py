@@ -9,6 +9,9 @@ import reflex as rx
 from .analysis.ratios import (
     compute_beneish,
     compute_composite_score,
+    compute_bank_composite_score,
+    compute_insurance_composite_score,
+    compute_finance_composite_score,
     compute_piotroski,
     compute_ratios,
 )
@@ -31,6 +34,8 @@ def _detect_sector_from_data(data: dict) -> str:
         return "Banking"
     if "insurance_balance_sheet" in data or "insurance_income_statement" in data:
         return "Insurance"
+    if "securities_balance_sheet" in data or "securities_income_statement" in data:
+        return "Finance"
     return "Standard"
 
 
@@ -240,106 +245,19 @@ def _load_all_companies() -> list[dict]:
                 bank_result = compute_bank_ratios(data)
                 bank_curr = bank_result.get("current", {})
                 bank_prof = bank_curr.get("profitability", {})
-                bank_cap  = bank_curr.get("capital_adequacy", {})
-                bank_liq  = bank_curr.get("liquidity", {})
-                compat_ratios = {
-                    "current": {
-                        "profitability": {
-                            "roa": bank_prof.get("roa"),
-                            "roe": bank_prof.get("roe"),
-                            "net_margin": bank_prof.get("net_margin"),
-                        },
-                        "liquidity": {
-                            "current_ratio": bank_liq.get("ldr"),
-                            "quick_ratio": None,
-                            "cash_ratio": bank_liq.get("cash_to_deposits"),
-                        },
-                        "solvency": {
-                            "debt_to_equity": None,
-                            "debt_to_assets": None,
-                            "equity_ratio": bank_cap.get("equity_to_assets"),
-                            "interest_coverage": None,
-                        },
-                        "activity": {
-                            "total_asset_turnover": None,
-                            "days_sales_outstanding": None,
-                            "inventory_turnover": None,
-                        },
-                        "z_score": {"z_score": None},
-                    },
-                    "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-                }
-                composite = compute_composite_score(compat_ratios, piotroski, beneish)
+                composite = compute_bank_composite_score(bank_result)
                 roe = bank_prof.get("roe")
             elif sector == "Insurance":
                 ins_result = compute_insurance_ratios(data)
                 ins_curr = ins_result.get("current", {})
                 ins_prof = ins_curr.get("profitability", {})
-                ins_solv = ins_curr.get("solvency", {})
-                ins_liq  = ins_curr.get("liquidity", {})
-                compat_ratios = {
-                    "current": {
-                        "profitability": {
-                            "roa": ins_prof.get("roa"),
-                            "roe": ins_prof.get("roe"),
-                            "net_margin": ins_prof.get("net_margin"),
-                        },
-                        "liquidity": {
-                            "current_ratio": None,
-                            "quick_ratio": None,
-                            "cash_ratio": ins_liq.get("cash_to_liabilities"),
-                        },
-                        "solvency": {
-                            "debt_to_equity": ins_solv.get("leverage_ratio"),
-                            "debt_to_assets": None,
-                            "equity_ratio": ins_solv.get("solvency_ratio"),
-                            "interest_coverage": None,
-                        },
-                        "activity": {
-                            "total_asset_turnover": None,
-                            "days_sales_outstanding": None,
-                            "inventory_turnover": None,
-                        },
-                        "z_score": {"z_score": None},
-                    },
-                    "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-                }
-                composite = compute_composite_score(compat_ratios, piotroski, beneish)
+                composite = compute_insurance_composite_score(ins_result)
                 roe = ins_prof.get("roe")
             elif sector == "Finance":
                 fin_result = compute_finance_ratios(data)
                 fin_curr = fin_result.get("current", {})
                 fin_prof = fin_curr.get("profitability", {})
-                fin_lev  = fin_curr.get("leverage", {})
-                fin_liq  = fin_curr.get("liquidity", {})
-                compat_ratios = {
-                    "current": {
-                        "profitability": {
-                            "roa": fin_prof.get("roa"),
-                            "roe": fin_prof.get("roe"),
-                            "net_margin": fin_prof.get("net_margin"),
-                        },
-                        "liquidity": {
-                            "current_ratio": None,
-                            "quick_ratio": None,
-                            "cash_ratio": fin_liq.get("cash_ratio"),
-                        },
-                        "solvency": {
-                            "debt_to_equity": fin_lev.get("debt_to_equity"),
-                            "debt_to_assets": fin_lev.get("debt_to_assets"),
-                            "equity_ratio": fin_lev.get("equity_ratio"),
-                            "interest_coverage": None,
-                        },
-                        "activity": {
-                            "total_asset_turnover": None,
-                            "days_sales_outstanding": None,
-                            "inventory_turnover": None,
-                        },
-                        "z_score": {"z_score": None},
-                    },
-                    "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-                }
-                composite = compute_composite_score(compat_ratios, piotroski, beneish)
+                composite = compute_finance_composite_score(fin_result)
                 roe = fin_prof.get("roe")
             else:
                 ratios    = compute_ratios(data)
@@ -613,36 +531,7 @@ class AnalysisState(UploadState):
             bank_prof = bank_curr.get("profitability", {})
             bank_cap = bank_curr.get("capital_adequacy", {})
             bank_liq = bank_curr.get("liquidity", {})
-            compat_ratios = {
-                "current": {
-                    "profitability": {
-                        "roa": bank_prof.get("roa"),
-                        "roe": bank_prof.get("roe"),
-                        "net_margin": bank_prof.get("net_margin"),
-                    },
-                    "liquidity": {
-                        "current_ratio": bank_liq.get("ldr"),  # use LDR as proxy
-                        "quick_ratio": None,
-                        "cash_ratio": bank_liq.get("cash_to_deposits"),
-                    },
-                    "solvency": {
-                        "debt_to_equity": None,
-                        "debt_to_assets": None,
-                        "equity_ratio": bank_cap.get("equity_to_assets"),
-                        "interest_coverage": None,
-                    },
-                    "activity": {
-                        "total_asset_turnover": None,
-                        "days_sales_outstanding": None,
-                        "inventory_turnover": None,
-                    },
-                    "z_score": {"z_score": None},
-                },
-                "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-            }
-            self.company_composite = compute_composite_score(
-                compat_ratios, self.company_piotroski, self.company_beneish
-            )
+            self.company_composite = compute_bank_composite_score(bank_result)
             # Populate bank flat vars
             bank_aq = bank_curr.get("asset_quality", {})
             bank_eff = bank_curr.get("efficiency", {})
@@ -682,36 +571,7 @@ class AnalysisState(UploadState):
             ins_solv = ins_curr.get("solvency", {})
             ins_liq = ins_curr.get("liquidity", {})
             ins_uw = ins_curr.get("underwriting", {})
-            compat_ratios = {
-                "current": {
-                    "profitability": {
-                        "roa": ins_prof.get("roa"),
-                        "roe": ins_prof.get("roe"),
-                        "net_margin": ins_prof.get("net_margin"),
-                    },
-                    "liquidity": {
-                        "current_ratio": None,
-                        "quick_ratio": None,
-                        "cash_ratio": ins_liq.get("cash_to_liabilities"),
-                    },
-                    "solvency": {
-                        "debt_to_equity": ins_solv.get("leverage_ratio"),
-                        "debt_to_assets": None,
-                        "equity_ratio": ins_solv.get("solvency_ratio"),
-                        "interest_coverage": None,
-                    },
-                    "activity": {
-                        "total_asset_turnover": None,
-                        "days_sales_outstanding": None,
-                        "inventory_turnover": None,
-                    },
-                    "z_score": {"z_score": None},
-                },
-                "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-            }
-            self.company_composite = compute_composite_score(
-                compat_ratios, self.company_piotroski, self.company_beneish
-            )
+            self.company_composite = compute_insurance_composite_score(ins_result)
             # Populate insurance flat vars
             self.company_ins_loss_ratio = _fmt(ins_uw.get("loss_ratio"))
             self.company_ins_expense_ratio = _fmt(ins_uw.get("expense_ratio"))
@@ -748,36 +608,7 @@ class AnalysisState(UploadState):
             fin_lev  = fin_curr.get("leverage", {})
             fin_liq  = fin_curr.get("liquidity", {})
             fin_aq   = fin_curr.get("asset_quality", {})
-            compat_ratios = {
-                "current": {
-                    "profitability": {
-                        "roa": fin_prof.get("roa"),
-                        "roe": fin_prof.get("roe"),
-                        "net_margin": fin_prof.get("net_margin"),
-                    },
-                    "liquidity": {
-                        "current_ratio": None,
-                        "quick_ratio": None,
-                        "cash_ratio": fin_liq.get("cash_ratio"),
-                    },
-                    "solvency": {
-                        "debt_to_equity": fin_lev.get("debt_to_equity"),
-                        "debt_to_assets": fin_lev.get("debt_to_assets"),
-                        "equity_ratio": fin_lev.get("equity_ratio"),
-                        "interest_coverage": None,
-                    },
-                    "activity": {
-                        "total_asset_turnover": None,
-                        "days_sales_outstanding": None,
-                        "inventory_turnover": None,
-                    },
-                    "z_score": {"z_score": None},
-                },
-                "prev": {"profitability": {}, "liquidity": {}, "solvency": {}, "activity": {}, "z_score": {}},
-            }
-            self.company_composite = compute_composite_score(
-                compat_ratios, self.company_piotroski, self.company_beneish
-            )
+            self.company_composite = compute_finance_composite_score(fin_result)
             # Populate Finance flat vars
             self.company_fin_nim = _fmt(fin_prof.get("nim"))
             self.company_fin_yield_on_earning_assets = _fmt(fin_prof.get("yield_on_earning_assets"))
@@ -921,14 +752,38 @@ class AnalysisState(UploadState):
         self.company_gauge_data = [{"name": "score", "value": score, "fill": fill}]
 
         breakdown = self.company_composite.get("breakdown", {})
-        self.company_radar_data = [
-            {"category": "Profitability", "score": breakdown.get("profitability") or 0},
-            {"category": "Liquidity",     "score": breakdown.get("liquidity") or 0},
-            {"category": "Solvency",      "score": breakdown.get("solvency") or 0},
-            {"category": "Activity",      "score": breakdown.get("activity") or 0},
-            {"category": "Altman Z",      "score": breakdown.get("altman") or 0},
-            {"category": "Piotroski",     "score": breakdown.get("piotroski") or 0},
-        ]
+        _sector = self.company_sector
+        if _sector == "Banking":
+            self.company_radar_data = [
+                {"category": "Capital",       "score": breakdown.get("capital") or 0},
+                {"category": "Asset Quality", "score": breakdown.get("asset_quality") or 0},
+                {"category": "Earnings",      "score": breakdown.get("earnings") or 0},
+                {"category": "Liquidity",     "score": breakdown.get("liquidity") or 0},
+                {"category": "Efficiency",    "score": breakdown.get("efficiency") or 0},
+            ]
+        elif _sector == "Insurance":
+            self.company_radar_data = [
+                {"category": "Underwriting",  "score": breakdown.get("underwriting") or 0},
+                {"category": "Solvency",      "score": breakdown.get("solvency") or 0},
+                {"category": "Profitability", "score": breakdown.get("profitability") or 0},
+                {"category": "Liquidity",     "score": breakdown.get("liquidity") or 0},
+            ]
+        elif _sector == "Finance":
+            self.company_radar_data = [
+                {"category": "Profitability", "score": breakdown.get("profitability") or 0},
+                {"category": "Capital",       "score": breakdown.get("capital") or 0},
+                {"category": "Efficiency",    "score": breakdown.get("efficiency") or 0},
+                {"category": "Liquidity",     "score": breakdown.get("liquidity") or 0},
+            ]
+        else:
+            self.company_radar_data = [
+                {"category": "Profitability", "score": breakdown.get("profitability") or 0},
+                {"category": "Liquidity",     "score": breakdown.get("liquidity") or 0},
+                {"category": "Solvency",      "score": breakdown.get("solvency") or 0},
+                {"category": "Activity",      "score": breakdown.get("activity") or 0},
+                {"category": "Altman Z",      "score": breakdown.get("altman") or 0},
+                {"category": "Piotroski",     "score": breakdown.get("piotroski") or 0},
+            ]
 
         beneish_idx = self.company_beneish.get("indices", {})
         self.company_beneish_chart_data = [

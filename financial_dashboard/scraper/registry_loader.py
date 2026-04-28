@@ -101,6 +101,30 @@ def find_sector_by_mse_id(mse_id: int) -> str | None:
     return None
 
 
+def find_sub_sector(company_name: str) -> str | None:
+    """Look up the sub-sector for a company by name (or alias)."""
+    if not company_name or company_name.lower() == "unknown":
+        return None
+    registry = _load()
+    query = _normalize(company_name)
+    for entry in registry:
+        if _normalize(entry["name"]) == query:
+            return entry.get("sub_sector") or None
+        for alias in entry.get("aliases", []):
+            if _normalize(alias) == query:
+                return entry.get("sub_sector") or None
+    return None
+
+
+def find_sub_sector_by_mse_id(mse_id: int) -> str | None:
+    """Look up the sub-sector for a company by its MSE numeric ID."""
+    registry = _load()
+    for entry in registry:
+        if entry.get("mse_id") == mse_id:
+            return entry.get("sub_sector") or None
+    return None
+
+
 def find_sector_from_filename(filename: str) -> str | None:
     """Extract sector by parsing the MSE ID from a filename.
 

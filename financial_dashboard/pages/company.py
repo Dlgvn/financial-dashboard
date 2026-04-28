@@ -333,9 +333,7 @@ def _finance_ratios_content() -> rx.Component:
         # Asset Quality
         ratio_category_card(
             "Asset Quality",
-            ratio_row("NPA Ratio",                       s.company_fin_npa_ratio,                 "%"),
             ratio_row("Receivables-to-Assets",           s.company_fin_receivables_to_assets,     "%"),
-            ratio_row("Provision Coverage",              s.company_fin_provision_coverage,        "%"),
         ),
         columns="2",
         spacing="4",

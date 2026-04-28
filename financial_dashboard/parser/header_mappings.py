@@ -360,11 +360,10 @@ BANK_INCOME_STATEMENT_HEADERS: dict[str, str] = {
     "орлогын нийт дүн": "total_revenue",
     # ── Interest income sub-items (breakdown rows, not used in ratios) ────────
     # These appear as sub-items under "хүүгийн орлого" in BoM IS format.
-    # Mapped to other_income to silence UNMATCHED warnings.
-    "монголбанкинд байршуулсан хөрөнгийн": "other_income",           # interest on BoM placements
-    "банк, санхүүгийн байгууллагад байршуулсан хөрөнгийн": "other_income",
-    "үнэт цаасны": "other_income",                                     # securities interest sub-item
-    "зээлийн": "other_income",                                         # loan interest sub-item
+    "монголбанкинд байршуулсан хөрөнгийн хүү": "other_income",       # interest on BoM placements
+    "банк, санхүүгийн байгууллагад байршуулсан хөрөнгийн хүү": "other_income",
+    "үнэт цаасны хүүгийн орлого": "other_income",                     # securities interest sub-item
+    "зээлийн хүүгийн орлого": "other_income",                         # loan interest sub-item
     # ── Interest expense sub-items ────────────────────────────────────────────
     "харилцахад төлсөн хүү": "other_expenses",                        # interest on demand deposits
     "хадгаламжинд төлсөн хүү": "other_expenses",                      # interest on savings deposits
@@ -384,7 +383,6 @@ BANK_INCOME_STATEMENT_HEADERS: dict[str, str] = {
     "нийгмийн хөгжлийн сан": "social_development_fund",
     "зогсоосон үйл ажиллагааны цэвэр орлого, зардал": "discontinued_operations",
     "бусад зардал": "other_expenses",
-    "бусад ": "other",                                                  # trailing-space variant
     "бусад": "other",
     # ── Bottom line ───────────────────────────────────────────────────────────
     # BoM bottom line is "Тайлант хугацааны нийт дэлгэрэнгүй орлогын дүн" (total
@@ -433,7 +431,6 @@ SHEET_TYPE_PATTERNS: dict[str, str] = {
     "даатгалын баланс": "insurance_balance_sheet",
     "даатгалын орлогын тайлан": "insurance_income_statement",
     "даатгалын ашиг алдагдлын тайлан": "insurance_income_statement",
-    "даатгалын компанийн": "insurance_balance_sheet",
 }
 
 # --- Insurance Balance Sheet (Даатгалын компанийн санхүүгийн байдлын тайлан) ---
@@ -649,6 +646,238 @@ INSURANCE_INCOME_STATEMENT_HEADERS: dict[str, str] = {
     "нийт орлого": "total_revenue",
 }
 
+# --- Securities / Investment Company Balance Sheet (FRC format) ---
+# Securities brokers, investment companies, and holding companies that file under the
+# Financial Regulatory Commission (FRC) format.  These firms use standard Mongolian
+# balance sheet terminology (like BALANCE_SHEET_HEADERS) but also hold large investment
+# securities portfolios and use broker-specific receivable/payable terminology.
+# This dict is a superset of BALANCE_SHEET_HEADERS with additional securities-specific terms.
+SECURITIES_BALANCE_SHEET_HEADERS: dict[str, str] = {
+    # ── Investment securities — PRIMARY earning asset (MUST come before "хөрөнгө") ──
+    # FRC standard format labels the securities portfolio "Санхүүгийн хөрөнгө"
+    # ("Financial assets").  This is a CURRENT asset for broker-dealers holding
+    # client securities and their own trading book.
+    # "санхүүгийн хөрөнгө" (18 chars) > "хөрөнгө" (7 chars) — checked first,
+    # prevents the short "хөрөнгө" pattern from consuming this 28B+ asset row.
+    "санхүүгийн хөрөнгө оруулалтын зориулалттай үл хөдлөх хөрөнгө": "other_non_financial_assets",
+    "санхүүгийн хөрөнгө оруулалт": "investment_securities",
+    "санхүүгийн хөрөнгө": "investment_securities",
+    # ── Standard BS items (duplicated from BALANCE_SHEET_HEADERS) ────────────
+    "мөнгө,түүнтэй адилтгах хөрөнгө": "cash_and_equivalents",
+    "мөнгө, түүнтэй адилтгах хөрөнгө": "cash_and_equivalents",
+    "мөнгө ба түүнтэй адилтгах хөрөнгө": "cash_and_equivalents",
+    "бэлэн мөнгө": "cash_and_equivalents",
+    "мөнгө, түүнтэй адилтгах хөрөнгийн дүн": "cash_and_equivalents",
+    "дансны авлага": "accounts_receivable",
+    "татвар, ндш – ийн авлага": "tax_receivable",
+    "татварын авлага": "tax_receivable",
+    "бусад авлага": "other_receivables",
+    "урьдчилж төлсөн зардал": "prepaid_expenses",
+    "бараа материал": "inventory",
+    "бусад эргэлтийн хөрөнгийн дүн": "total_current_assets",
+    "эргэлтийн хөрөнгийн дүн": "total_current_assets",
+    "эргэлтийн хөрөнгө": "current_assets_section",
+    "үндсэн хөрөнгө": "fixed_assets",
+    "биет бус хөрөнгө": "intangible_assets",
+    "хойшлогдсон татварын хөрөнгө": "deferred_tax_asset",
+    "бусад эргэлтийн бус хөрөнгийн дүн": "total_non_current_assets",
+    "эргэлтийн бус хөрөнгийн дүн": "total_non_current_assets",
+    "эргэлтийн бус хөрөнгө": "non_current_assets_section",
+    "нийт хөрөнгийн дүн": "total_assets",
+    "нийт хөрөнгө": "total_assets",
+    "дансны өглөг": "accounts_payable",
+    "цалингийн өглөг": "salaries_payable",
+    "татварын өр": "taxes_payable",
+    "ндш - ийн өглөг": "social_security_payable",
+    "хүүний өглөг": "interest_payable",
+    "ногдол ашгийн өглөг": "dividends_payable",
+    "урьдчилж орсон орлого": "unearned_revenue",
+    "богино хугацаат өр төлбөрийн дүн": "total_current_liabilities",
+    "богино хугацаат зээл": "short_term_loans",
+    "урт хугацаат зээл": "long_term_loans",
+    "хойшлогдсон татварын өр": "deferred_tax_liability",
+    "урт хугацаат өр төлбөрийн дүн": "total_non_current_liabilities",
+    "өр төлбөрийн нийт дүн": "total_liabilities",
+    "нийт өр төлбөр": "total_liabilities",
+    "нэмж төлөгдсөн капитал": "additional_paid_in_capital",
+    "хуримтлагдсан ашиг": "retained_earnings",
+    "хуваарилагдаагүй ашиг": "retained_earnings",
+    "эздийн өмчийн дүн": "total_equity",
+    "нийт эздийн өмч": "total_equity",
+    "эздийн өмч": "total_equity",
+    "өр төлбөр ба эздийн өмчийн дүн": "total_liabilities_and_equity",
+    # ── Structural label rows (silenced) ──────────────────────────────────────
+    "үзүүлэлт": "label_column",
+    "хөрөнгө": "assets_section",
+    "өр төлбөр": "liabilities_section",
+    # ── Investment securities — primary earning asset for securities firms ────
+    # FRC format uses various labels; longer patterns checked first.
+    "хувьцаа, үнэт цаасны хөрөнгө оруулалт": "investment_securities",
+    "үнэт цаасны хөрөнгө оруулалт": "investment_securities",
+    "санхүүгийн хөрөнгө оруулалт": "investment_securities",
+    "урт хугацаат хөрөнгө оруулалт": "long_term_investments",
+    "хөрөнгө оруулалт": "investment_securities",
+    "үнэт цаас": "investment_securities",
+    "бонд": "investment_securities",
+    # ── Broker receivables / client accounts ─────────────────────────────────
+    # Securities brokers hold client funds and securities on behalf of clients.
+    # These map to other_financial_assets so the loan_portfolio proxy can use them.
+    "үйлчлүүлэгчдийн үнэт цаасны авлага": "other_financial_assets",
+    "үйлчлүүлэгчдийн авлага": "other_financial_assets",
+    "брокерийн авлага": "other_financial_assets",
+    "зуучлалын авлага": "other_financial_assets",
+    "үнэт цаасны арилжааны авлага": "other_financial_assets",
+    "санхүүгийн авлага": "other_financial_assets",
+    "бусад санхүүгийн хөрөнгө": "other_financial_assets",
+    # ── Interbank / bank placements ───────────────────────────────────────────
+    "банк санхүүгийн байгууллагад байршуулсан хөрөнгө": "interbank_placements",
+    "банкинд байршуулсан хөрөнгө": "interbank_placements",
+    # ── Debt funding ──────────────────────────────────────────────────────────
+    "банкнаас авсан зээл": "bank_borrowings",
+    "банк санхүүгийн байгууллагаас авсан зээл": "bank_borrowings",
+    "гаргасан өрийн бичиг": "bonds_issued",
+    "өрийн бичиг": "bonds_issued",
+    "бусад санхүүгийн өр төлбөр": "other_financial_liabilities",
+    # ── Client accounts payable (broker liabilities) ──────────────────────────
+    "үйлчлүүлэгчдийн данс": "other_financial_liabilities",
+    "харилцагчийн данс": "other_financial_liabilities",
+    "брокерийн өглөг": "other_financial_liabilities",
+    "үнэт цаасны арилжааны өглөг": "other_financial_liabilities",
+    # ── Other assets ─────────────────────────────────────────────────────────
+    "бусад санхүүгийн бус хөрөнгө": "other_non_financial_assets",
+    "бусад эргэлтийн хөрөнгө": "other_current_assets",
+    "борлуулах зорилгоор эзэмшиж буй эргэлтийн бус хөрөнгө": "assets_held_for_sale",
+    # ── Equity components ────────────────────────────────────────────────────
+    "хөрөнгийн дахин үнэлгээний нэмэгдэл": "revaluation_surplus",
+    "гадаад валютын хөрвүүлэлтийн нөөц": "fx_translation_reserve",
+    "эздийн өмчийн бусад хэсэг": "other_equity",
+    "халаасны хувьцаа": "treasury_shares",
+    # ── Silence equity sub-items (ownership breakdown rows) ──────────────────
+    # FRC standard BS splits equity into state / private / joint-stock ownership
+    # sub-lines.  These are sub-items of paid-in capital, not separate equity totals.
+    "өмч -төрийн": "label_column",
+    "-хувийн": "label_column",
+    "-хувьцаат": "label_column",
+    # ── Contingency reserves (current liability sub-item) ─────────────────────
+    "нөөц /өр төлбөр/": "other_current_liabilities",
+    "бусад богино хугацаат өр төлбөр": "other_current_liabilities",
+    "бусад": "other",
+}
+
+# --- Securities / Investment Company Income Statement (FRC format) ---
+# Superset of INCOME_STATEMENT_HEADERS with securities-specific income line items.
+SECURITIES_INCOME_STATEMENT_HEADERS: dict[str, str] = {
+    # ── Standard IS items (duplicated from INCOME_STATEMENT_HEADERS) ──────────
+    "борлуулалтын орлого": "revenue",
+    "цэвэр борлуулалт": "net_revenue",
+    "борлуулалтын өртөг": "cost_of_goods_sold",
+    "борлуулсан бүтээгдэхүүний өртөг": "cost_of_goods_sold",
+    "нийт ашиг": "gross_profit",
+    "түрээсийн орлого": "rental_income",
+    "ногдол ашгийн орлого": "dividend_income",
+    "гадаад валютын ханшийн зөрүү": "foreign_exchange_gain_loss",
+    "татвар төлөхийн өмнөх ашиг": "profit_before_tax",
+    "татварын өмнөх ашиг": "profit_before_tax",
+    "орлогын татварын зардал": "income_tax_expense",
+    "татварын дараахь ашиг": "profit_after_tax",
+    "тайлант үеийн цэвэр ашиг": "net_income",
+    "цэвэр ашиг": "net_income",
+    "орлогын нийт дүн": "total_comprehensive_income",
+    "нийт орлого": "total_revenue",
+    "борлуулалт, маркетингийн зардал": "selling_expenses",
+    "борлуулалтын зардал": "selling_expenses",
+    "ерөнхий ба удирдлагын зардал": "general_and_admin_expenses",
+    "удирдлагын зардал": "admin_expenses",
+    "санхүүгийн зардал": "financial_expense",
+    "бусад зардал": "other_expenses",
+    "бусад орлого": "other_income",
+    # ── Interest income — both standard (-ний) and BoM (-гийн) variants ───────
+    "нийт хүүний орлого": "interest_income",
+    "зээлийн хүүний орлого": "interest_income",
+    "хүүний орлого": "interest_income",
+    "хүүгийн орлого": "interest_income",             # BoM variant
+    "хүүний зардал": "interest_expense",
+    "нийт хүүний зардал": "interest_expense",
+    "хүүгийн зардал": "interest_expense",             # BoM variant
+    # ── Fee / commission income — primary revenue for securities brokers ──────
+    # Longer patterns checked first
+    "шимтгэлийн цэвэр орлого": "fee_income",
+    "цэвэр шимтгэлийн орлого": "fee_income",
+    "нийт шимтгэлийн орлого": "fee_income",
+    "хураамж шимтгэлийн орлого": "fee_income",
+    "брокерийн шимтгэлийн орлого": "fee_income",
+    "зуучлалын шимтгэлийн орлого": "fee_income",
+    "үнэт цаасны шимтгэлийн орлого": "fee_income",
+    "шимтгэлийн орлого": "fee_income",
+    "брокерийн хураамж": "fee_income",
+    "зуучлалын хураамж": "fee_income",
+    "комиссийн орлого": "commission_income",
+    # ── Total operating income — PRIMARY revenue line for securities firms ────
+    # FRC standard IS row 1: "Үйл ажиллагааны орлого" = sum of broker/underwriting/
+    # trading sub-items.  Mapping the TOTAL here means sub-items that contain the
+    # substring "үйл ажиллагааны орлого" (e.g. "Брокер, дилерийн үйл ажиллагааны
+    # орлого") also resolve to revenue, but first-match-wins keeps the total row.
+    "үйл ажиллагааны орлого": "revenue",
+    # ── Operating income sub-items — mapped for breakdown reporting ───────────
+    # These resolve via first-match-wins: revenue is already set from the total row,
+    # so sub-item values are silenced in income totals but stored for granularity.
+    "брокер, дилерийн үйл ажиллагааны орлого": "fee_income",
+    "андеррайтерийн үйл ажиллагааны орлого": "commission_income",
+    # ── Securities trading / valuation income ────────────────────────────────
+    # Rows 1.3–1.4 in FRC IS are SUB-ITEMS of row 1 "Үйл ажиллагааны орлого"
+    # (already captured as revenue = 7.47B).  Silencing them prevents double-
+    # counting in _get_total_income.  The standalone gains (row 14) are separate.
+    "үнэт цаасны арилжааны цэвэр орлого": "label_column",              # IS sub-item 1.3
+    "үнэт цаасны үнэлгээний тэгшитгэлийн цэвэр орлого": "label_column",# IS sub-item 1.4
+    "үнэт цаасны арилжааны орлого": "label_column",
+    "үнэт цаасны арилжааны ашиг": "label_column",
+    "арилжааны орлого": "trading_income",
+    "гадаад валютын арилжааны орлого": "trading_income",
+    "хөрөнгө оруулалтын орлого": "other_income",
+    "үнэт цаасны орлого": "other_income",
+    # ── Standalone other gains (IS row 14) ───────────────────────────────────
+    # "Бусад ашиг (алдагдал)" = large portfolio revaluation / disposal gains.
+    # This is NOT a sub-item of row 1 — it's a separate income line after expenses.
+    # Maps to trading_income (the only income key not yet claimed by sub-items).
+    # With the revenue>0 guard in _get_total_income, this is included in the total
+    # without double-counting with revenue.
+    "бусад ашиг ( алдагдал)": "trading_income",
+    "бусад ашиг (алдагдал)": "trading_income",
+    # ── Profit after tax spelling variant (file omits 'ь') ───────────────────
+    # File: "Татварын дараах ашиг (алдагдал)" — without 'ь' in "дараах"
+    # Dict has "татварын дараахь ашиг" (with ь) which doesn't substring-match.
+    "татварын дараах ашиг": "profit_after_tax",
+    # ── Asset disposal gains ─────────────────────────────────────────────────
+    "үндсэн хөрөнгө данснаас хассаны олз (гарз)": "other_income",
+    "биет бус хөрөнгө данснаас хассаны олз (гарз)": "label_column",
+    # ── Equity-method income (sub-item of dividend income, first-match-wins) ──
+    "хувьцааны ногдол ашиг": "dividend_income",
+    # "Харaaт" in this file uses Latin 'a' (U+0061) for the double-а — data entry artifact.
+    # Both the Latin-mixed and pure-Cyrillic variants are listed to silence the warning.
+    "хар\u0061\u0061т болон хамтарсан компаниас олсон ашиг": "label_column",  # Latin-a variant (file)
+    "харaaт болон хамтарсан компаниас олсон ашиг": "label_column",             # Latin-a spelled out
+    "хар\u0430\u0430т болон хамтарсан компаниас олсон ашиг": "label_column",   # All-Cyrillic а variant
+    "харат болон хамтарсан компаниас олсон ашиг": "label_column",
+    "харат болон хамтарсан": "label_column",
+    # ── OCI section (all zero for most securities firms) ─────────────────────
+    "бусад дэлгэрэнгүй орлого": "other_comprehensive_income",
+    "хөрөнгийн дахин үнэлгээний нэмэгдлийн зөрүү": "label_column",
+    "гадаад валютынхөрвүүлэлтийн зөрүү": "label_column",   # no-space variant in file
+    "гадаад валютын хөрвүүлэлтийн зөрүү": "label_column",
+    "бусад  олз (гарз)": "label_column",                    # double-space variant
+    "бусад олз (гарз)": "label_column",
+    # ── EPS / stopped operations ──────────────────────────────────────────────
+    "нэгж хувьцаанд ногдох суурь ашиг (алдагдал)": "basic_eps",
+    "зогсоосон үйл ажиллагааны татварын дараах ашиг (алдагдал)": "label_column",
+    # ── Operating expenses ────────────────────────────────────────────────────
+    "үйл ажиллагааны зардал": "operating_expenses",
+    "нийт үйл ажиллагааны зардал": "operating_expenses",
+    "үйл ажиллагааны бусад зардал": "operating_expenses",
+    # ── Label rows ────────────────────────────────────────────────────────────
+    "үзүүлэлт": "label_column",
+}
+
+
 # Map sheet types to their corresponding header dictionaries
 HEADERS_BY_TYPE: dict[str, dict[str, str]] = {
     "balance_sheet": BALANCE_SHEET_HEADERS,
@@ -658,4 +887,6 @@ HEADERS_BY_TYPE: dict[str, dict[str, str]] = {
     "bank_income_statement": BANK_INCOME_STATEMENT_HEADERS,
     "insurance_balance_sheet": INSURANCE_BALANCE_SHEET_HEADERS,
     "insurance_income_statement": INSURANCE_INCOME_STATEMENT_HEADERS,
+    "securities_balance_sheet": SECURITIES_BALANCE_SHEET_HEADERS,
+    "securities_income_statement": SECURITIES_INCOME_STATEMENT_HEADERS,
 }

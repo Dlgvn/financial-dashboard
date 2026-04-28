@@ -69,7 +69,9 @@ def _get_interest_expense(inc: dict, suffix: str) -> float | None:
     Standard IS format: financial_expense (sign may be negative — normalise).
     Bank/NBFI format:   interest_expense (always positive in bank IS).
     """
-    val = inc.get(f"interest_expense{suffix}") or inc.get(f"financial_expense{suffix}")
+    val = inc.get(f"interest_expense{suffix}")
+    if val is None:
+        val = inc.get(f"financial_expense{suffix}")
     if val is None:
         return None
     return abs(val)
@@ -119,15 +121,31 @@ def _get_total_income(inc: dict, suffix: str) -> float | None:
     # Explicit income components — include revenue/gross_profit because Finance companies
     # that use standard IS format (e.g. investment firms, holding companies) book their
     # primary income as "Борлуулалтын орлого" which maps to revenue/gross_profit.
+    revenue_val = inc.get(f"revenue{suffix}") or inc.get(f"gross_profit{suffix}")
+    fee_val     = inc.get(f"fee_income{suffix}")
+    comm_val    = inc.get(f"commission_income{suffix}")
+
+    # For securities firms, `revenue` = total operating income (broker fees + underwriting
+    # + trading sub-items summed in the IS total row).  fee_income and commission_income
+    # are sub-components already included in revenue — exclude them to avoid double-counting.
+    # For lending NBFIs, revenue is None and fee/commission are standalone income lines.
+    if revenue_val and revenue_val > 0:
+        non_dupe_fee  = None
+        non_dupe_comm = None
+    else:
+        non_dupe_fee  = fee_val
+        non_dupe_comm = comm_val
+
     components = [
-        inc.get(f"revenue{suffix}") or inc.get(f"gross_profit{suffix}"),
+        revenue_val,
         inc.get(f"interest_income{suffix}"),
-        inc.get(f"fee_income{suffix}"),
-        inc.get(f"commission_income{suffix}"),
+        non_dupe_fee,
+        non_dupe_comm,
         inc.get(f"dividend_income{suffix}"),
         inc.get(f"rental_income{suffix}"),
         inc.get(f"other_income{suffix}"),
         inc.get(f"foreign_exchange_gain_loss{suffix}"),
+        inc.get(f"trading_income{suffix}"),  # securities trading gains, valuation adj, other gains
     ]
     positive = [v for v in components if v is not None and v > 0]
 
@@ -173,10 +191,22 @@ def _get_operating_expenses(inc: dict, suffix: str) -> float | None:
     # Fall back to component sum (standard IS format).
     # Some companies store expenses as negative values (sign-flipped from Excel),
     # so use abs() to normalise before summing.
-    admin   = inc.get(f"general_and_admin_expenses{suffix}") or inc.get(f"admin_expenses{suffix}")
+    admin = inc.get(f"general_and_admin_expenses{suffix}")
+    if admin is None:
+        admin = inc.get(f"admin_expenses{suffix}")
     selling = inc.get(f"selling_expenses{suffix}")
     parts = [abs(v) for v in [admin, selling] if v is not None and v != 0]
-    return sum(parts) if parts else None
+    if parts:
+        return sum(parts)
+    # Derive operating expenses as residual: total_income − profit_before_tax.
+    # Applies to firms (e.g. Тандэм Инвэст) where all direct expense fields are
+    # 0/None in the parsed data but PBT and total income are both available.
+    pbt = inc.get(f"profit_before_tax{suffix}")
+    total_inc = _get_total_income(inc, suffix)
+    if pbt is not None and total_inc is not None and total_inc > 0:
+        derived = total_inc - pbt
+        return derived if derived > 0 else None
+    return None
 
 
 def _get_total_borrowings(bs: dict, suffix: str) -> float | None:
@@ -191,12 +221,19 @@ def _get_total_borrowings(bs: dict, suffix: str) -> float | None:
     of = bs.get(f"other_funding{suffix}")
     if of is not None and of > 0:
         return of
+    # Explicit bank borrowings + bonds issued (investment/securities firms)
+    bb = bs.get(f"bank_borrowings{suffix}")
+    bi = bs.get(f"bonds_issued{suffix}")
+    if bb is not None or bi is not None:
+        return (bb or 0) + (bi or 0)
     # Standard format: explicit short + long term loans
     stl = bs.get(f"short_term_loans{suffix}")
     ltl = bs.get(f"long_term_loans{suffix}")
     if stl is not None or ltl is not None:
         return (stl or 0) + (ltl or 0)
-    return None
+    # Last resort: total_liabilities (accurate when liabilities are primarily debt,
+    # which holds for most Finance/NBFI companies that lack detailed liability breakdown)
+    return bs.get(f"total_liabilities{suffix}")
 
 
 def _get_loan_portfolio(bs: dict, suffix: str) -> float | None:
@@ -212,7 +249,17 @@ def _get_loan_portfolio(bs: dict, suffix: str) -> float | None:
         val = bs.get(key)
         if val is not None and val > 0:
             return val
-    # Standard BS proxy: largest financial receivable
+    # Securities/investment firm proxy: investment_securities is the primary earning asset
+    # for broker-dealers and investment companies (analogous to loan portfolio for lenders).
+    # Checked BEFORE receivables so Бидисек's 28B securities portfolio isn't overridden
+    # by the smaller other_receivables (3B) entry.  Banks reach this point only when
+    # total_loans is 0; they also carry investment_securities, so this still works.
+    inv_sec = bs.get(f"investment_securities{suffix}")
+    if inv_sec is not None and inv_sec > 0:
+        oth_fin = bs.get(f"other_financial_assets{suffix}") or 0
+        return inv_sec + (oth_fin if oth_fin > 0 else 0)
+
+    # Standard BS proxy: largest financial receivable (lending NBFIs without explicit loan fields)
     candidates = [
         bs.get(f"accounts_receivable{suffix}"),
         bs.get(f"other_receivables{suffix}"),
@@ -252,8 +299,16 @@ def compute_finance_ratios(parsed_data: dict) -> dict:
     liquidity:      cash_ratio, ocf_ratio, loan_to_assets
     asset_quality:  npa_ratio, receivables_to_assets, provision_coverage
     """
-    bs  = parsed_data.get("bank_balance_sheet") or parsed_data.get("balance_sheet", {})
-    inc = parsed_data.get("bank_income_statement") or parsed_data.get("income_statement", {})
+    bs  = (
+        parsed_data.get("bank_balance_sheet")
+        or parsed_data.get("securities_balance_sheet")
+        or parsed_data.get("balance_sheet", {})
+    )
+    inc = (
+        parsed_data.get("bank_income_statement")
+        or parsed_data.get("securities_income_statement")
+        or parsed_data.get("income_statement", {})
+    )
     cf  = parsed_data.get("cash_flow", {})
     company = parsed_data.get("metadata", {}).get("company", "Unknown")
 
@@ -273,18 +328,32 @@ def compute_finance_ratios(parsed_data: dict) -> dict:
         total_liabilities = bs.get(f"total_liabilities{period_suffix}")
         total_equity      = bs.get(f"total_equity{period_suffix}")
         retained_earnings = bs.get(f"retained_earnings{period_suffix}")
-        # Bank BS splits cash into: cash_and_equivalents (vault cash) + total_deposits
-        # (bank placements) + savings_deposits. Sum all three for true liquid cash.
-        _cash_vault = bs.get(f"cash_and_equivalents{period_suffix}") or 0
-        _cash_dep   = bs.get(f"total_deposits{period_suffix}") or 0
-        _cash_sav   = bs.get(f"savings_deposits{period_suffix}") or 0
-        cash = _cash_vault + _cash_dep + _cash_sav or None
+        # Cash: vault cash + interbank placements. total_deposits is a customer
+        # deposit liability in BANK_BALANCE_SHEET_HEADERS — must NOT be included here.
+        _cash_vault_raw = bs.get(f"cash_and_equivalents{period_suffix}")
+        _cash_ibk_raw   = bs.get(f"interbank_placements{period_suffix}")
+        _cash_vault = _cash_vault_raw if _cash_vault_raw is not None else 0
+        _cash_ibk   = _cash_ibk_raw   if _cash_ibk_raw   is not None else 0
+        _cash_sum = _cash_vault + _cash_ibk
+        cash = _cash_sum if (_cash_vault_raw is not None or _cash_ibk_raw is not None) else None
         total_borrowings  = _get_total_borrowings(bs, period_suffix)
         loan_portfolio    = _get_loan_portfolio(bs, period_suffix)
 
         # Derive equity from assets - liabilities when not directly available
-        if total_equity is None and total_assets is not None and total_liabilities is not None:
-            total_equity = total_assets - total_liabilities
+        if (total_equity is None or total_equity == 0) and total_assets is not None and total_liabilities is not None:
+            computed = total_assets - total_liabilities
+            if total_equity is None or computed != 0:
+                total_equity = computed
+        elif total_equity is not None and total_assets is not None and total_liabilities is not None and total_assets > 0:
+            derived = total_assets - total_liabilities
+            if derived != 0:
+                sign_mismatch = (total_equity >= 0) != (derived >= 0)
+                sub_line_capture = (
+                    abs(total_equity) < abs(derived) * 0.8
+                    and abs(total_equity - derived) / total_assets > 0.05
+                )
+                if sign_mismatch or sub_line_capture:
+                    total_equity = derived
 
         # For NBFIs, "earning assets" is the loan portfolio; fall back to total_assets
         earning_assets = loan_portfolio or total_assets
@@ -297,6 +366,15 @@ def compute_finance_ratios(parsed_data: dict) -> dict:
         operating_expenses = _get_operating_expenses(inc, period_suffix)
         net_income         = inc.get(f"net_income{period_suffix}")
         profit_before_tax  = inc.get(f"profit_before_tax{period_suffix}")
+        income_tax_expense = inc.get(f"income_tax_expense{period_suffix}")
+        profit_after_tax   = inc.get(f"profit_after_tax{period_suffix}")
+        # Fallback: net_income may be 0.0 from a section-header parse artefact.
+        if (net_income is None or net_income == 0) and profit_after_tax:
+            net_income = profit_after_tax
+        elif (net_income is None or net_income == 0) and profit_before_tax is not None and income_tax_expense is not None:
+            net_income = profit_before_tax - income_tax_expense
+        elif (net_income is None or net_income == 0) and profit_before_tax:
+            net_income = profit_before_tax
 
         # Net Interest Income (NBFI's equivalent of Gross Profit)
         nii = None
