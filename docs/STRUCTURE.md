@@ -76,8 +76,9 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 | Group | Key vars |
 |---|---|
 | Composite | `company_score`, `company_health_label`, `company_health_color` |
-| Piotroski | `company_f_score_display`, `company_f1`–`company_f9` (int: 1/0/−1) |
-| Beneish | `company_m_score_display`, `company_dsri/gmi/aqi/sgi/sgai/lvgi/tata` |
+| Piotroski | `company_f_score_display`, `company_f1`–`company_f9` (int: 1/0/−1) — N/A for Banking/Insurance/Finance |
+| Beneish | `company_m_score_display`, `company_dsri/gmi/aqi/sgi/sgai/lvgi/tata` — N/A for Banking/Insurance/Finance |
+| Sector Forensic | `company_sector_forensic_criteria: list[dict]`, `company_sector_forensic_score_display: str`, `company_sector_forensic_chart_data: list[dict]` — populated only for Banking/Insurance/Finance |
 | Standard ratios | `roa`, `roe`, `net_margin`, `current_ratio`, `quick_ratio`, `debt_equity`, `interest_cov`, `asset_turnover`, `z_score` + 18 extended |
 | Bank-specific | 19 vars: `nim`, `car`, `npl_ratio`, `ldr`, `cost_to_income`, … |
 | Insurance-specific | 15 vars: `loss_ratio`, `combined_ratio`, `solvency_ratio`, … |
@@ -310,6 +311,59 @@ Also exports:
 
 ---
 
+### `sector_forensics.py` — Sector-Specific Forensic Scoring
+
+Replaces Piotroski F-Score + Beneish M-Score (designed for manufacturing) with rule-based criteria derived from sector-appropriate ratios and YoY trends. Piotroski/Beneish are **suppressed** (shown as N/A) for Banking, Insurance, and Finance companies.
+
+Each function returns: `{score, max_score, criteria: [{label, pass (1/0/−1), explanation}], chart_data: [{metric, change, fill}]}`
+
+#### `compute_bank_forensic(bank_result)` — 8 criteria
+
+| # | Criterion | Pass condition |
+|---|---|---|
+| B1 | ROA Positive | ROA > 0 |
+| B2 | ROA Improving YoY | ROA(curr) > ROA(prev) |
+| B3 | NPL Ratio Decreasing | NPL(curr) < NPL(prev) |
+| B4 | Coverage Ratio ≥ 1.0x | loan_loss_reserves / non_performing_loans ≥ 1.0 |
+| B5 | Loan-to-Deposit ≤ 90% | LDR ≤ 0.90 |
+| B6 | Cost-to-Income Improving | CTI(curr) < CTI(prev) |
+| B7 | NIM Stable or Improving | NIM(curr) ≥ NIM(prev) |
+| B8 | Equity-to-Assets Improving | E/A(curr) > E/A(prev) |
+
+YoY chart tracks: ROA, NIM, NPL Ratio, Cost-to-Income, Equity/Assets
+
+#### `compute_insurance_forensic(ins_result)` — 8 criteria
+
+| # | Criterion | Pass condition |
+|---|---|---|
+| I1 | ROA Positive | ROA > 0 |
+| I2 | ROA Improving YoY | ROA(curr) > ROA(prev) |
+| I3 | Combined Ratio < 100% | combined_ratio < 1.0 |
+| I4 | Combined Ratio Improving | CR(curr) < CR(prev) |
+| I5 | Solvency Ratio ≥ 100% | solvency_ratio ≥ 1.0 |
+| I6 | Reserve Coverage ≥ 1.0x | reserve_coverage ≥ 1.0 |
+| I7 | Loss Ratio Improving | LR(curr) < LR(prev) |
+| I8 | Operating Cash Flow Positive | OCF ratio > 0 |
+
+YoY chart tracks: ROA, Combined Ratio, Loss Ratio, Solvency, Reserve Coverage
+
+#### `compute_finance_forensic(fin_result)` — 8 criteria
+
+| # | Criterion | Pass condition |
+|---|---|---|
+| F1 | ROA Positive | ROA > 0 |
+| F2 | ROA Improving YoY | ROA(curr) > ROA(prev) |
+| F3 | NIM Stable or Improving | NIM(curr) ≥ NIM(prev) |
+| F4 | NPA Ratio Decreasing | NPA(curr) < NPA(prev) |
+| F5 | Cost-to-Income Improving | CTI(curr) < CTI(prev) |
+| F6 | Leverage Not Increasing | D/E(curr) ≤ D/E(prev) |
+| F7 | Operating Cash Flow Positive | OCF ratio > 0 |
+| F8 | Provision Coverage ≥ 1.0x | provision_coverage ≥ 1.0 |
+
+YoY chart tracks: ROA, NIM, NPA Ratio, Cost-to-Income, D/E Ratio
+
+---
+
 ### `valuation.py` — Valuation Metrics
 
 `compute_valuation_metrics(fin_data, shares, last_close)` → `{pe, pbv, ev_ebitda, fcf_yield}`
@@ -354,7 +408,7 @@ Provides label/color classification thresholds for composite scores (Green/Amber
 
 | File | Route | Structure |
 |---|---|---|
-| `company.py` | `/company/[company]` | 5-tab layout: Overview · Ratios · Piotroski · Beneish · Valuation. Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard, each calling its own `_*_ratios_content()` function. DuPont panel, red flags panel, price+volume charts. |
+| `company.py` | `/company/[company]` | 5-tab layout: Ratios · Forensic · Valuation · DuPont · Red Flags. Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard. **Forensic tab** shows Piotroski + Beneish for standard companies; shows `_sector_forensic_panel()` (criteria checklist + YoY bar chart) for Banking/Insurance/Finance. Hero card label switches from "Piotroski F-Score" → "Sector Forensic Score" for financial-sector companies. |
 | `screener.py` | `/screener` | Sortable/filterable company table. Each row: health badge, ROE, F-score, sector; links to company page; "Add to Portfolio" button. |
 | `portfolio.py` | `/portfolio` | 2-tab: Holdings (weight sliders, remove) + Analysis (frontier chart, optimization table, risk metrics, sector donut). |
 
@@ -388,6 +442,7 @@ User uploads .xls/.xlsx
    bank_ratios.py       ← Banking sector
    insurance_ratios.py  ← Insurance sector
    finance_ratios.py    ← Finance / NBFI sector
+   sector_forensics.py  ← Forensic scoring for Banking/Insurance/Finance
    valuation.py   ←── data/prices/{company}.json
    portfolio_optimization.py
         ↓

@@ -359,10 +359,93 @@ def ratios_tab_content() -> rx.Component:
     )
 
 
+def _sector_criterion_row(item: dict) -> rx.Component:
+    """A single forensic criterion row for sector-specific scoring."""
+    return rx.hstack(
+        rx.cond(
+            item["pass"] == 1,
+            rx.icon("circle-check", size=16, class_name="text-green-400"),
+            rx.cond(
+                item["pass"] == 0,
+                rx.icon("circle-x", size=16, class_name="text-red-400"),
+                rx.icon("circle-help", size=16, class_name="text-slate-500"),
+            ),
+        ),
+        rx.vstack(
+            rx.text(item["label"], class_name="text-slate-300 text-sm"),
+            rx.text(item["explanation"], class_name="text-slate-500 text-xs"),
+            spacing="0",
+            align="start",
+        ),
+        spacing="2",
+        align="center",
+        class_name="py-1",
+    )
+
+
+def _sector_forensic_panel() -> rx.Component:
+    """Sector-specific forensic scoring panel for Banking / Insurance / Finance."""
+    s = AnalysisState
+    return rx.grid(
+        # Left: criteria checklist
+        rx.box(
+            rx.hstack(
+                rx.text("Sector Forensic Score", class_name="text-slate-200 font-semibold"),
+                rx.spacer(),
+                rx.text(
+                    s.company_sector_forensic_score_display,
+                    class_name="text-green-400 font-mono font-bold text-sm",
+                ),
+                width="100%",
+                align="center",
+                class_name="mb-3",
+            ),
+            rx.foreach(s.company_sector_forensic_criteria, _sector_criterion_row),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+        ),
+        # Right: YoY change bar chart
+        rx.box(
+            rx.text("Year-on-Year Key Ratio Changes (%)", class_name="text-slate-200 font-semibold mb-3"),
+            rx.cond(
+                s.company_sector_forensic_chart_data.length() == 0,
+                rx.text(
+                    "No prior-year data available for trend chart.",
+                    class_name="text-slate-500 text-sm",
+                ),
+                rx.recharts.bar_chart(
+                    rx.recharts.x_axis(type_="number", unit="%"),
+                    rx.recharts.y_axis(data_key="metric", type_="category", width=120),
+                    rx.recharts.bar(data_key="change", fill="#60a5fa"),
+                    rx.recharts.reference_line(x=0, stroke="#64748b", stroke_dasharray="4 4"),
+                    rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
+                    rx.recharts.tooltip(),
+                    data=s.company_sector_forensic_chart_data,
+                    layout="vertical",
+                    width="100%",
+                    height=220,
+                ),
+            ),
+            rx.text(
+                "Green = improvement vs prior year. Red = deterioration. "
+                "For ratios where lower is better (NPL, Cost-to-Income, Leverage), "
+                "a negative change is shown as green.",
+                class_name="text-slate-600 text-xs mt-3",
+            ),
+            class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+        ),
+        columns="2",
+        spacing="4",
+        width="100%",
+    )
+
+
 def forensic_tab_content() -> rx.Component:
     """Piotroski F-Score criteria + Beneish M-Score horizontal bar chart and table."""
     s = AnalysisState
-    return rx.grid(
+    return rx.cond(
+        s.company_is_bank | s.company_is_insurance | s.company_is_finance,
+        _sector_forensic_panel(),
+        rx.grid(
         # Left: Piotroski criteria
         rx.box(
             rx.text(
@@ -419,6 +502,7 @@ def forensic_tab_content() -> rx.Component:
         columns="2",
         spacing="4",
         width="100%",
+        ),
     )
 
 
@@ -748,7 +832,19 @@ def company_page() -> rx.Component:
                 # Hero score cards row (4 cards)
                 rx.grid(
                     score_card("Health Score",     s.company_score.to_string(), "/100"),
-                    score_card("Piotroski F-Score",s.company_f_score_display,   ""),
+                    score_card(
+                        rx.cond(
+                            s.company_is_bank | s.company_is_insurance | s.company_is_finance,
+                            "Sector Forensic Score",
+                            "Piotroski F-Score",
+                        ),
+                        rx.cond(
+                            s.company_is_bank | s.company_is_insurance | s.company_is_finance,
+                            s.company_sector_forensic_score_display,
+                            s.company_f_score_display,
+                        ),
+                        "",
+                    ),
                     score_card("M-Score",          s.company_m_score_display,   ""),
                     score_card("M-Score Result",   s.company_m_interp,          ""),
                     columns="4",

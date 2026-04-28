@@ -18,6 +18,11 @@ from .analysis.ratios import (
 from .analysis.bank_ratios import compute_bank_ratios
 from .analysis.insurance_ratios import compute_insurance_ratios
 from .analysis.finance_ratios import compute_finance_ratios
+from .analysis.sector_forensics import (
+    compute_bank_forensic,
+    compute_insurance_forensic,
+    compute_finance_forensic,
+)
 from .parser.excel_parser import parse_excel_file
 from .analysis.valuation import compute_valuation_metrics
 from .scraper.price_scraper import scrape_company_prices, save_price_data, PRICES_DIR, price_filename
@@ -264,6 +269,7 @@ def _load_all_companies() -> list[dict]:
                 composite = compute_composite_score(ratios, piotroski, beneish)
                 roe = ratios["current"].get("profitability", {}).get("roe")
 
+            _financial_sector = sector in ("Banking", "Insurance", "Finance")
             f_score = piotroski["f_score"]
             max_score = piotroski["max_score"]
             results.append({
@@ -277,8 +283,8 @@ def _load_all_companies() -> list[dict]:
                 "color":       composite["color"],
                 "roe":         roe if roe is not None else 0.0,
                 "roe_str":     f"{roe * 100:.1f}%" if roe is not None else "N/A",
-                "f_score":     int(f_score) if f_score is not None else 0,
-                "f_score_str": f"{f_score} / {max_score}" if f_score is not None else "N/A",
+                "f_score":     int(f_score) if (f_score is not None and not _financial_sector) else 0,
+                "f_score_str": "N/A" if _financial_sector else (f"{f_score} / {max_score}" if f_score is not None else "N/A"),
             })
         except Exception as e:
             print(f"[_load_all_companies] Skipping {entry.get('filename', '?')}: {e}")
@@ -362,6 +368,11 @@ class AnalysisState(UploadState):
     company_gauge_data: list[dict] = []
     company_radar_data: list[dict] = []
     company_beneish_chart_data: list[dict] = []
+
+    # Sector-specific forensic (Banking / Insurance / Finance)
+    company_sector_forensic_criteria: list[dict] = []
+    company_sector_forensic_score_display: str = ""
+    company_sector_forensic_chart_data: list[dict] = []
 
     # DuPont vars (current and prior year)
     company_net_margin_dupont: str = ""
@@ -562,6 +573,10 @@ class AnalysisState(UploadState):
             self.company_interest_cov = "N/A"
             self.company_asset_turnover = "N/A"
             self.company_z_score = "N/A"
+            _bf = compute_bank_forensic(bank_result)
+            self.company_sector_forensic_criteria = _bf["criteria"]
+            self.company_sector_forensic_score_display = f"{_bf['score']} / {_bf['max_score']}"
+            self.company_sector_forensic_chart_data = _bf["chart_data"]
 
         elif sector == "Insurance":
             ins_result = compute_insurance_ratios(data)
@@ -598,6 +613,10 @@ class AnalysisState(UploadState):
             self.company_interest_cov = "N/A"
             self.company_asset_turnover = "N/A"
             self.company_z_score = "N/A"
+            _if = compute_insurance_forensic(ins_result)
+            self.company_sector_forensic_criteria = _if["criteria"]
+            self.company_sector_forensic_score_display = f"{_if['score']} / {_if['max_score']}"
+            self.company_sector_forensic_chart_data = _if["chart_data"]
 
         elif sector == "Finance":
             fin_result = compute_finance_ratios(data)
@@ -641,6 +660,10 @@ class AnalysisState(UploadState):
             self.company_interest_cov = "N/A"
             self.company_asset_turnover = "N/A"
             self.company_z_score = "N/A"
+            _ff = compute_finance_forensic(fin_result)
+            self.company_sector_forensic_criteria = _ff["criteria"]
+            self.company_sector_forensic_score_display = f"{_ff['score']} / {_ff['max_score']}"
+            self.company_sector_forensic_chart_data = _ff["chart_data"]
 
         else:
             # Standard sector
@@ -648,6 +671,9 @@ class AnalysisState(UploadState):
             self.company_composite = compute_composite_score(
                 self.company_ratios, self.company_piotroski, self.company_beneish
             )
+            self.company_sector_forensic_criteria = []
+            self.company_sector_forensic_score_display = ""
+            self.company_sector_forensic_chart_data = []
             curr = self.company_ratios.get("current", {})
             prof = curr.get("profitability", {})
             liq  = curr.get("liquidity", {})
@@ -720,31 +746,53 @@ class AnalysisState(UploadState):
         self.company_health_label = comp.get("label", "")
         self.company_health_color = comp.get("color", "")
 
-        fs = piots.get("f_score")
-        ms = piots.get("max_score")
-        self.company_f_score_display = f"{fs} / {ms}" if fs is not None else "N/A"
-        mv = ben.get("m_score")
-        self.company_m_score_display = f"{mv:.2f}" if mv is not None else "N/A"
-        self.company_m_interp = ben.get("interpretation", "")
+        if sector in ("Banking", "Insurance", "Finance"):
+            self.company_f_score_display = "N/A"
+            self.company_m_score_display = "N/A"
+            self.company_m_interp = "Not applicable"
+        else:
+            fs = piots.get("f_score")
+            ms = piots.get("max_score")
+            self.company_f_score_display = f"{fs} / {ms}" if fs is not None else "N/A"
+            mv = ben.get("m_score")
+            self.company_m_score_display = f"{mv:.2f}" if mv is not None else "N/A"
+            self.company_m_interp = ben.get("interpretation", "")
 
-        crit = piots.get("criteria", {})
-        self.company_f1 = _crit(crit.get("f1_roa_positive"))
-        self.company_f2 = _crit(crit.get("f2_ocf_positive"))
-        self.company_f3 = _crit(crit.get("f3_roa_improving"))
-        self.company_f4 = _crit(crit.get("f4_accruals"))
-        self.company_f5 = _crit(crit.get("f5_leverage_down"))
-        self.company_f6 = _crit(crit.get("f6_liquidity_up"))
-        self.company_f8 = _crit(crit.get("f8_gross_margin_up"))
-        self.company_f9 = _crit(crit.get("f9_asset_turnover_up"))
+        if sector in ("Banking", "Insurance", "Finance"):
+            self.company_f1 = -1
+            self.company_f2 = -1
+            self.company_f3 = -1
+            self.company_f4 = -1
+            self.company_f5 = -1
+            self.company_f6 = -1
+            self.company_f8 = -1
+            self.company_f9 = -1
+            self.company_dsri = "N/A"
+            self.company_gmi  = "N/A"
+            self.company_aqi  = "N/A"
+            self.company_sgi  = "N/A"
+            self.company_sgai = "N/A"
+            self.company_lvgi = "N/A"
+            self.company_tata = "N/A"
+        else:
+            crit = piots.get("criteria", {})
+            self.company_f1 = _crit(crit.get("f1_roa_positive"))
+            self.company_f2 = _crit(crit.get("f2_ocf_positive"))
+            self.company_f3 = _crit(crit.get("f3_roa_improving"))
+            self.company_f4 = _crit(crit.get("f4_accruals"))
+            self.company_f5 = _crit(crit.get("f5_leverage_down"))
+            self.company_f6 = _crit(crit.get("f6_liquidity_up"))
+            self.company_f8 = _crit(crit.get("f8_gross_margin_up"))
+            self.company_f9 = _crit(crit.get("f9_asset_turnover_up"))
 
-        idx = ben.get("indices", {})
-        self.company_dsri  = _fmt(idx.get("dsri"))
-        self.company_gmi   = _fmt(idx.get("gmi"))
-        self.company_aqi   = _fmt(idx.get("aqi"))
-        self.company_sgi   = _fmt(idx.get("sgi"))
-        self.company_sgai  = _fmt(idx.get("sgai"))
-        self.company_lvgi  = _fmt(idx.get("lvgi"))
-        self.company_tata  = _fmt(idx.get("tata"))
+            idx = ben.get("indices", {})
+            self.company_dsri  = _fmt(idx.get("dsri"))
+            self.company_gmi   = _fmt(idx.get("gmi"))
+            self.company_aqi   = _fmt(idx.get("aqi"))
+            self.company_sgi   = _fmt(idx.get("sgi"))
+            self.company_sgai  = _fmt(idx.get("sgai"))
+            self.company_lvgi  = _fmt(idx.get("lvgi"))
+            self.company_tata  = _fmt(idx.get("tata"))
 
         # --- Chart data vars ---
         score = self.company_score
@@ -785,12 +833,15 @@ class AnalysisState(UploadState):
                 {"category": "Piotroski",     "score": breakdown.get("piotroski") or 0},
             ]
 
-        beneish_idx = self.company_beneish.get("indices", {})
-        self.company_beneish_chart_data = [
-            {"index": k.upper(), "value": round(v, 3) if v is not None else 0,
-             "fill": "#ef4444" if (v is not None and v > 1.0) else "#60a5fa"}
-            for k, v in beneish_idx.items() if k != "depi"
-        ]
+        if sector in ("Banking", "Insurance", "Finance"):
+            self.company_beneish_chart_data = []
+        else:
+            beneish_idx = self.company_beneish.get("indices", {})
+            self.company_beneish_chart_data = [
+                {"index": k.upper(), "value": round(v, 3) if v is not None else 0,
+                 "fill": "#ef4444" if (v is not None and v > 1.0) else "#60a5fa"}
+                for k, v in beneish_idx.items() if k != "depi"
+            ]
 
         # --- Red flags ---
         self.company_red_flags = _compute_red_flags(self.company_ratios, self.company_beneish)
