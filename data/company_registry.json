@@ -37,7 +37,10 @@
     "mse_id": 326,
     "ticker": "AARD",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "aliases": [
+      "Ард санхүүгийн нэгдэл"
+    ]
   },
   {
     "name": "Говь",
@@ -97,20 +100,15 @@
     "sector": "Finance"
   },
   {
-    "name": "Мандал даатгал",
-    "english": "Mandal Insurance",
-    "mse_id": 547,
-    "ticker": "MNDL",
-    "tier": "I",
-    "sector": "Insurance"
-  },
-  {
     "name": "Мандалженерал даатгал",
     "english": "MandaGeneral Insurance",
     "mse_id": 547,
     "ticker": "MNDL",
     "tier": "I",
-    "sector": "Insurance"
+    "sector": "Insurance",
+    "aliases": [
+      "Мандал даатгал"
+    ]
   },
   {
     "name": "Ард даатгал",
@@ -174,7 +172,10 @@
     "mse_id": 561,
     "ticker": "SEND",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "aliases": [
+      "Сэндли ББСБ ХК"
+    ]
   },
   {
     "name": "Голомт банк",
@@ -310,7 +311,10 @@
     "mse_id": 162,
     "ticker": "MDIC",
     "tier": "II",
-    "sector": "Insurance"
+    "sector": "Insurance",
+    "aliases": [
+      "Монгол даатгал ХК"
+    ]
   },
   {
     "name": "Ариг гал",
@@ -359,7 +363,10 @@
     "ticker": "CNF",
     "tier": "II",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "aliases": [
+      "Крипто үндэстэн"
+    ]
   },
   {
     "name": "Шарын гол",
@@ -416,7 +423,11 @@
     "ticker": "VIK",
     "tier": "II",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "aliases": [
+      "\"Тандэм Инвэст ББСБ\" ХК",
+      "Тандем Инвест ББСБ ХК"
+    ]
   },
   {
     "name": "Техникимпорт",
@@ -778,7 +789,10 @@
     "ticker": "GFG",
     "tier": "III",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "aliases": [
+      "Силк нэт"
+    ]
   },
   {
     "name": "Глобал лайф технологи",
@@ -1187,7 +1201,10 @@
     "mse_id": 471,
     "ticker": "MNB",
     "tier": "III",
-    "sector": "Finance"
+    "sector": "Finance",
+    "aliases": [
+      "Моннаб"
+    ]
   },
   {
     "name": "Барилга корпораци",
@@ -1220,7 +1237,10 @@
     "ticker": "MSC",
     "tier": "III",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "aliases": [
+      "Монгол секюритиес"
+    ]
   },
   {
     "name": "Дархан ус сувaг",
