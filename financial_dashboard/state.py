@@ -907,7 +907,24 @@ class AnalysisState(UploadState):
             except (ValueError, KeyError):
                 last_close_price = None
 
-        result = compute_valuation_metrics(fin_data_for_valuation, effective_shares, last_close_price)
+        # Apply reporting unit multiplier so financial figures (often in thousands of MNT)
+        # are scaled to raw MNT before being compared with market cap.
+        unit_mult = fin_data_for_valuation.get("metadata", {}).get("reporting_unit_multiplier")
+        if unit_mult is None:
+            # Legacy files pre-date unit detection: infer from MCap/Assets ratio.
+            # If ratio > 20, the assets figure is almost certainly in thousands.
+            bs_leg = (fin_data_for_valuation.get("balance_sheet")
+                      or fin_data_for_valuation.get("bank_balance_sheet")
+                      or fin_data_for_valuation.get("insurance_balance_sheet")
+                      or {})
+            total_assets = bs_leg.get("total_assets")
+            if (effective_shares and last_close_price and total_assets and total_assets > 0
+                    and (effective_shares * last_close_price) / total_assets > 20):
+                unit_mult = 1_000
+            else:
+                unit_mult = 1
+
+        result = compute_valuation_metrics(fin_data_for_valuation, effective_shares, last_close_price, unit_mult)
 
         # Format results for display
         self.company_ev_ebitda = _fmt(result["ev_ebitda"], 1)

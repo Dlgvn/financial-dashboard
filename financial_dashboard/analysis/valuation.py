@@ -22,6 +22,7 @@ def compute_valuation_metrics(
     parsed_data: dict,
     shares_outstanding: int | None,
     last_close_price: float | None,
+    reporting_unit_multiplier: int = 1,
 ) -> dict:
     """Compute 4 valuation ratios from financial data, shares, and price.
 
@@ -32,6 +33,9 @@ def compute_valuation_metrics(
                             If None, all market-cap-dependent ratios return None.
         last_close_price: Most recent close price from price JSON records.
                           If None, all ratios return None.
+        reporting_unit_multiplier: Scale factor for financial statement values.
+                          1 = raw MNT, 1000 = thousands of MNT (мянган төгрөг),
+                          1_000_000 = millions of MNT. Defaults to 1 (no scaling).
 
     Returns:
         Dict with keys:
@@ -69,12 +73,16 @@ def compute_valuation_metrics(
                         or {})
     cash_flow = parsed_data.get("cash_flow", {}) or {}
 
+    def _scale(v):
+        """Scale a financial statement value to raw MNT."""
+        return v * reporting_unit_multiplier if v is not None else None
+
     # ------------------------------------------------------------------
     # EV/EBITDA (per D-03)
     # ------------------------------------------------------------------
-    short_term_loans = balance_sheet.get("short_term_loans")
-    long_term_loans = balance_sheet.get("long_term_loans")
-    cash = balance_sheet.get("cash_and_equivalents")
+    short_term_loans = _scale(balance_sheet.get("short_term_loans"))
+    long_term_loans = _scale(balance_sheet.get("long_term_loans"))
+    cash = _scale(balance_sheet.get("cash_and_equivalents"))
 
     # Total debt: treat None as 0 for each component
     total_debt = (short_term_loans or 0) + (long_term_loans or 0)
@@ -85,8 +93,8 @@ def compute_valuation_metrics(
 
     # EBITDA approximation: EBIT = profit_before_tax + financial_expense
     # (no depreciation data available from MSE — same approach as ratios.py)
-    profit_before_tax = income_statement.get("profit_before_tax")
-    financial_expense = income_statement.get("financial_expense")
+    profit_before_tax = _scale(income_statement.get("profit_before_tax"))
+    financial_expense = _scale(income_statement.get("financial_expense"))
 
     ebitda = None
     if profit_before_tax is not None and financial_expense is not None:
@@ -99,8 +107,8 @@ def compute_valuation_metrics(
     # ------------------------------------------------------------------
     # FCF Yield (per D-02)
     # ------------------------------------------------------------------
-    ocf = cash_flow.get("operating_cash_flow")
-    capex = cash_flow.get("investing_cash_flow")  # typically negative
+    ocf = _scale(cash_flow.get("operating_cash_flow"))
+    capex = _scale(cash_flow.get("investing_cash_flow"))  # typically negative
 
     if ocf is not None:
         if capex is not None:
@@ -112,7 +120,7 @@ def compute_valuation_metrics(
     # ------------------------------------------------------------------
     # P/E (per D-04)
     # ------------------------------------------------------------------
-    net_income = income_statement.get("net_income")
+    net_income = _scale(income_statement.get("net_income"))
     # P/E is only meaningful when net income is positive
     if net_income is not None and net_income > 0:
         result["pe"] = _safe_div(market_cap, net_income)
@@ -120,11 +128,11 @@ def compute_valuation_metrics(
     # ------------------------------------------------------------------
     # P/BV (per D-04)
     # ------------------------------------------------------------------
-    total_equity = balance_sheet.get("total_equity")
+    total_equity = _scale(balance_sheet.get("total_equity"))
     if total_equity is None:
         # Derive from total_assets - total_liabilities if available
-        total_assets = balance_sheet.get("total_assets")
-        total_liabilities = balance_sheet.get("total_liabilities")
+        total_assets = _scale(balance_sheet.get("total_assets"))
+        total_liabilities = _scale(balance_sheet.get("total_liabilities"))
         if total_assets is not None and total_liabilities is not None:
             total_equity = total_assets - total_liabilities
 

@@ -125,7 +125,13 @@ def _parse_xlsx(file_bytes: bytes, filename: str, sector: str = "") -> dict:
         raise ValueError(f"Cannot open Excel file: {e}")
 
     company, year = _extract_metadata_from_filename(filename)
-    result = _make_result_dict(filename, company, year)
+
+    # Detect reporting unit from first sheet before building result dict
+    unit_multiplier = 1_000
+    if wb.sheetnames:
+        unit_multiplier = _detect_reporting_unit_openpyxl(wb[wb.sheetnames[0]])
+
+    result = _make_result_dict(filename, company, year, unit_multiplier)
 
     # Pre-scan sheets for company name so sector lookup works even when the
     # filename is an opaque MSE code (e.g. "56320254report.xls").
@@ -199,7 +205,13 @@ def _parse_xls(file_bytes: bytes, filename: str, sector: str = "") -> dict:
         raise ValueError(f"Cannot open Excel file: {e}")
 
     company, year = _extract_metadata_from_filename(filename)
-    result = _make_result_dict(filename, company, year)
+
+    # Detect reporting unit from first sheet before building result dict
+    unit_multiplier = 1_000
+    if wb.sheet_names():
+        unit_multiplier = _detect_reporting_unit_xlrd(wb.sheet_by_index(0))
+
+    result = _make_result_dict(filename, company, year, unit_multiplier)
 
     # Pre-scan sheets for company name so sector lookup works even when the
     # filename is an opaque MSE code (e.g. "56320254report.xls").
@@ -254,7 +266,7 @@ def _parse_xls(file_bytes: bytes, filename: str, sector: str = "") -> dict:
     return result
 
 
-def _make_result_dict(filename: str, company: str, year: str) -> dict:
+def _make_result_dict(filename: str, company: str, year: str, unit_multiplier: int = 1_000) -> dict:
     """Create the base result dictionary."""
     return {
         "metadata": {
@@ -263,6 +275,7 @@ def _make_result_dict(filename: str, company: str, year: str) -> dict:
             "year": year,
             "parsed_at": datetime.now().isoformat(),
             "sheets_parsed": [],
+            "reporting_unit_multiplier": unit_multiplier,
         },
     }
 
@@ -290,6 +303,54 @@ def _extract_metadata_from_filename(filename: str) -> tuple[str, str]:
         company = "unknown"
 
     return company if company else "unknown", year
+
+
+def _detect_reporting_unit_multiplier_from_text(text: str) -> int | None:
+    """Return the numeric multiplier implied by a unit declaration cell.
+
+    Mongolian MSE files declare the reporting unit in the first few rows, e.g.:
+      /Мянган төгрөг/   → 1 000 (thousands)
+      /мян.төгрөгөөр/   → 1 000
+      /Сая төгрөг/      → 1 000 000 (millions)
+      / төгрөг/         → 1 (raw MNT)
+
+    Returns the multiplier (1, 1000, or 1_000_000) or None if text doesn't
+    look like a unit declaration.
+    """
+    if not text:
+        return None
+    t = str(text).strip().lower()
+    if "мян" in t:
+        return 1_000
+    if "сая" in t:
+        return 1_000_000
+    # raw MNT: contains "төгрөг" but no мян/сая qualifier
+    if "төгрөг" in t:
+        return 1
+    return None
+
+
+def _detect_reporting_unit_openpyxl(ws) -> int:
+    """Scan first 8 rows of an openpyxl sheet for the unit declaration."""
+    for row in ws.iter_rows(min_row=1, max_row=8, max_col=5):
+        for cell in row:
+            if cell.value:
+                mult = _detect_reporting_unit_multiplier_from_text(str(cell.value))
+                if mult is not None:
+                    return mult
+    return 1_000  # default: most MSE companies report in thousands
+
+
+def _detect_reporting_unit_xlrd(ws) -> int:
+    """Scan first 8 rows of an xlrd sheet for the unit declaration."""
+    for row_idx in range(min(8, ws.nrows)):
+        for col_idx in range(min(5, ws.ncols)):
+            val = ws.cell_value(row_idx, col_idx)
+            if val:
+                mult = _detect_reporting_unit_multiplier_from_text(str(val))
+                if mult is not None:
+                    return mult
+    return 1_000  # default: most MSE companies report in thousands
 
 
 def _extract_company_name_from_text(text: str) -> str | None:
