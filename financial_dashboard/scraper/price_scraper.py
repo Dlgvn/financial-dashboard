@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 PRICES_DIR = DATA_DIR / "prices"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; MSEAnalytica-Scraper/1.0)"}
-BASE_URL = "http://old.mse.mn/en/company/{mse_id}"
+BASE_URL = "https://old.mse.mn/mn/company/{mse_id}"
 
 
 def price_filename(company_name: str) -> str:
@@ -35,10 +35,10 @@ def price_file_exists(company_name: str) -> bool:
 
 
 def scrape_shares_outstanding(soup: BeautifulSoup) -> int | None:
-    """Extract shares outstanding from the MSE company page HTML.
+    """Extract total shares outstanding from the MSE company page.
 
-    Searches for a table row or element containing "share" (case-insensitive)
-    in the company info section of old.mse.mn/en/company/{id}.
+    Works with old.mse.mn/mn/company/{id} structure:
+      #trade_chart > 2nd direct div > ul > li[7] (Нийт гаргасан хувьцаа)
 
     Args:
         soup: Parsed BeautifulSoup of the company page.
@@ -47,29 +47,29 @@ def scrape_shares_outstanding(soup: BeautifulSoup) -> int | None:
         Total shares outstanding as an integer, or None if not found.
     """
     try:
-        # Look for table rows with "share" in the label cell
-        for row in soup.find_all("tr"):
-            cells = row.find_all(["td", "th"])
-            for i, cell in enumerate(cells):
-                text = cell.get_text(strip=True).lower()
-                if "share" in text and i + 1 < len(cells):
-                    value_text = cells[i + 1].get_text(strip=True).replace(",", "").replace(" ", "")
-                    try:
-                        return int(value_text)
-                    except ValueError:
-                        pass
+        trade_chart = soup.find(id="trade_chart")
+        if not trade_chart:
+            return None
 
-        # Fallback: search all text nodes near "share" keyword
-        for tag in soup.find_all(string=re.compile(r"share", re.IGNORECASE)):
-            parent = tag.parent
-            if parent:
-                next_sib = parent.find_next_sibling()
-                if next_sib:
-                    value_text = next_sib.get_text(strip=True).replace(",", "").replace(" ", "")
-                    try:
-                        return int(value_text)
-                    except ValueError:
-                        pass
+        div_children = [c for c in trade_chart.children if c.name == "div"]
+        if len(div_children) < 2:
+            return None
+
+        ul = div_children[1].find("ul")
+        if not ul:
+            return None
+
+        lis = ul.find_all("li")
+        # li[7] (index 6) = "Нийт гаргасан хувьцаа"
+        if len(lis) < 7:
+            return None
+
+        b = lis[6].find("b")
+        if not b:
+            return None
+
+        value_text = b.get_text(strip=True).replace(",", "").replace(" ", "")
+        return int(float(value_text))
     except Exception as e:
         logger.warning("Error extracting shares_outstanding: %s", e)
 

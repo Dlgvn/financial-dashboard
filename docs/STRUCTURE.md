@@ -218,10 +218,10 @@ Entry point: `parse_excel_file(file_bytes, filename, sector="") → dict`
 
 ### `price_scraper.py` — OHLCV Scraper
 
-**Source:** `http://old.mse.mn/en/company/{mse_id}`
+**Source:** `https://old.mse.mn/mn/company/{mse_id}` (Mongolian page — contains shares outstanding)
 
 - `scrape_company_prices(mse_id, company_name)` → `(records, shares_outstanding)` — parses `<table class="trade_history_result">`; columns: No/High/Low/Open/Close/Volume/Value/Date
-- `scrape_shares_outstanding(soup)` — scans table rows for "share" keyword
+- `scrape_shares_outstanding(soup)` — reads `#trade_chart > 2nd direct div > ul > li[7] > b` ("Нийт гаргасан хувьцаа")
 - `save_price_data(company_name, mse_id, records, shares_outstanding)` → writes `data/prices/{company}.json`:
 ```json
 {
