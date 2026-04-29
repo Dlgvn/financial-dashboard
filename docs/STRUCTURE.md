@@ -374,9 +374,11 @@ YoY chart tracks: ROA, NIM, NPA Ratio, Cost-to-Income, D/E Ratio
 
 ### `valuation.py` — Valuation Metrics
 
-`compute_valuation_metrics(fin_data, shares, last_close)` → `{pe, pbv, ev_ebitda, fcf_yield, market_cap, ev}`
+`compute_valuation_metrics(fin_data, shares, last_close, reporting_unit_multiplier=1)` → `{pe, pbv, ev_ebitda, fcf_yield, market_cap, ev}`
 
 Requires shares outstanding + last close price. Any metric with missing inputs returns `None`. All four ratios return raw decimals; `fcf_yield` is multiplied by 100 in `state.py` before display.
+
+**Unit scaling:** MSE financial statements are typically denominated in thousands of MNT (мянган төгрөг), but market cap uses raw MNT (shares × price). `reporting_unit_multiplier` bridges this gap — all financial inputs are multiplied by this factor before any ratio is computed. Value is sourced from `metadata.reporting_unit_multiplier` in the parsed JSON (set by the parser); legacy files without the field fall back to a MCap/Assets heuristic in `state.py`.
 
 ---
 
