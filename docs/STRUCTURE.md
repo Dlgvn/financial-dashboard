@@ -84,7 +84,7 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 | Insurance-specific | 15 vars: `loss_ratio`, `combined_ratio`, `solvency_ratio`, … |
 | Finance-specific | 21 vars (`company_fin_*`): `nim`, `yield_on_earning_assets`, `cost_of_funds`, `interest_spread`, `roa`, `roe`, `net_margin`, `cost_to_income`, `operating_expense_ratio`, `non_interest_income_ratio`, `asset_utilisation`, `debt_to_equity`, `debt_to_assets`, `equity_ratio`, `equity_multiplier`, `cash_ratio`, `ocf_ratio`, `loan_to_assets`, `npa_ratio`, `receivables_to_assets`, `provision_coverage` |
 | DuPont | `net_margin_dupont/prev`, `asset_turnover_dupont/prev`, `equity_multiplier_curr/prev`, `roe_dupont/prev` |
-| Valuation | `ev_ebitda`, `fcf_yield`, `pe`, `pbv`, `shares_outstanding` |
+| Valuation | `company_valuation_sector`, `ev_ebitda`, `fcf_yield`, `pe`, `pbv`, `shares_outstanding`, `ptbv`, `p_ppop`, `p_nii`, `p_npe`, `p_uwp`, `p_inv_sec`, `p_revenue` |
 | Charts | `gauge_data`, `radar_data`, `beneish_chart_data`, `price_chart_data`, `volume_chart_data` |
 | Red flags | `company_red_flags: list[dict]` |
 
@@ -374,9 +374,38 @@ YoY chart tracks: ROA, NIM, NPA Ratio, Cost-to-Income, D/E Ratio
 
 ### `valuation.py` — Valuation Metrics
 
-`compute_valuation_metrics(fin_data, shares, last_close, reporting_unit_multiplier=1)` → `{pe, pbv, ev_ebitda, fcf_yield, market_cap, ev}`
+`compute_valuation_metrics(fin_data, shares, last_close, reporting_unit_multiplier=1)` → dict
 
-Requires shares outstanding + last close price. Any metric with missing inputs returns `None`. All four ratios return raw decimals; `fcf_yield` is multiplied by 100 in `state.py` before display.
+Requires shares outstanding + last close price. Any metric with missing inputs returns `None`. Returns a `sector` key that drives UI card selection; `fcf_yield` is multiplied by 100 in `state.py` before display.
+
+**Subsector detection** (`_detect_sector`) maps each company to one of 6 types based on balance sheet and income statement keys:
+
+| Subsector | Detection rule | Metrics shown |
+|-----------|---------------|---------------|
+| `standard` | no `bank_*` or `insurance_*` keys | EV/EBIT, FCF Yield, P/E, P/BV |
+| `commercial_bank` | has `net_interest_income` + `total_deposits` | P/E, P/BV, P/TBV, P/PPOP, P/NII |
+| `nbfi` | has `net_interest_income`, no `total_deposits` | P/E, P/BV, P/PPOP, P/NII |
+| `holding` | no NII/LLP; `investment_securities / total_assets > 5%` | P/E, P/NAV, P/Inv Securities |
+| `securities` | no NII/LLP; minimal investment securities | P/E, P/BV, P/Revenue |
+| `insurance` | has `insurance_*` keys | P/E, P/BV, P/NPE, P/UWP |
+
+**Metric definitions:**
+
+| Key | Formula | Sector |
+|-----|---------|--------|
+| `ev_ebitda` | EV / EBIT (no D&A data available) | standard |
+| `fcf_yield` | (OCF + investing CF) / MCap | standard |
+| `pe` | MCap / Net Income (positive only) | all |
+| `pbv` | MCap / Equity (derived when parsed equity ≈ share capital only) | all |
+| `ptbv` | MCap / (Equity − Intangibles) | commercial_bank |
+| `p_ppop` | MCap / (Net Income + Loan Loss Provision) | commercial_bank, nbfi |
+| `p_nii` | MCap / Net Interest Income | commercial_bank, nbfi |
+| `p_inv_sec` | MCap / Investment Securities | holding |
+| `p_revenue` | MCap / Total Revenue | securities |
+| `p_npe` | MCap / Net Premiums Earned | insurance |
+| `p_uwp` | MCap / Insurance Operating Profit | insurance |
+
+**P/BV equity fallback:** if parsed `total_equity` < 1/5 of `total_assets − total_liabilities` (indicates parser captured only share capital), the derived value is used instead.
 
 **Unit scaling:** MSE financial statements are typically denominated in thousands of MNT (мянган төгрөг), but market cap uses raw MNT (shares × price). `reporting_unit_multiplier` bridges this gap — all financial inputs are multiplied by this factor before any ratio is computed. Value is sourced from `metadata.reporting_unit_multiplier` in the parsed JSON (set by the parser); legacy files without the field fall back to a MCap/Assets heuristic in `state.py`.
 
@@ -418,7 +447,7 @@ Provides label/color classification thresholds for composite scores (Green/Amber
 
 | File | Route | Structure |
 |---|---|---|
-| `company.py` | `/company/[company]` | 5-tab layout: Ratios · Forensic · Valuation · DuPont · Red Flags. Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard. **Forensic tab** shows Piotroski + Beneish for standard companies; shows `_sector_forensic_panel()` (criteria checklist + YoY bar chart) for Banking/Insurance/Finance. Hero card label switches from "Piotroski F-Score" → "Sector Forensic Score" for financial-sector companies. **Finance Asset Quality card** shows all 3 ratios: NPA Ratio, Receivables-to-Assets, Provision Coverage. |
+| `company.py` | `/company/[company]` | 5-tab layout: Ratios · Forensic · Valuation · DuPont · Red Flags. Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard. **Forensic tab** shows Piotroski + Beneish for standard companies; shows `_sector_forensic_panel()` (criteria checklist + YoY bar chart) for Banking/Insurance/Finance. Hero card label switches from "Piotroski F-Score" → "Sector Forensic Score" for financial-sector companies. **Finance Asset Quality card** shows all 3 ratios: NPA Ratio, Receivables-to-Assets, Provision Coverage. **Valuation tab** renders one of 6 card grids based on `company_valuation_sector`: standard (4 cards), commercial_bank (5 cards), nbfi (4 cards), holding (3 cards: P/E · P/NAV · P/Inv Securities), securities (3 cards: P/E · P/BV · P/Revenue), insurance (4 cards). |
 | `screener.py` | `/screener` | Sortable/filterable company table. Each row: health badge, ROE, F-score, sector; links to company page; "Add to Portfolio" button. |
 | `portfolio.py` | `/portfolio` | 2-tab: Holdings (weight sliders, remove) + Analysis (frontier chart, optimization table, risk metrics, sector donut). |
 

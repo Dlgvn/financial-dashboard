@@ -486,6 +486,19 @@ class AnalysisState(UploadState):
     company_pe: str = ""
     company_pbv: str = ""
     company_shares_outstanding: str = ""
+    # Sector tag drives which additional cards are shown
+    company_valuation_sector: str = "standard"
+    # Bank / NBFI metrics
+    company_ptbv: str = ""
+    company_p_ppop: str = ""
+    company_p_nii: str = ""
+    # Insurance metrics
+    company_p_npe: str = ""
+    company_p_uwp: str = ""
+    # Holding company metrics
+    company_p_inv_sec: str = ""
+    # Securities / Broker metrics
+    company_p_revenue: str = ""
 
     # Shares input UI state
     company_shares_input_open: bool = False
@@ -862,6 +875,13 @@ class AnalysisState(UploadState):
             self.company_fcf_yield = "N/A"
             self.company_pe = "N/A"
             self.company_pbv = "N/A"
+            self.company_ptbv = "N/A"
+            self.company_p_ppop = "N/A"
+            self.company_p_nii = "N/A"
+            self.company_p_npe     = "N/A"
+            self.company_p_uwp     = "N/A"
+            self.company_p_inv_sec = "N/A"
+            self.company_p_revenue = "N/A"
             self.company_shares_outstanding = ""
             self.company_price_chart_data = []
             self.company_volume_chart_data = []
@@ -927,11 +947,23 @@ class AnalysisState(UploadState):
         result = compute_valuation_metrics(fin_data_for_valuation, effective_shares, last_close_price, unit_mult)
 
         # Format results for display
+        self.company_valuation_sector = result["sector"]
         self.company_ev_ebitda = _fmt(result["ev_ebitda"], 1)
         fcf = result["fcf_yield"]
         self.company_fcf_yield = _fmt(fcf * 100 if fcf is not None else None, 1)
         self.company_pe = _fmt(result["pe"], 1)
         self.company_pbv = _fmt(result["pbv"], 1)
+        # Bank / NBFI
+        self.company_ptbv   = _fmt(result["ptbv"],   1)
+        self.company_p_ppop = _fmt(result["p_ppop"], 1)
+        self.company_p_nii  = _fmt(result["p_nii"],  1)
+        # Insurance
+        self.company_p_npe  = _fmt(result["p_npe"],  1)
+        self.company_p_uwp  = _fmt(result["p_uwp"],  1)
+        # Holding
+        self.company_p_inv_sec = _fmt(result["p_inv_sec"], 1)
+        # Securities
+        self.company_p_revenue = _fmt(result["p_revenue"], 1)
 
         # Slice price records by selected range
         self._slice_price_records(records)

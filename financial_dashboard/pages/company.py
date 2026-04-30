@@ -624,18 +624,77 @@ def price_chart_section() -> rx.Component:
 
 
 def valuation_tab_content() -> rx.Component:
-    """Full valuation tab: 4 ratio cards, inline shares input, price chart, volume chart."""
+    """Valuation tab: sector-aware ratio cards, shares input, price chart."""
     s = AnalysisState
     has_shares = s.company_shares_outstanding != ""
 
-    cards_row = rx.grid(
-        valuation_card("EV / EBITDA", s.company_ev_ebitda, "x", has_shares),
-        valuation_card("FCF Yield", s.company_fcf_yield, "%", has_shares),
-        valuation_card("P / E", s.company_pe, "x", has_shares),
-        valuation_card("P / BV", s.company_pbv, "x", has_shares),
-        columns="4",
-        spacing="4",
-        width="100%",
+    standard_cards = rx.grid(
+        valuation_card("EV / EBIT",  s.company_ev_ebitda, "x", has_shares),
+        valuation_card("FCF Yield",  s.company_fcf_yield, "%", has_shares),
+        valuation_card("P / E",      s.company_pe,        "x", has_shares),
+        valuation_card("P / BV",     s.company_pbv,       "x", has_shares),
+        columns="4", spacing="4", width="100%",
+    )
+
+    bank_cards = rx.grid(
+        valuation_card("P / E",    s.company_pe,      "x", has_shares),
+        valuation_card("P / BV",   s.company_pbv,     "x", has_shares),
+        valuation_card("P / TBV",  s.company_ptbv,    "x", has_shares),
+        valuation_card("P / PPOP", s.company_p_ppop,  "x", has_shares),
+        valuation_card("P / NII",  s.company_p_nii,   "x", has_shares),
+        columns="5", spacing="4", width="100%",
+    )
+
+    nbfi_cards = rx.grid(
+        valuation_card("P / E",    s.company_pe,     "x", has_shares),
+        valuation_card("P / BV",   s.company_pbv,    "x", has_shares),
+        valuation_card("P / PPOP", s.company_p_ppop, "x", has_shares),
+        valuation_card("P / NII",  s.company_p_nii,  "x", has_shares),
+        columns="4", spacing="4", width="100%",
+    )
+
+    holding_cards = rx.grid(
+        valuation_card("P / E",       s.company_pe,        "x", has_shares),
+        valuation_card("P / NAV",     s.company_pbv,       "x", has_shares),
+        valuation_card("P / Inv Sec", s.company_p_inv_sec, "x", has_shares),
+        columns="3", spacing="4", width="100%",
+    )
+
+    securities_cards = rx.grid(
+        valuation_card("P / E",       s.company_pe,        "x", has_shares),
+        valuation_card("P / BV",      s.company_pbv,       "x", has_shares),
+        valuation_card("P / Revenue", s.company_p_revenue, "x", has_shares),
+        columns="3", spacing="4", width="100%",
+    )
+
+    insurance_cards = rx.grid(
+        valuation_card("P / E",   s.company_pe,    "x", has_shares),
+        valuation_card("P / BV",  s.company_pbv,   "x", has_shares),
+        valuation_card("P / NPE", s.company_p_npe, "x", has_shares),
+        valuation_card("P / UWP", s.company_p_uwp, "x", has_shares),
+        columns="4", spacing="4", width="100%",
+    )
+
+    cards_row = rx.cond(
+        s.company_valuation_sector == "commercial_bank",
+        bank_cards,
+        rx.cond(
+            s.company_valuation_sector == "nbfi",
+            nbfi_cards,
+            rx.cond(
+                s.company_valuation_sector == "holding",
+                holding_cards,
+                rx.cond(
+                    s.company_valuation_sector == "securities",
+                    securities_cards,
+                    rx.cond(
+                        s.company_valuation_sector == "insurance",
+                        insurance_cards,
+                        standard_cards,
+                    ),
+                ),
+            ),
+        ),
     )
 
     return rx.vstack(
