@@ -23,6 +23,7 @@ from .analysis.sector_forensics import (
     compute_insurance_forensic,
     compute_finance_forensic,
 )
+from .analysis.ai_red_flags import compute_red_flags_ai
 from .parser.excel_parser import parse_excel_file
 from .analysis.valuation import compute_valuation_metrics
 from .scraper.price_scraper import scrape_company_prices, save_price_data, PRICES_DIR, price_filename
@@ -417,6 +418,7 @@ class AnalysisState(UploadState):
 
     # Red flags
     company_red_flags: list[dict] = []
+    company_red_flags_loading: bool = False
 
     # Additional standard ratios (17 beyond existing 9)
     company_gross_margin: str = ""
@@ -543,7 +545,7 @@ class AnalysisState(UploadState):
         self.all_companies = _load_all_companies()
 
     @rx.event
-    def load_company(self, company_name: str):
+    async def load_company(self, company_name: str):
         """Load and compute full analysis for one company."""
         self.selected_company_name = company_name
         index_path = DATA_DIR / "index.json"
@@ -967,11 +969,64 @@ class AnalysisState(UploadState):
                 for k, v in beneish_idx.items() if k != "depi"
             ]
 
-        # --- Red flags ---
+        # --- Red flags: seed with rule-based instantly ---
         self.company_red_flags = _compute_red_flags(self.company_ratios, self.company_beneish)
 
         # --- Valuation data ---
         self._load_valuation_data(company_name)
+
+        # --- Flush UI so company page renders, then run AI red flags ---
+        yield
+        self.company_red_flags_loading = True
+        yield
+
+        price_records: list = []
+        price_file = PRICES_DIR / price_filename(company_name)
+        if price_file.exists():
+            with open(price_file, encoding="utf-8") as f:
+                price_data = json.load(f)
+            price_records = price_data.get("records", [])
+
+        dupont_vars = {
+            "formula": self.company_dupont_formula_text,
+            "factor1_label": self.company_dupont_factor1_label,
+            "factor1_curr": self.company_net_margin_dupont,
+            "factor1_prev": self.company_net_margin_prev,
+            "factor2_label": self.company_dupont_factor2_label,
+            "factor2_curr": self.company_asset_turnover_dupont,
+            "factor2_prev": self.company_asset_turnover_prev,
+            "equity_multiplier_curr": self.company_equity_multiplier_curr,
+            "equity_multiplier_prev": self.company_equity_multiplier_prev,
+            "roe_curr": self.company_roe_dupont,
+            "roe_prev": self.company_roe_prev,
+        }
+        valuation_vars = {
+            "pe": self.company_pe,
+            "pbv": self.company_pbv,
+            "ev_ebitda": self.company_ev_ebitda,
+            "fcf_yield": self.company_fcf_yield,
+            "ptbv": self.company_ptbv,
+            "p_ppop": self.company_p_ppop,
+            "p_nii": self.company_p_nii,
+            "p_npe": self.company_p_npe,
+            "p_uwp": self.company_p_uwp,
+            "p_inv_sec": self.company_p_inv_sec,
+            "p_revenue": self.company_p_revenue,
+        }
+
+        flags = await compute_red_flags_ai(
+            company_name=company_name,
+            sector=self.company_sector,
+            company_ratios=self.company_ratios,
+            company_beneish=self.company_beneish,
+            forensic_criteria=self.company_sector_forensic_criteria,
+            forensic_score_display=self.company_sector_forensic_score_display,
+            dupont_vars=dupont_vars,
+            valuation_vars=valuation_vars,
+            price_records=price_records,
+        )
+        self.company_red_flags = flags
+        self.company_red_flags_loading = False
 
     def _load_valuation_data(self, company_name: str):
         """Load price JSON, compute valuation ratios, and slice chart data by range."""
@@ -1182,7 +1237,7 @@ class AnalysisState(UploadState):
         """Called on page load -- reads company name from URL params."""
         company = self.router.page.params.get("company", "")
         if company:
-            self.load_company(company)
+            return AnalysisState.load_company(company)
 
     @rx.event
     def set_screener_filter(self, value: str):

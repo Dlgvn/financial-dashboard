@@ -86,13 +86,13 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 | DuPont | `net_margin_dupont/prev`, `asset_turnover_dupont/prev`, `equity_multiplier_curr/prev`, `roe_dupont/prev` |
 | Valuation | `company_valuation_sector`, `ev_ebitda`, `fcf_yield`, `pe`, `pbv`, `shares_outstanding`, `ptbv`, `p_ppop`, `p_nii`, `p_npe`, `p_uwp`, `p_inv_sec`, `p_revenue` |
 | Charts | `gauge_data`, `radar_data`, `beneish_chart_data`, `price_chart_data`, `volume_chart_data` |
-| Red flags | `company_red_flags: list[dict]` |
+| Red flags | `company_red_flags: list[dict]`, `company_red_flags_loading: bool` |
 
 **Sector flags:** `company_is_bank: bool`, `company_is_insurance: bool`, `company_is_finance: bool` — control conditional tab rendering.
 
 **Key events:**
-- `load_company(name)` — full sector-aware analysis: detects Banking / Insurance / Finance / Standard → runs matching ratio engine → populates all flat vars → calls `_load_valuation_data()`
-- `on_load_company()` — reads `[company]` URL param → `load_company()`
+- `load_company(name)` — async; full sector-aware analysis: detects Banking / Insurance / Finance / Standard → runs matching ratio engine → populates all flat vars → calls `_load_valuation_data()` → yields to flush UI → calls Groq AI for red flags upgrade
+- `on_load_company()` — reads `[company]` URL param → returns `AnalysisState.load_company()`
 - `load_screener()` → `_load_all_companies()` — processes all index.json entries with scores
 - `set_valuation_range(range)` — re-slices price records for 1M/6M/1Y/All chart views
 - `save_shares_outstanding(value)` — writes `shares_outstanding_override` into the company's financial JSON; recomputes valuation
@@ -105,7 +105,7 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 - `_load_all_companies()` — reads index.json, computes composite score per company for screener
 - `_detect_sector_from_data(data)` — heuristic: checks for bank/insurance sheet keys in parsed dict
 - `_detect_finance_subsector(name)` — classifies Finance companies into subsector; registry lookup (`find_sub_sector`) takes precedence over name-pattern heuristics
-- `_compute_red_flags(ratios, beneish)` — returns list of flag dicts (DSRI spike, TATA, D/E jump, M-Score, current ratio drop)
+- `_compute_red_flags(ratios, beneish)` — rule-based fallback: returns list of flag dicts (DSRI spike, TATA, D/E jump, M-Score, current ratio drop); used as instant seed before AI response arrives
 
 **Formatting contract:** all ratio engines return raw decimals (e.g. `0.12` for 12%). State assignments use `_pct` for "%" display vars and `_fmt` for "x"/"ratio" display vars. `_slice_price_records` casts `volume` to `int` before storing chart data. `_load_valuation_data` reads `index.json` once and reuses the loaded `fin_data` for both the shares-override check and valuation computation.
 
@@ -322,6 +322,26 @@ Also exports:
 
 ---
 
+### `ai_red_flags.py` — Groq AI Red Flags Engine
+
+`compute_red_flags_ai(company_name, sector, company_ratios, company_beneish, forensic_criteria, forensic_score_display, dupont_vars, valuation_vars, price_records)` → `list[dict]`
+
+Calls Groq `llama-3.3-70b-versatile` with a sector-aware prompt that includes all computed data. Returns structured `{flag, explanation, severity}` flags. Falls back to `_rule_based_fallback()` (same logic as `_compute_red_flags`) on any error or missing API key.
+
+**Severity levels:** `"high"` (red) · `"medium"` (amber) · `"low"` (blue) · `"clear"` (green)
+
+**Sector contexts injected into prompt:**
+- **Standard** — Beneish/Piotroski/DSRI/TATA/Z-Score/DuPont drivers
+- **Banking** — NPL, Coverage, LDR, NIM, Equity/Assets, Cost-to-Income; Beneish explicitly excluded
+- **Finance/NBFI** — NPA, Provision Coverage, D/E acceleration, Interest Spread, OCF; Beneish excluded
+- **Insurance** — Combined Ratio, Loss Ratio, Solvency, Reserve Coverage, investment-income dependency; Beneish excluded
+
+**Data fed to Groq:** current + prior period ratios · forensic score + criteria · DuPont formula and all 3 factors (curr/prev) · sector-appropriate valuation multiples · 52-week price range + 3-month return
+
+**API key:** reads `GROQ_API_KEY` from environment; auto-loads from `.env` at module import if not already set.
+
+---
+
 ### `sector_forensics.py` — Sector-Specific Forensic Scoring
 
 Replaces Piotroski F-Score + Beneish M-Score (designed for manufacturing) with rule-based criteria derived from sector-appropriate ratios and YoY trends. Piotroski/Beneish are **suppressed** (shown as N/A) for Banking, Insurance, and Finance companies.
@@ -450,7 +470,7 @@ Provides label/color classification thresholds for composite scores (Green/Amber
 
 | File | Route | Structure |
 |---|---|---|
-| `company.py` | `/company/[company]` | 5-tab layout: Ratios · Forensic · Valuation · DuPont · Red Flags. Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard. **Forensic tab** shows Piotroski + Beneish for standard companies; shows `_sector_forensic_panel()` (criteria checklist + YoY bar chart) for Banking/Insurance/Finance. Hero card label switches from "Piotroski F-Score" → "Sector Forensic Score" for financial-sector companies. **Finance Asset Quality card** shows all 3 ratios: NPA Ratio, Receivables-to-Assets, Provision Coverage. **Valuation tab** renders one of 6 card grids based on `company_valuation_sector`: standard (4 cards), commercial_bank (5 cards), nbfi (4 cards), holding (3 cards: P/E · P/NAV · P/Inv Securities), securities (3 cards: P/E · P/BV · P/Revenue), insurance (4 cards). |
+| `company.py` | `/company/[company]` | 5-tab layout: Ratios · Forensic · Valuation · DuPont · Red Flags. **Red Flags tab** shows rule-based flags instantly, then replaces with Groq AI flags (spinner shown during AI call). Each flag rendered with severity badge (HIGH/MEDIUM/LOW/CLEAR) and matching border/icon color. Footer: "Powered by Groq AI". Sector-conditional ratio rendering: `ratios_tab_content()` branches on `company_is_bank` → `company_is_insurance` → `company_is_finance` → standard. **Forensic tab** shows Piotroski + Beneish for standard companies; shows `_sector_forensic_panel()` (criteria checklist + YoY bar chart) for Banking/Insurance/Finance. Hero card label switches from "Piotroski F-Score" → "Sector Forensic Score" for financial-sector companies. **Finance Asset Quality card** shows all 3 ratios: NPA Ratio, Receivables-to-Assets, Provision Coverage. **Valuation tab** renders one of 6 card grids based on `company_valuation_sector`: standard (4 cards), commercial_bank (5 cards), nbfi (4 cards), holding (3 cards: P/E · P/NAV · P/Inv Securities), securities (3 cards: P/E · P/BV · P/Revenue), insurance (4 cards). |
 | `screener.py` | `/screener` | Sortable/filterable company table. Each row: health badge, ROE, F-score, sector; links to company page; "Add to Portfolio" button. |
 | `portfolio.py` | `/portfolio` | 2-tab: Holdings (weight sliders, remove) + Analysis (frontier chart, optimization table, risk metrics, sector donut). |
 
@@ -486,6 +506,7 @@ User uploads .xls/.xlsx
    finance_ratios.py    ← Finance / NBFI sector
    sector_forensics.py  ← Forensic scoring for Banking/Insurance/Finance
    valuation.py   ←── data/prices/{company}.json
+   ai_red_flags.py ←── Groq API (llama-3.3-70b-versatile)
    portfolio_optimization.py
         ↓
    pages/company.py / screener.py / portfolio.py  (Reflex UI)

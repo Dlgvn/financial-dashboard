@@ -710,29 +710,45 @@ def valuation_tab_content() -> rx.Component:
 
 
 def dupont_tab_content() -> rx.Component:
-    """DuPont decomposition: ROE = Net Profit Margin × Asset Turnover × Equity Multiplier."""
+    """Sector-aware DuPont decomposition."""
     s = AnalysisState
 
-    def dupont_row(year_label: str, net_margin: rx.Var, asset_turnover: rx.Var, eq_multiplier: rx.Var, roe: rx.Var) -> rx.Component:
+    def dupont_row(
+        year_label: str,
+        factor1: rx.Var,
+        factor2: rx.Var,
+        eq_multiplier: rx.Var,
+        roe: rx.Var,
+    ) -> rx.Component:
         return rx.hstack(
             rx.box(
                 rx.text(year_label, class_name="text-slate-400 text-xs uppercase tracking-wider mb-1"),
                 class_name="w-24 flex-shrink-0",
             ),
+            # Factor 1: Net Margin (standard/insurance) or ROA (bank/finance)
             rx.box(
-                rx.text("Net Margin", class_name="text-slate-400 text-xs mb-1"),
-                rx.text(net_margin, class_name="text-slate-100 text-lg font-mono font-bold"),
-                rx.text("%", class_name="text-slate-500 text-xs"),
+                rx.text(s.company_dupont_factor1_label, class_name="text-slate-400 text-xs mb-1"),
+                rx.text(factor1, class_name="text-slate-100 text-lg font-mono font-bold"),
+                rx.text(s.company_dupont_factor1_unit, class_name="text-slate-500 text-xs"),
                 class_name="flex flex-col items-center flex-1",
             ),
             rx.text("×", class_name="text-slate-500 text-xl font-bold px-1"),
-            rx.box(
-                rx.text("Asset Turnover", class_name="text-slate-400 text-xs mb-1"),
-                rx.text(asset_turnover, class_name="text-slate-100 text-lg font-mono font-bold"),
-                rx.text("times", class_name="text-slate-500 text-xs"),
-                class_name="flex flex-col items-center flex-1",
+            # Factor 2: conditionally shown (hidden for 2-factor bank/finance DuPont)
+            rx.cond(
+                s.company_dupont_show_factor2,
+                rx.hstack(
+                    rx.box(
+                        rx.text(s.company_dupont_factor2_label, class_name="text-slate-400 text-xs mb-1"),
+                        rx.text(factor2, class_name="text-slate-100 text-lg font-mono font-bold"),
+                        rx.text(s.company_dupont_factor2_unit, class_name="text-slate-500 text-xs"),
+                        class_name="flex flex-col items-center flex-1",
+                    ),
+                    rx.text("×", class_name="text-slate-500 text-xl font-bold px-1"),
+                    spacing="2",
+                    align="center",
+                ),
+                rx.box(),
             ),
-            rx.text("×", class_name="text-slate-500 text-xl font-bold px-1"),
             rx.box(
                 rx.text("Equity Multiplier", class_name="text-slate-400 text-xs mb-1"),
                 rx.text(eq_multiplier, class_name="text-slate-100 text-lg font-mono font-bold"),
@@ -755,7 +771,7 @@ def dupont_tab_content() -> rx.Component:
     return rx.box(
         rx.text("DuPont Decomposition", class_name="text-slate-200 font-semibold mb-2"),
         rx.text(
-            "ROE = Net Profit Margin × Asset Turnover × Equity Multiplier",
+            s.company_dupont_formula_text,
             class_name="text-slate-400 text-sm mb-4 font-mono",
         ),
         rx.vstack(
@@ -781,23 +797,77 @@ def dupont_tab_content() -> rx.Component:
 
 
 def red_flag_item(flag: dict) -> rx.Component:
-    """A single red flag or clear indicator item."""
+    """A single red flag card with severity-aware styling."""
+    severity = flag["severity"]
     is_clear = flag["flag"] == "No Major Red Flags"
+    is_high = severity == "high"
+    is_medium = severity == "medium"
+
+    icon_el = rx.cond(
+        is_clear,
+        rx.icon("circle-check", size=20, class_name="text-green-400 shrink-0"),
+        rx.cond(
+            is_high,
+            rx.icon("octagon-alert", size=20, class_name="text-red-400 shrink-0"),
+            rx.cond(
+                is_medium,
+                rx.icon("triangle-alert", size=20, class_name="text-amber-400 shrink-0"),
+                rx.icon("info", size=20, class_name="text-blue-400 shrink-0"),
+            ),
+        ),
+    )
+
+    title_class = rx.cond(
+        is_clear,
+        "text-green-400 font-semibold text-sm",
+        rx.cond(
+            is_high,
+            "text-red-400 font-semibold text-sm",
+            rx.cond(
+                is_medium,
+                "text-amber-400 font-semibold text-sm",
+                "text-blue-400 font-semibold text-sm",
+            ),
+        ),
+    )
+
+    severity_badge = rx.cond(
+        is_clear,
+        rx.badge("CLEAR", color_scheme="green", size="1"),
+        rx.cond(
+            is_high,
+            rx.badge("HIGH", color_scheme="red", size="1"),
+            rx.cond(
+                is_medium,
+                rx.badge("MEDIUM", color_scheme="yellow", size="1"),
+                rx.badge("LOW", color_scheme="blue", size="1"),
+            ),
+        ),
+    )
+
+    border_class = rx.cond(
+        is_clear,
+        "bg-slate-900 border border-green-900 rounded-lg p-4",
+        rx.cond(
+            is_high,
+            "bg-slate-900 border border-red-900 rounded-lg p-4",
+            rx.cond(
+                is_medium,
+                "bg-slate-900 border border-amber-900 rounded-lg p-4",
+                "bg-slate-900 border border-blue-900 rounded-lg p-4",
+            ),
+        ),
+    )
+
     return rx.box(
         rx.hstack(
-            rx.cond(
-                is_clear,
-                rx.icon("check-circle", size=20, class_name="text-green-400"),
-                rx.icon("alert-triangle", size=20, class_name="text-amber-400"),
-            ),
+            icon_el,
             rx.vstack(
-                rx.text(
-                    flag["flag"],
-                    class_name=rx.cond(
-                        is_clear,
-                        "text-green-400 font-semibold",
-                        "text-amber-400 font-semibold",
-                    ),
+                rx.hstack(
+                    rx.text(flag["flag"], class_name=title_class),
+                    severity_badge,
+                    spacing="2",
+                    align="center",
                 ),
                 rx.text(flag["explanation"], class_name="text-slate-400 text-sm"),
                 spacing="1",
@@ -806,18 +876,43 @@ def red_flag_item(flag: dict) -> rx.Component:
             spacing="3",
             align="start",
         ),
-        class_name=rx.cond(
-            is_clear,
-            "bg-slate-900 border border-green-900 rounded-lg p-4",
-            "bg-slate-900 border border-amber-900 rounded-lg p-4",
-        ),
+        class_name=border_class,
     )
 
 
 def red_flags_tab_content() -> rx.Component:
-    """Red flags tab using rx.foreach to render each flag."""
+    """Red flags tab with AI analysis and loading state."""
     return rx.vstack(
-        rx.foreach(AnalysisState.company_red_flags, red_flag_item),
+        rx.cond(
+            AnalysisState.company_red_flags_loading,
+            rx.vstack(
+                rx.hstack(
+                    rx.spinner(size="3", class_name="text-violet-400"),
+                    rx.text("AI is analysing financial data...", class_name="text-slate-400 text-sm"),
+                    spacing="3",
+                    align="center",
+                ),
+                rx.text(
+                    "Groq AI is cross-referencing ratios, forensic scores, DuPont decomposition, valuation multiples, and stock price context.",
+                    class_name="text-slate-500 text-xs text-center",
+                ),
+                align="center",
+                spacing="2",
+                width="100%",
+                class_name="py-6",
+            ),
+            rx.foreach(AnalysisState.company_red_flags, red_flag_item),
+        ),
+        rx.cond(
+            ~AnalysisState.company_red_flags_loading,
+            rx.hstack(
+                rx.icon("sparkles", size=12, class_name="text-violet-400"),
+                rx.text("Powered by Groq AI — llama-3.3-70b-versatile", class_name="text-slate-600 text-xs"),
+                spacing="1",
+                align="center",
+            ),
+            rx.fragment(),
+        ),
         spacing="3",
         width="100%",
     )
