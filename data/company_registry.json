@@ -40,7 +40,8 @@
     "sector": "Finance",
     "aliases": [
       "Ард санхүүгийн нэгдэл"
-    ]
+    ],
+    "sub_sector": "Investment/Holding"
   },
   {
     "name": "Говь",
@@ -81,7 +82,8 @@
     "mse_id": 542,
     "ticker": "MIK",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "Investment/Holding"
   },
   {
     "name": "МонголБазальт",
@@ -97,7 +99,8 @@
     "mse_id": 545,
     "ticker": "LEND",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "ББСБ (Lending NBFI)"
   },
   {
     "name": "Мандалженерал даатгал",
@@ -132,7 +135,8 @@
     "mse_id": 550,
     "ticker": "ADB",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "ББСБ (Lending NBFI)"
   },
   {
     "name": "Моносхүнс",
@@ -148,7 +152,8 @@
     "mse_id": 553,
     "ticker": "INV",
     "tier": "I",
-    "sector": "Finance"
+    "sector": "Finance",
+    "sub_sector": "ББСБ (Lending NBFI)"
   },
   {
     "name": "Бодь даатгал ХХК",
@@ -175,7 +180,8 @@
     "sector": "Finance",
     "aliases": [
       "Сэндли ББСБ ХК"
-    ]
+    ],
+    "sub_sector": "ББСБ (Lending NBFI)"
   },
   {
     "name": "Голомт банк",
@@ -1204,7 +1210,8 @@
     "sector": "Finance",
     "aliases": [
       "Моннаб"
-    ]
+    ],
+    "sub_sector": "ББСБ (Lending NBFI)"
   },
   {
     "name": "Барилга корпораци",

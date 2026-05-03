@@ -26,7 +26,7 @@ from .analysis.sector_forensics import (
 from .parser.excel_parser import parse_excel_file
 from .analysis.valuation import compute_valuation_metrics
 from .scraper.price_scraper import scrape_company_prices, save_price_data, PRICES_DIR, price_filename
-from .scraper.registry_loader import find_mse_id
+from .scraper.registry_loader import find_mse_id, find_sub_sector
 from .storage.json_store import (
     DATA_DIR,
     delete_parsed_file,
@@ -42,6 +42,24 @@ def _detect_sector_from_data(data: dict) -> str:
     if "securities_balance_sheet" in data or "securities_income_statement" in data:
         return "Finance"
     return "Standard"
+
+
+def _detect_finance_subsector(company_name: str) -> str:
+    """Classify a Finance-sector company into its NBFI subsector.
+
+    Registry lookup takes precedence; name-pattern heuristics are the fallback.
+    """
+    registry_sub = find_sub_sector(company_name)
+    if registry_sub:
+        return registry_sub
+    name = company_name.upper()
+    if "ББСБ" in name or "ЛЭНД" in name or "МОННАБ" in name:
+        return "ББСБ (Lending NBFI)"
+    if "СЕКЮРИТ" in name or "СЕК" in name or "БИДИСЕК" in name:
+        return "Securities/Brokerage"
+    if "ХОЛДИНГ" in name or "ИНВЕСТМЕНТ" in name or "НЭГДЭЛ" in name or "ИННОВЭЙШН" in name:
+        return "Investment/Holding"
+    return "Finance"
 
 
 def _compute_red_flags(ratios: dict, beneish: dict) -> list[dict[str, str]]:
@@ -368,6 +386,7 @@ class AnalysisState(UploadState):
     company_is_bank: bool = False
     company_is_insurance: bool = False
     company_is_finance: bool = False
+    company_finance_subsector: str = ""   # "ББСБ (Lending NBFI)" | "Securities" | "Investment/Holding" | "Finance"
 
     # Chart data vars (must be list[dict] for rx.recharts)
     company_gauge_data: list[dict] = []
@@ -388,6 +407,13 @@ class AnalysisState(UploadState):
     company_equity_multiplier_prev: str = ""
     company_roe_dupont: str = ""
     company_roe_prev: str = ""
+    # Sector-aware DuPont labels and formula description
+    company_dupont_factor1_label: str = "Net Margin"
+    company_dupont_factor1_unit: str = "%"
+    company_dupont_factor2_label: str = "Asset Turnover"
+    company_dupont_factor2_unit: str = "times"
+    company_dupont_formula_text: str = "ROE = Net Profit Margin × Asset Turnover × Equity Multiplier"
+    company_dupont_show_factor2: bool = True
 
     # Red flags
     company_red_flags: list[dict] = []
@@ -595,6 +621,24 @@ class AnalysisState(UploadState):
             self.company_sector_forensic_criteria = _bf["criteria"]
             self.company_sector_forensic_score_display = f"{_bf['score']} / {_bf['max_score']}"
             self.company_sector_forensic_chart_data = _bf["chart_data"]
+            # Banking DuPont: ROE = ROA × Equity Multiplier (2-factor)
+            bank_prev = bank_result.get("prev", {})
+            bank_prev_prof = bank_prev.get("profitability", {})
+            bank_prev_cap  = bank_prev.get("capital_adequacy", {})
+            self.company_dupont_factor1_label = "ROA"
+            self.company_dupont_factor1_unit  = "%"
+            self.company_dupont_factor2_label = ""
+            self.company_dupont_factor2_unit  = ""
+            self.company_dupont_show_factor2  = False
+            self.company_dupont_formula_text  = "ROE = ROA × Equity Multiplier"
+            self.company_net_margin_dupont    = _pct(bank_prof.get("roa"))
+            self.company_net_margin_prev      = _pct(bank_prev_prof.get("roa"))
+            self.company_asset_turnover_dupont = ""
+            self.company_asset_turnover_prev   = ""
+            self.company_equity_multiplier_curr = _fmt(bank_cap.get("equity_multiplier"))
+            self.company_equity_multiplier_prev = _fmt(bank_prev_cap.get("equity_multiplier"))
+            self.company_roe_dupont = _pct(bank_prof.get("roe"))
+            self.company_roe_prev   = _pct(bank_prev_prof.get("roe"))
 
         elif sector == "Insurance":
             ins_result = compute_insurance_ratios(data)
@@ -635,6 +679,38 @@ class AnalysisState(UploadState):
             self.company_sector_forensic_criteria = _if["criteria"]
             self.company_sector_forensic_score_display = f"{_if['score']} / {_if['max_score']}"
             self.company_sector_forensic_chart_data = _if["chart_data"]
+            # Insurance DuPont: ROE = Net Margin × Asset Utilization × Equity Multiplier
+            # Asset Utilization = premiums / total_assets (revenue proxy for insurers)
+            ins_prev = ins_result.get("prev", {})
+            ins_prev_prof = ins_prev.get("profitability", {})
+            ins_prev_solv = ins_prev.get("solvency", {})
+            ins_leverage   = ins_solv.get("leverage_ratio")       # liabilities / equity
+            ins_leverage_p = ins_prev_solv.get("leverage_ratio")
+            # Equity Multiplier = 1 + leverage_ratio = assets / equity
+            ins_eq_mult   = (1 + ins_leverage)   if ins_leverage   is not None else None
+            ins_eq_mult_p = (1 + ins_leverage_p) if ins_leverage_p is not None else None
+            # Asset Utilization: use premiums/assets — stored in insurance ratios as a proxy via
+            # net_margin = net_income/premiums and roa = net_income/assets → AU = roa/net_margin
+            ins_roa_v   = ins_prof.get("roa")
+            ins_nm_v    = ins_prof.get("net_margin")
+            ins_roa_p   = ins_prev_prof.get("roa")
+            ins_nm_p    = ins_prev_prof.get("net_margin")
+            ins_au      = (ins_roa_v / ins_nm_v)   if (ins_roa_v is not None and ins_nm_v and ins_nm_v != 0) else None
+            ins_au_prev = (ins_roa_p / ins_nm_p)   if (ins_roa_p is not None and ins_nm_p and ins_nm_p != 0) else None
+            self.company_dupont_factor1_label = "Net Margin"
+            self.company_dupont_factor1_unit  = "%"
+            self.company_dupont_factor2_label = "Asset Utilization"
+            self.company_dupont_factor2_unit  = "times"
+            self.company_dupont_show_factor2  = True
+            self.company_dupont_formula_text  = "ROE = Net Margin × Asset Utilization × Equity Multiplier"
+            self.company_net_margin_dupont    = _pct(ins_nm_v)
+            self.company_net_margin_prev      = _pct(ins_nm_p)
+            self.company_asset_turnover_dupont = _fmt(ins_au)
+            self.company_asset_turnover_prev   = _fmt(ins_au_prev)
+            self.company_equity_multiplier_curr = _fmt(ins_eq_mult)
+            self.company_equity_multiplier_prev = _fmt(ins_eq_mult_p)
+            self.company_roe_dupont = _pct(ins_prof.get("roe"))
+            self.company_roe_prev   = _pct(ins_prev_prof.get("roe"))
 
         elif sector == "Finance":
             fin_result = compute_finance_ratios(data)
@@ -682,6 +758,30 @@ class AnalysisState(UploadState):
             self.company_sector_forensic_criteria = _ff["criteria"]
             self.company_sector_forensic_score_display = f"{_ff['score']} / {_ff['max_score']}"
             self.company_sector_forensic_chart_data = _ff["chart_data"]
+            # Finance/NBFI DuPont: ROE = Net Margin × Asset Utilization × Equity Multiplier
+            # Exact identity: (NI/TotalIncome) × (TotalIncome/Assets) × (Assets/Equity) = NI/Equity
+            # Applies to all Finance subsectors (ББСБ lenders, securities firms, holding companies)
+            fin_prev      = fin_result.get("prev", {})
+            fin_prev_prof = fin_prev.get("profitability", {})
+            fin_prev_eff  = fin_prev.get("efficiency", {})
+            fin_prev_lev  = fin_prev.get("leverage", {})
+            self.company_finance_subsector    = _detect_finance_subsector(
+                fin_result.get("company", "")
+            )
+            self.company_dupont_factor1_label = "Net Margin"
+            self.company_dupont_factor1_unit  = "%"
+            self.company_dupont_factor2_label = "Asset Utilization"
+            self.company_dupont_factor2_unit  = "times"
+            self.company_dupont_show_factor2  = True
+            self.company_dupont_formula_text  = "ROE = Net Margin × Asset Utilization × Equity Multiplier"
+            self.company_net_margin_dupont    = _pct(fin_prof.get("net_margin"))
+            self.company_net_margin_prev      = _pct(fin_prev_prof.get("net_margin"))
+            self.company_asset_turnover_dupont = _fmt(fin_eff.get("asset_utilisation"))
+            self.company_asset_turnover_prev   = _fmt(fin_prev_eff.get("asset_utilisation"))
+            self.company_equity_multiplier_curr = _fmt(fin_lev.get("equity_multiplier"))
+            self.company_equity_multiplier_prev = _fmt(fin_prev_lev.get("equity_multiplier"))
+            self.company_roe_dupont = _pct(fin_prof.get("roe"))
+            self.company_roe_prev   = _pct(fin_prev_prof.get("roe"))
 
         else:
             # Standard sector
@@ -736,7 +836,13 @@ class AnalysisState(UploadState):
             self.company_z_x4 = _fmt(zs.get("x4_eq_tl"))
             self.company_z_x5 = _fmt(zs.get("x5_rev_ta"))
 
-            # DuPont vars
+            # DuPont vars — standard 3-factor
+            self.company_dupont_factor1_label = "Net Margin"
+            self.company_dupont_factor1_unit  = "%"
+            self.company_dupont_factor2_label = "Asset Turnover"
+            self.company_dupont_factor2_unit  = "times"
+            self.company_dupont_show_factor2  = True
+            self.company_dupont_formula_text  = "ROE = Net Profit Margin × Asset Turnover × Equity Multiplier"
             prev_data = self.company_ratios.get("prev", {})
             prev_prof = prev_data.get("profitability", {})
             prev_act  = prev_data.get("activity", {})

@@ -104,6 +104,7 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 - `_pct(v, decimals)` — multiplies by 100 then formats; used for all ratio values displayed with "%" unit (ROA, ROE, margins, NIM, LDR, Loss Ratio, etc.)
 - `_load_all_companies()` — reads index.json, computes composite score per company for screener
 - `_detect_sector_from_data(data)` — heuristic: checks for bank/insurance sheet keys in parsed dict
+- `_detect_finance_subsector(name)` — classifies Finance companies into subsector; registry lookup (`find_sub_sector`) takes precedence over name-pattern heuristics
 - `_compute_red_flags(ratios, beneish)` — returns list of flag dicts (DSRI spike, TATA, D/E jump, M-Score, current ratio drop)
 
 **Formatting contract:** all ratio engines return raw decimals (e.g. `0.12` for 12%). State assignments use `_pct` for "%" display vars and `_fmt` for "x"/"ratio" display vars. `_slice_price_records` casts `volume` to `int` before storing chart data. `_load_valuation_data` reads `index.json` once and reuses the loaded `fin_data` for both the shares-override check and valuation computation.
@@ -246,6 +247,8 @@ Entry point: `parse_excel_file(file_bytes, filename, sector="") → dict`
 | `find_sector(name)` | `str \| None` — "Banking", "Insurance", "Finance", "Standard" |
 | `find_sector_by_mse_id(id)` | `str \| None` |
 | `find_sector_from_filename(filename)` | `str \| None` — extracts mse_id from filename first |
+| `find_sub_sector(name)` | `str \| None` — e.g. "Securities", "ББСБ (Lending NBFI)", "Investment/Holding" |
+| `find_sub_sector_by_mse_id(id)` | `str \| None` |
 | `all_companies()` | `list[dict]` |
 
 Name normalization: strips `"` `'`, collapses whitespace, lowercases. Checks `aliases` list per entry.
@@ -458,7 +461,7 @@ Provides label/color classification thresholds for composite scores (Green/Amber
 | File/Dir | Shape |
 |---|---|
 | `index.json` | `{"files": [{filename, company, year, sector, sheets_parsed, parsed_at}]}` |
-| `company_registry.json` | `[{name, mse_id, tier, sector, aliases, english}]` — 68 companies |
+| `company_registry.json` | `[{name, mse_id, tier, sector, sub_sector?, aliases?, english?}]` — 68 companies; all Finance entries have `sub_sector` ("Securities", "ББСБ (Lending NBFI)", "Investment/Holding") |
 | `prices/{company}.json` | `{company, mse_id, scraped_at, shares_outstanding?, records:[{date,open,high,low,close,volume}]}` |
 | `{Company}_{year}.json` | Full parsed dict with metadata wrapper from manual upload |
 
