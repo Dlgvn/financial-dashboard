@@ -7,8 +7,11 @@ Exports:
     load_price_returns       Load price JSONs and compute log returns per company.
     align_returns            Align return arrays to equal length, return matrix.
     compute_portfolio_returns Weighted portfolio return series from returns matrix.
-    compute_risk_metrics     Sortino, Max Drawdown, CVaR 95% from return series.
+    compute_risk_metrics     Sortino, Max Drawdown from return series.
     mean_variance_optimize   Maximize Sharpe via SLSQP; returns weight dict.
+    min_risk_optimize        Minimize portfolio variance; returns weight dict.
+    max_return_optimize      Maximize portfolio return; returns weight dict.
+    compute_individual_stats Per-company daily/annual return and variance stats.
     sample_frontier          Random frontier sample; returns list[dict[str,str]].
     rebalance_weights        Proportional weight rebalance after manual edit.
     compute_sector_breakdown Aggregate holdings weight by sector for pie chart.
@@ -27,18 +30,70 @@ from scipy.optimize import minimize
 
 PRICES_DIR = Path(__file__).parent.parent.parent / "data" / "prices"
 
+# MSE enforces a ±15% daily price-move circuit breaker.
+# Any close-to-close ratio outside this band is a corporate action (split,
+# rights issue, ex-dividend drop) rather than a real traded return.
+_MSE_DAILY_LIMIT = 0.15
+_CORP_ACTION_THRESHOLD = math.log(1 + _MSE_DAILY_LIMIT)  # ≈ 0.1393
+
 SECTOR_COLORS = {
-    "Banking": "#60a5fa",
-    "Insurance": "#f59e0b",
-    "Standard": "#4ade80",
+    "Banking":      "#60a5fa",  # blue
+    "Insurance":    "#f59e0b",  # amber
+    "Finance":      "#818cf8",  # indigo
+    "Mining":       "#f87171",  # red
+    "Manufacturing":"#4ade80",  # green
+    "Energy":       "#facc15",  # yellow
+    "Construction": "#fb923c",  # orange
+    "Agriculture":  "#a3e635",  # lime
+    "Food":         "#34d399",  # emerald
+    "Trade":        "#22d3ee",  # cyan
+    "Transport":    "#e879f9",  # fuchsia
+    "Tourism":      "#f472b6",  # pink
+    "Holding":      "#c084fc",  # purple
+    "Real Estate":  "#2dd4bf",  # teal
+    "Services":     "#94a3b8",  # slate
+    "Textiles":     "#a78bfa",  # violet
+    "Standard":     "#4ade80",  # green (legacy fallback label)
 }
 
 # Default color for unknown sectors
-_DEFAULT_COLOR = "#94a3b8"
+_DEFAULT_COLOR = "#64748b"
 
 # ---------------------------------------------------------------------------
 # 1. load_price_returns
 # ---------------------------------------------------------------------------
+
+
+def _adjust_closes(closes: np.ndarray) -> np.ndarray:
+    """Return backward-adjusted closing prices using the MSE ±15% circuit breaker.
+
+    Any consecutive-day ratio outside ±15% is treated as a corporate action
+    (dividend ex-date, split, rights issue).  A multiplicative adjustment
+    factor is applied to all prices *before* that event so the series is
+    continuous — the same convention used by Yahoo Finance adj_close.
+
+    Args:
+        closes: Raw closing price array, chronologically ordered, all > 0.
+
+    Returns:
+        Adjusted price array of the same length.  The most-recent price is
+        unchanged; only historical prices are scaled.
+    """
+    adj = closes.copy()
+    n = len(adj)
+
+    # Walk backward from the most recent observation so earlier prices absorb
+    # each adjustment cumulatively.
+    for i in range(n - 1, 0, -1):
+        log_ratio = math.log(adj[i] / adj[i - 1])
+        if abs(log_ratio) > _CORP_ACTION_THRESHOLD:
+            # Adjustment factor: what the price *should* have been if there
+            # were no corporate action — i.e. scale all preceding prices by
+            # adj[i] / adj[i-1] so the return on that day becomes 0.
+            factor = adj[i] / adj[i - 1]
+            adj[:i] *= factor
+
+    return adj
 
 
 def load_price_returns(company_names: list[str]) -> dict[str, np.ndarray]:
@@ -78,9 +133,11 @@ def load_price_returns(company_names: list[str]) -> dict[str, np.ndarray]:
         if np.any(closes <= 0):
             continue
 
+        adj_closes = _adjust_closes(closes)
+
         # Log returns used instead of simple returns: log(P_t/P_{t-1}) is time-additive and approximately
         # normally distributed — required assumption for mean-variance optimization (log-normality).
-        log_returns = np.log(closes[1:] / closes[:-1])
+        log_returns = np.log(adj_closes[1:] / adj_closes[:-1])
         result[name] = log_returns
 
     return result
@@ -145,16 +202,16 @@ def compute_portfolio_returns(
 
 
 def compute_risk_metrics(portfolio_returns: np.ndarray) -> dict:
-    """Compute Sortino Ratio, Maximum Drawdown, and CVaR 95%.
+    """Compute Sortino Ratio and Maximum Drawdown.
 
     Args:
         portfolio_returns: 1-D array of portfolio daily returns.
 
     Returns:
-        Dict with keys: sortino (float|None), max_drawdown (float|None),
-        cvar_95 (float|None). All None if fewer than 10 observations.
+        Dict with keys: sortino (float|None), max_drawdown (float|None).
+        All None if fewer than 10 observations.
     """
-    null_result = {"sortino": None, "max_drawdown": None, "cvar_95": None}
+    null_result = {"sortino": None, "max_drawdown": None}
 
     if len(portfolio_returns) < 10:
         return null_result
@@ -186,17 +243,6 @@ def compute_risk_metrics(portfolio_returns: np.ndarray) -> dict:
     peak = np.maximum.accumulate(cum_returns)
     drawdowns = (cum_returns - peak) / peak
     result["max_drawdown"] = float(np.min(drawdowns))
-
-    # ------------------------------------------------------------------
-    # CVaR (Conditional Value at Risk) at 95% = Expected Shortfall = mean of returns below the 5th percentile.
-    # More conservative than VaR: captures the average magnitude of tail losses, not just the threshold.
-    # Historical simulation used — no parametric distribution assumed.
-    threshold = float(np.percentile(portfolio_returns, 5))
-    tail = portfolio_returns[portfolio_returns <= threshold]
-    if len(tail) == 0:
-        result["cvar_95"] = float(threshold)
-    else:
-        result["cvar_95"] = float(np.mean(tail))
 
     return result
 
@@ -240,7 +286,7 @@ def mean_variance_optimize(
         port_return = float(w @ mean_returns)
         port_var = float(w @ cov_matrix @ w)
         if port_var <= 0:
-            return 0.0
+            return 1e10
         return -(port_return / math.sqrt(port_var))
 
     constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
@@ -269,6 +315,129 @@ def mean_variance_optimize(
     else:
         # Fallback: equal weights
         return {"weights": equal_weights, "success": False}
+
+
+# ---------------------------------------------------------------------------
+# 5b. min_risk_optimize
+# ---------------------------------------------------------------------------
+
+
+def min_risk_optimize(
+    returns_matrix: np.ndarray, names: list[str]
+) -> dict:
+    """Find minimum-variance weights using SLSQP.
+
+    Args:
+        returns_matrix: 2-D array (n_obs, n_assets).
+        names: Asset names corresponding to columns.
+
+    Returns:
+        Dict with weights: {name: weight_as_percent}, success: bool.
+    """
+    n = returns_matrix.shape[1]
+    equal_weights = {name: round(100.0 / n, 1) for name in names}
+
+    if n == 0:
+        return {"weights": {}, "success": False}
+
+    cov_matrix = np.cov(returns_matrix.T) * 252
+    if cov_matrix.ndim == 0:
+        cov_matrix = np.array([[float(cov_matrix)]])
+
+    def port_variance(w: np.ndarray) -> float:
+        return float(w @ cov_matrix @ w)
+
+    constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
+    bounds = [(0.0, 1.0)] * n
+    w0 = np.ones(n) / n
+
+    opt_result = minimize(
+        port_variance,
+        w0,
+        method="SLSQP",
+        bounds=bounds,
+        constraints=constraints,
+        options={"maxiter": 1000, "ftol": 1e-9},
+    )
+
+    if opt_result.success:
+        raw_weights = np.clip(opt_result.x, 0.0, 1.0)
+        total = raw_weights.sum()
+        if total > 0:
+            raw_weights = raw_weights / total
+        weights = {name: round(float(w) * 100, 1) for name, w in zip(names, raw_weights)}
+        return {"weights": weights, "success": True}
+    else:
+        return {"weights": equal_weights, "success": False}
+
+
+# ---------------------------------------------------------------------------
+# 5c. max_return_optimize
+# ---------------------------------------------------------------------------
+
+
+def max_return_optimize(
+    returns_matrix: np.ndarray, names: list[str]
+) -> dict:
+    """Find maximum-return weights (long-only, fully invested).
+
+    Closed-form solution: concentrate 100% in the asset with the highest
+    annualized mean return. No optimizer needed — this is a trivial LP corner.
+
+    Args:
+        returns_matrix: 2-D array (n_obs, n_assets).
+        names: Asset names corresponding to columns.
+
+    Returns:
+        Dict with weights: {name: weight_as_percent}, success: bool.
+    """
+    n = returns_matrix.shape[1]
+    if n == 0:
+        return {"weights": {}, "success": False}
+
+    mean_returns = np.mean(returns_matrix, axis=0) * 252
+    best_idx = int(np.argmax(mean_returns))
+    weights = {name: 0.0 for name in names}
+    weights[names[best_idx]] = 100.0
+    return {"weights": weights, "success": True}
+
+
+# ---------------------------------------------------------------------------
+# 5d. compute_individual_stats
+# ---------------------------------------------------------------------------
+
+
+def compute_individual_stats(
+    returns_map: dict[str, np.ndarray],
+) -> list[dict[str, str]]:
+    """Compute per-company daily and annualized return/variance statistics.
+
+    Args:
+        returns_map: Dict from company name to 1-D log return array.
+
+    Returns:
+        List of dicts with string keys:
+            company, daily_return, annual_return, daily_variance, annual_variance, sharpe
+        All numeric values are strings for Reflex compatibility.
+    """
+    results = []
+    for name, returns in returns_map.items():
+        if len(returns) < 2:
+            continue
+        daily_ret = float(np.mean(returns))
+        daily_std = float(np.std(returns, ddof=1))
+        ann_ret = daily_ret * 252
+        ann_std = daily_std * math.sqrt(252)
+        sharpe = ann_ret / ann_std if ann_std > 0 else None
+        results.append({
+            "company": name,
+            "daily_return": f"{daily_ret * 100:.4f}%",
+            "annual_return": f"{ann_ret * 100:.2f}%",
+            "daily_vol": f"{daily_std * 100:.4f}%",
+            "annual_vol": f"{ann_std * 100:.2f}%",
+            "sharpe": f"{sharpe:.3f}" if sharpe is not None else "N/A",
+        })
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -409,7 +578,7 @@ def compute_sector_breakdown(holdings: list[dict]) -> list[dict]:
         fill = SECTOR_COLORS.get(sector, _DEFAULT_COLOR)
         result.append({
             "name": sector,
-            "value": str(round(total, 1)),
+            "value": round(total, 1),  # numeric — Recharts pie needs a number, not a string
             "fill": fill,
         })
 
