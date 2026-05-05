@@ -213,41 +213,27 @@ def overview_tab_content() -> rx.Component:
                     class_name="mb-4",
                 ),
                 rx.vstack(
-                    rx.hstack(
-                        rx.text("ROE", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_roe, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        rx.text("%", class_name="text-xs", style={"color": _FAINT}),
-                        spacing="2", align="center", class_name="py-2 border-b", style={"borderColor": _BORDER},
-                    ),
-                    rx.hstack(
-                        rx.text("ROA", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_roa, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        rx.text("%", class_name="text-xs", style={"color": _FAINT}),
-                        spacing="2", align="center", class_name="py-2 border-b", style={"borderColor": _BORDER},
-                    ),
-                    rx.hstack(
-                        rx.text("Net Margin", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_net_margin, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        rx.text("%", class_name="text-xs", style={"color": _FAINT}),
-                        spacing="2", align="center", class_name="py-2 border-b", style={"borderColor": _BORDER},
-                    ),
-                    rx.hstack(
-                        rx.text("Debt / Equity", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_debt_equity, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        rx.text("x", class_name="text-xs", style={"color": _FAINT}),
-                        spacing="2", align="center", class_name="py-2 border-b", style={"borderColor": _BORDER},
-                    ),
-                    rx.hstack(
-                        rx.text("Current Ratio", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_current_ratio, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        rx.text("x", class_name="text-xs", style={"color": _FAINT}),
-                        spacing="2", align="center", class_name="py-2 border-b", style={"borderColor": _BORDER},
-                    ),
-                    rx.hstack(
-                        rx.text("Altman Z-Score", class_name="text-xs font-semibold w-40", style={"color": _MUTED}),
-                        rx.text(s.company_z_score, class_name="text-sm font-mono font-bold", style={"color": _BLUE}),
-                        spacing="2", align="center", class_name="py-2",
-                    ),
+                    *[
+                        rx.hstack(
+                            rx.text(label, class_name="text-sm font-semibold flex-1", style={"color": _MUTED}),
+                            rx.text(val, class_name="text-lg font-mono font-bold", style={"color": _BLUE}),
+                            rx.text(unit, class_name="text-sm", style={"color": _FAINT}),
+                            spacing="2", align="center",
+                            class_name=f"py-3 {'border-b' if i < 8 else ''}",
+                            style={"borderColor": _BORDER},
+                        )
+                        for i, (label, val, unit) in enumerate([
+                            ("ROE",              s.company_roe,            "%"),
+                            ("ROA",              s.company_roa,            "%"),
+                            ("Net Margin",       s.company_net_margin,     "%"),
+                            ("Gross Margin",     s.company_gross_margin,   "%"),
+                            ("Operating Margin", s.company_operating_margin, "%"),
+                            ("Debt / Equity",    s.company_debt_equity,    "x"),
+                            ("Current Ratio",    s.company_current_ratio,  "x"),
+                            ("Quick Ratio",      s.company_quick_ratio,    "x"),
+                            ("Altman Z-Score",   s.company_z_score,        ""),
+                        ])
+                    ],
                     spacing="0",
                     width="100%",
                 ),
