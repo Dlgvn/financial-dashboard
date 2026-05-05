@@ -28,10 +28,12 @@ Registers 4 routes and defines the home page UI:
 
 | Route | Page | On-load |
 |---|---|---|
-| `/` | `index()` | `UploadState.on_load` |
-| `/screener` | `screener_page` | `AnalysisState.load_screener` |
+| `/` | `index()` | `PortfolioState.load_screener` |
+| `/screener` | `screener_page` | `PortfolioState.load_screener` |
 | `/company/[company]` | `company_page` | `AnalysisState.on_load_company` |
 | `/portfolio` | `portfolio_page` | — |
+
+> **Why `PortfolioState.load_screener` and not `AnalysisState.load_screener`:** Reflex substates own separate copies of inherited vars. Calling `AnalysisState.load_screener` populates only `AnalysisState.all_companies`; `PortfolioState.all_companies` (read by `add_to_portfolio`) stays empty, causing every "Add" button to silently no-op. Both the index and screener pages use `PortfolioState.*` for all screener-related state vars (`filtered_companies`, `screener_sort_col`, `screener_filter`, etc.).
 
 **Home page sections:**
 1. **Demo mode** — "Load 7 MSE Companies" → skips upload, loads pre-parsed data, redirects to `/screener`
@@ -125,11 +127,13 @@ Holds ~80 flat display vars (pre-formatted strings) for the company detail page 
 | `can_show_analysis` | Guard: requires ≥2 companies with price data |
 
 **Events:**
-- `add_to_portfolio(company)` — equal-weight rebalance on add
+- `add_to_portfolio(company)` — equal-weight rebalance on add; looks up `self.all_companies` (populated by `load_screener` on the same `PortfolioState` instance)
 - `remove_from_portfolio(company)` — rebalances remaining
 - `set_holding_weight(company, value)` — manual weight edit → `rebalance_weights()`
 - `apply_optimal_weights()` — applies mean-variance optimal weights from `optimization_data`
 - `on_tab_change(tab)` — triggers `_run_portfolio_analysis()` when switching to "analysis" tab
+
+**Holdings dict keys:** `company`, `filename`, `url`, `weight` (float 0–1), `weight_str` (e.g. `"33.3%"`), `weight_pct` (e.g. `"33.3"`), `score`, `score_str`, `label`, `color`, `sector`.
 
 **Computed vars:** `portfolio_health` (weighted avg score), `in_portfolio` (list of names)
 
