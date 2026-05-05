@@ -251,7 +251,7 @@ def overview_tab_content() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                class_name="rounded-2xl p-5",
+                class_name="rounded-2xl p-5 self-start",
                 style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
             ),
             # Risk signals
