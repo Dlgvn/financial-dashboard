@@ -25,13 +25,13 @@ Finance/NBFI subsectors (Securities, ББСБ Lending, Investment/Holding) are a
 
 - **Ratios** — sector-aware table with green/amber/red color coding against calibrated MSE benchmarks
 - **Forensic** — standard companies: Piotroski F-Score + Beneish M-Score; Banking/Insurance/Finance: 8-criterion sector forensic score + YoY bar chart
-- **Valuation** — 6 subsector-specific card grids (EV/EBIT, FCF Yield, P/E, P/BV, P/TBV, P/PPOP, P/NII, P/NPE, P/UWP, P/InvSec, P/Revenue); historical OHLCV price chart with 1M/6M/1Y/All range toggle
+- **Valuation** — 6 subsector-specific card grids with a cash flow metric on every grid: standard (EV/EBIT, FCF Yield, Free Cash Flow M₮, P/E, P/BV), banking (P/E, P/BV, P/TBV, P/PPOP, P/NII, Op. Cash Flow M₮), NBFI (P/E, P/BV, P/PPOP, P/NII, Op. Cash Flow M₮), holding (P/E, P/NAV, P/Inv Sec, Op. Cash Flow M₮), securities (P/E, P/BV, P/Revenue, Op. Cash Flow M₮), insurance (P/E, P/BV, P/NPE, P/UWP, Op. Cash Flow M₮); historical OHLCV price chart with 1M/6M/1Y/All range toggle
 - **DuPont** — 3-factor decomposition (Standard/Insurance/Finance: Net Margin × Asset Turnover × Equity Multiplier; Banking: ROA × Equity Multiplier); current vs. prior year comparison
 - **Red Flags** — rule-based flags appear instantly on page load, then replaced by Groq AI (Llama 3.3 70B) sector-aware flags with HIGH/MEDIUM/LOW/CLEAR severity badges
 
 ### Company Screener
 
-Sortable, filterable table across all uploaded companies. Columns: company name, year, sector, composite health badge, Piotroski F-Score, ROE. One-click "Add to Portfolio" per row.
+Sortable, filterable table across all uploaded companies with an expandable Methodology & Validation panel. Columns: company name, year, sector, composite health badge, ROE. One-click "Add to Portfolio" per row. The methodology panel documents exact scoring weights per sector, universal adjustments (Beneish penalty, missing-data redistribution), and known limitations.
 
 ### Portfolio Manager
 
@@ -182,6 +182,7 @@ Demo data for 7 MSE companies is pre-loaded — no file upload required. To add 
 | Piotroski F7 always N/A | MSE Excel filings do not include shares outstanding |
 | Beneish DEPI always N/A | MSE filings do not disclose depreciation as a separate line |
 | EV/EBITDA uses EBIT proxy | No depreciation line available; labeled as EV/EBIT in UI |
+| FCF not shown for financial sectors | Investing CF is core business activity for banks/insurers/NBFIs; Op. Cash Flow shown instead |
 | Valuation ratios require shares input | Shares outstanding must be entered manually on the company page if not scraped |
 | Price history scope | Pre-loaded for 7 demo companies; run "Refresh Prices" to scrape remaining MSE companies |
 | 1–2 years of data | MSE members portal typically provides only the most recent filing year |
