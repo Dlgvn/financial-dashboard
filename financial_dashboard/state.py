@@ -104,6 +104,25 @@ def _compute_red_flags(ratios: dict, beneish: dict) -> list[dict[str, str]]:
     return flags
 
 
+def _color(v, good_above=None, bad_below=None, good_below=None, bad_above=None) -> str:
+    """Return 'good', 'neutral', or 'bad' color hint for a raw ratio float."""
+    if v is None:
+        return "neutral"
+    if good_above is not None and bad_below is not None:
+        if v >= good_above:
+            return "good"
+        if v <= bad_below:
+            return "bad"
+        return "neutral"
+    if good_below is not None and bad_above is not None:
+        if v <= good_below:
+            return "good"
+        if v >= bad_above:
+            return "bad"
+        return "neutral"
+    return "neutral"
+
+
 class UploadState(rx.State):
     """Manages file upload, parsing, and display state."""
 
@@ -125,6 +144,13 @@ class UploadState(rx.State):
 
     # Currently selected file
     selected_file: str = ""
+
+    # UI language toggle
+    lang: str = "EN"
+
+    @rx.event
+    def toggle_lang(self):
+        self.lang = "MN" if self.lang == "EN" else "EN"
 
     def _refresh_file_list(self):
         """Reload uploaded files from index.json."""
@@ -288,22 +314,17 @@ def _load_all_companies() -> list[dict]:
                 composite = compute_composite_score(ratios, piotroski, beneish)
                 roe = ratios["current"].get("profitability", {}).get("roe")
 
-            _financial_sector = sector in ("Banking", "Insurance", "Finance")
-            f_score = piotroski["f_score"]
-            max_score = piotroski["max_score"]
             results.append({
-                "filename":    entry["filename"],
-                "company":     entry["company"],
-                "url":         f"/company/{entry['company']}",
-                "year":        entry.get("year", ""),
-                "sector":      sector,
-                "score":       composite["score"],
-                "label":       composite["label"],
-                "color":       composite["color"],
-                "roe":         roe if roe is not None else 0.0,
-                "roe_str":     f"{roe * 100:.1f}%" if roe is not None else "N/A",
-                "f_score":     int(f_score) if (f_score is not None and not _financial_sector) else 0,
-                "f_score_str": "N/A" if _financial_sector else (f"{f_score} / {max_score}" if f_score is not None else "N/A"),
+                "filename": entry["filename"],
+                "company":  entry["company"],
+                "url":      f"/company/{entry['company']}",
+                "year":     entry.get("year", ""),
+                "sector":   sector,
+                "score":    composite["score"],
+                "label":    composite["label"],
+                "color":    composite["color"],
+                "roe":      roe if roe is not None else 0.0,
+                "roe_str":  f"{roe * 100:.1f}%" if roe is not None else "N/A",
             })
         except Exception as e:
             print(f"[_load_all_companies] Skipping {entry.get('filename', '?')}: {e}")
@@ -334,6 +355,14 @@ class AnalysisState(UploadState):
     # Screener
     all_companies: list[dict] = []
     screener_filter: str = "All"     # sector filter value
+
+    # Ratio color coding
+    show_ratio_colors: bool = True
+    company_ratio_color_map: dict[str, str] = {}
+
+    @rx.event
+    def toggle_ratio_colors(self):
+        self.show_ratio_colors = not self.show_ratio_colors
 
     # Company detail — raw dicts (kept for any backend use)
     selected_company_name: str = ""
@@ -641,6 +670,21 @@ class AnalysisState(UploadState):
             self.company_equity_multiplier_prev = _fmt(bank_prev_cap.get("equity_multiplier"))
             self.company_roe_dupont = _pct(bank_prof.get("roe"))
             self.company_roe_prev   = _pct(bank_prev_prof.get("roe"))
+            self.company_ratio_color_map = {
+                "bank_nim": _color(bank_prof.get("nim"), good_above=0.04, bad_below=0.02),
+                "bank_roa": _color(bank_prof.get("roa"), good_above=0.015, bad_below=0),
+                "bank_roe": _color(bank_prof.get("roe"), good_above=0.10, bad_below=0),
+                "bank_net_margin": _color(bank_prof.get("net_margin"), good_above=0.15, bad_below=0),
+                "bank_interest_income_ratio": _color(bank_prof.get("interest_income_ratio"), good_above=0.6, bad_below=0.3),
+                "bank_equity_multiplier": _color(bank_cap.get("equity_multiplier"), good_below=10.0, bad_above=15.0),
+                "bank_equity_to_assets": _color(bank_cap.get("equity_to_assets"), good_above=0.12, bad_below=0.08),
+                "bank_npl_ratio": _color(bank_aq.get("npl_ratio"), good_below=0.03, bad_above=0.07),
+                "bank_coverage_ratio": _color(bank_aq.get("coverage_ratio"), good_above=1.5, bad_below=1.0),
+                "bank_loan_loss_reserve": _color(bank_aq.get("loan_loss_reserve_ratio"), good_above=0.05, bad_below=0.02),
+                "bank_provision_to_loans": _color(bank_aq.get("provision_to_loans"), good_above=0.02, bad_below=0.005),
+                "bank_ldr": _color(bank_liq.get("ldr"), good_below=0.80, bad_above=0.90),
+                "bank_cost_to_income": _color(bank_eff.get("cost_to_income"), good_below=0.50, bad_above=0.70),
+            }
 
         elif sector == "Insurance":
             ins_result = compute_insurance_ratios(data)
@@ -713,6 +757,17 @@ class AnalysisState(UploadState):
             self.company_equity_multiplier_prev = _fmt(ins_eq_mult_p)
             self.company_roe_dupont = _pct(ins_prof.get("roe"))
             self.company_roe_prev   = _pct(ins_prev_prof.get("roe"))
+            self.company_ratio_color_map = {
+                "ins_loss_ratio": _color(ins_uw.get("loss_ratio"), good_below=0.60, bad_above=0.80),
+                "ins_expense_ratio": _color(ins_uw.get("expense_ratio"), good_below=0.25, bad_above=0.35),
+                "ins_combined_ratio": _color(ins_uw.get("combined_ratio"), good_below=0.95, bad_above=1.00),
+                "ins_roa": _color(ins_prof.get("roa"), good_above=0.03, bad_below=0),
+                "ins_roe": _color(ins_prof.get("roe"), good_above=0.10, bad_below=0),
+                "ins_net_margin": _color(ins_prof.get("net_margin"), good_above=0.10, bad_below=0),
+                "ins_solvency_ratio": _color(ins_solv.get("solvency_ratio"), good_above=1.5, bad_below=1.0),
+                "ins_reserve_coverage": _color(ins_solv.get("reserve_coverage"), good_above=1.5, bad_below=1.0),
+                "ins_ocf_ratio": _color(ins_liq.get("ocf_ratio"), good_above=0.1, bad_below=0),
+            }
 
         elif sector == "Finance":
             fin_result = compute_finance_ratios(data)
@@ -784,6 +839,18 @@ class AnalysisState(UploadState):
             self.company_equity_multiplier_prev = _fmt(fin_prev_lev.get("equity_multiplier"))
             self.company_roe_dupont = _pct(fin_prof.get("roe"))
             self.company_roe_prev   = _pct(fin_prev_prof.get("roe"))
+            self.company_ratio_color_map = {
+                "fin_nim": _color(fin_prof.get("nim"), good_above=0.04, bad_below=0.02),
+                "fin_roa": _color(fin_prof.get("roa"), good_above=0.02, bad_below=0),
+                "fin_roe": _color(fin_prof.get("roe"), good_above=0.10, bad_below=0),
+                "fin_net_margin": _color(fin_prof.get("net_margin"), good_above=0.10, bad_below=0),
+                "fin_cost_to_income": _color(fin_eff.get("cost_to_income"), good_below=0.50, bad_above=0.70),
+                "fin_debt_to_equity": _color(fin_lev.get("debt_to_equity"), good_below=3.0, bad_above=8.0),
+                "fin_equity_ratio": _color(fin_lev.get("equity_ratio"), good_above=0.15, bad_below=0.08),
+                "fin_npa_ratio": _color(fin_aq.get("npa_ratio"), good_below=0.03, bad_above=0.07),
+                "fin_provision_coverage": _color(fin_aq.get("provision_coverage"), good_above=1.0, bad_below=0.7),
+                "fin_ocf_ratio": _color(fin_liq.get("ocf_ratio"), good_above=0.1, bad_below=0),
+            }
 
         else:
             # Standard sector
@@ -862,6 +929,25 @@ class AnalysisState(UploadState):
 
             self.company_roe_dupont = _pct(prof.get("roe"))
             self.company_roe_prev   = _pct(prev_prof.get("roe"))
+            self.company_ratio_color_map = {
+                "roa": _color(prof.get("roa"), good_above=0.05, bad_below=0),
+                "roe": _color(prof.get("roe"), good_above=0.10, bad_below=0),
+                "net_margin": _color(prof.get("net_margin"), good_above=0.05, bad_below=0),
+                "gross_margin": _color(prof.get("gross_margin"), good_above=0.20, bad_below=0.05),
+                "operating_margin": _color(prof.get("operating_margin"), good_above=0.10, bad_below=0),
+                "ebit_margin": _color(prof.get("ebit_margin"), good_above=0.10, bad_below=0),
+                "current_ratio": _color(liq.get("current_ratio"), good_above=1.5, bad_below=1.0),
+                "quick_ratio": _color(liq.get("quick_ratio"), good_above=1.0, bad_below=0.5),
+                "cash_ratio": _color(liq.get("cash_ratio"), good_above=0.5, bad_below=0.1),
+                "debt_equity": _color(solv.get("debt_to_equity"), good_below=1.0, bad_above=3.0),
+                "debt_to_assets": _color(solv.get("debt_to_assets"), good_below=0.4, bad_above=0.6),
+                "equity_ratio": _color(solv.get("equity_ratio"), good_above=0.4, bad_below=0.2),
+                "interest_cov": _color(solv.get("interest_coverage"), good_above=3.0, bad_below=1.0),
+                "asset_turnover": _color(act.get("total_asset_turnover"), good_above=1.0, bad_below=0.3),
+                "ocf_ratio": _color(perf.get("ocf_ratio"), good_above=0.1, bad_below=0),
+                "cf_to_debt": _color(perf.get("cf_to_debt"), good_above=0.2, bad_below=0.05),
+                "z_score": _color(zs.get("z_score"), good_above=2.99, bad_below=1.81),
+            }
 
         # --- Populate flat display vars (common to all sectors) ---
         comp  = self.company_composite
@@ -1275,8 +1361,8 @@ class PortfolioState(AnalysisState):
     # --- Phase 4: Portfolio Optimization vars ---
     active_portfolio_tab: str = "holdings"
 
-    # Sector donut chart data (per D-20)
-    sector_chart_data: list[dict[str, str]] = []
+    # Sector donut chart data — value is float so Recharts pie can render it
+    sector_chart_data: list[dict] = []
 
     # Efficient frontier scatter data (per D-15)
     frontier_data: list[dict[str, str]] = []
@@ -1290,10 +1376,12 @@ class PortfolioState(AnalysisState):
     # Risk metric display strings (per D-13, D-14)
     sortino_str: str = "N/A"
     max_drawdown_str: str = "N/A"
-    cvar_str: str = "N/A"
 
     # Whether analysis can be shown (per D-04)
     can_show_analysis: bool = False
+
+    # Per-company stats table (daily/annual return + variance + sharpe)
+    individual_stats: list[dict[str, str]] = []
 
     @rx.event
     def add_to_portfolio(self, company: str):
@@ -1356,19 +1444,73 @@ class PortfolioState(AnalysisState):
 
     @rx.event
     def apply_optimal_weights(self):
-        """Apply mean-variance optimal weights to all holdings."""
+        """Apply max-Sharpe optimal weights to all holdings."""
         if not self.optimization_data:
             return
-        opt_map = {row["company"]: row["optimal"] for row in self.optimization_data}
-        from .analysis.portfolio_optimization import rebalance_weights, compute_sector_breakdown
-        holdings = list(self.holdings)
-        for h in holdings:
-            opt_pct = float(opt_map.get(h["company"], h.get("weight_pct", "0")))
-            w = round(opt_pct / 100, 4)
-            h["weight"] = w
-            h["weight_pct"] = str(round(opt_pct, 1))
-            h["weight_str"] = f"{opt_pct:.1f}%"
-        self.holdings = holdings
+        from .analysis.portfolio_optimization import compute_sector_breakdown
+        opt_map = {row["company"]: float(row["optimal"]) for row in self.optimization_data}
+        # Companies not in opt_map (no price data) get 0 weight, then renormalize
+        new_holdings = []
+        for h in self.holdings:
+            h_copy = dict(h)
+            opt_pct = opt_map.get(h_copy["company"], 0.0)
+            h_copy["weight"] = round(opt_pct / 100, 4)
+            h_copy["weight_pct"] = str(round(opt_pct, 1))
+            h_copy["weight_str"] = f"{opt_pct:.1f}%"
+            new_holdings.append(h_copy)
+        self.holdings = new_holdings
+        self.sector_chart_data = compute_sector_breakdown(self.holdings)
+        self._run_portfolio_analysis()
+
+    @rx.event
+    def apply_min_risk_weights(self):
+        """Apply minimum-variance weights to all holdings."""
+        from .analysis.portfolio_optimization import (
+            load_price_returns, align_returns, min_risk_optimize, compute_sector_breakdown,
+        )
+        company_names = [h["company"] for h in self.holdings]
+        returns_map = load_price_returns(company_names)
+        if len(returns_map) < 2:
+            return
+        names, matrix = align_returns(returns_map)
+        opt = min_risk_optimize(matrix, names)
+        opt_weights = opt["weights"]
+        # Companies without price data get 0; optimizer weights already sum to 100
+        new_holdings = []
+        for h in self.holdings:
+            h_copy = dict(h)
+            opt_pct = float(opt_weights.get(h_copy["company"], 0.0))
+            h_copy["weight"] = round(opt_pct / 100, 4)
+            h_copy["weight_pct"] = str(round(opt_pct, 1))
+            h_copy["weight_str"] = f"{opt_pct:.1f}%"
+            new_holdings.append(h_copy)
+        self.holdings = new_holdings
+        self.sector_chart_data = compute_sector_breakdown(self.holdings)
+        self._run_portfolio_analysis()
+
+    @rx.event
+    def apply_max_return_weights(self):
+        """Apply maximum-return weights to all holdings."""
+        from .analysis.portfolio_optimization import (
+            load_price_returns, align_returns, max_return_optimize, compute_sector_breakdown,
+        )
+        company_names = [h["company"] for h in self.holdings]
+        returns_map = load_price_returns(company_names)
+        if len(returns_map) < 2:
+            return
+        names, matrix = align_returns(returns_map)
+        opt = max_return_optimize(matrix, names)
+        opt_weights = opt["weights"]
+        # Companies without price data get 0; optimizer weights already sum to 100
+        new_holdings = []
+        for h in self.holdings:
+            h_copy = dict(h)
+            opt_pct = float(opt_weights.get(h_copy["company"], 0.0))
+            h_copy["weight"] = round(opt_pct / 100, 4)
+            h_copy["weight_pct"] = str(round(opt_pct, 1))
+            h_copy["weight_str"] = f"{opt_pct:.1f}%"
+            new_holdings.append(h_copy)
+        self.holdings = new_holdings
         self.sector_chart_data = compute_sector_breakdown(self.holdings)
         self._run_portfolio_analysis()
 
@@ -1377,7 +1519,7 @@ class PortfolioState(AnalysisState):
         from .analysis.portfolio_optimization import (
             load_price_returns, align_returns, compute_portfolio_returns,
             compute_risk_metrics, mean_variance_optimize, sample_frontier,
-            compute_sector_breakdown,
+            compute_sector_breakdown, compute_individual_stats,
         )
         import numpy as np
 
@@ -1389,10 +1531,10 @@ class PortfolioState(AnalysisState):
             self.can_show_analysis = False
             self.sortino_str = "N/A"
             self.max_drawdown_str = "N/A"
-            self.cvar_str = "N/A"
             self.frontier_data = []
             self.current_point_data = []
             self.optimization_data = []
+            self.individual_stats = []
             return
 
         self.can_show_analysis = True
@@ -1410,7 +1552,6 @@ class PortfolioState(AnalysisState):
         metrics = compute_risk_metrics(port_returns)
         self.sortino_str = f"{metrics['sortino']:.2f}" if metrics["sortino"] is not None else "N/A"
         self.max_drawdown_str = f"{metrics['max_drawdown'] * 100:.1f}%" if metrics["max_drawdown"] is not None else "N/A"
-        self.cvar_str = f"{metrics['cvar_95'] * 100:.2f}%" if metrics["cvar_95"] is not None else "N/A"
 
         # Optimization (PORT-04, D-09)
         opt = mean_variance_optimize(matrix, names)
@@ -1434,6 +1575,9 @@ class PortfolioState(AnalysisState):
         curr_ret = float(np.dot(current_weights, mean_rets) * 100)
         curr_risk = float(np.sqrt(current_weights @ cov_mat @ current_weights) * 100)
         self.current_point_data = [{"risk": str(round(curr_risk, 2)), "return": str(round(curr_ret, 2))}]
+
+        # Per-company stats
+        self.individual_stats = compute_individual_stats(returns_map)
 
         # Sector breakdown (PORT-02, D-20)
         self.sector_chart_data = compute_sector_breakdown(self.holdings)

@@ -80,10 +80,6 @@ def company_row(company: dict) -> rx.Component:
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.text(company["f_score_str"], class_name="text-sm font-mono", style={"color": _TEXT}),
-            class_name="py-3 px-4",
-        ),
-        rx.table.cell(
             rx.text(company["roe_str"], class_name="text-sm font-mono", style={"color": _TEXT}),
             class_name="py-3 px-4",
         ),
@@ -103,6 +99,28 @@ def company_row(company: dict) -> rx.Component:
     )
 
 
+def _check(text: str) -> rx.Component:
+    return rx.hstack(
+        rx.icon("check-circle", size=12, class_name="text-green-400 mt-0.5 shrink-0"),
+        rx.text(text, class_name="text-xs", style={"color": _MUTED}),
+        spacing="2",
+        align="start",
+    )
+
+
+def _warn(text: str) -> rx.Component:
+    return rx.hstack(
+        rx.icon("alert-triangle", size=12, class_name="text-amber-400 mt-0.5 shrink-0"),
+        rx.text(text, class_name="text-xs", style={"color": _MUTED}),
+        spacing="2",
+        align="start",
+    )
+
+
+def _section_label(text: str) -> rx.Component:
+    return rx.text(text, class_name="text-xs font-semibold uppercase tracking-wider mb-2", style={"color": _TEXT})
+
+
 def methodology_panel() -> rx.Component:
     return rx.el.details(
         rx.el.summary(
@@ -116,46 +134,60 @@ def methodology_panel() -> rx.Component:
         ),
         rx.box(
             rx.grid(
+                # Column 1 — Score by Sector
                 rx.box(
-                    rx.text("Models Used", class_name="text-xs font-semibold uppercase tracking-wider mb-2", style={"color": _TEXT}),
+                    _section_label("Score by Sector"),
                     rx.vstack(
-                        *[
-                            rx.hstack(
-                                rx.icon("check-circle", size=12, class_name="text-green-400 mt-0.5 shrink-0"),
-                                rx.text(t, class_name="text-xs", style={"color": _MUTED}),
-                                spacing="2",
-                                align="start",
-                            )
-                            for t in [
-                                "Piotroski F-Score — 9-point rule-based fundamental strength signal",
-                                "Beneish M-Score — forensic fraud detection via 8 accounting ratios (threshold: −1.78)",
-                                "Altman Z-Score — bankruptcy prediction, validated on emerging markets",
-                                "Composite 0–100 — weighted blend (profitability 25%, liquidity 20%, solvency 20%, activity 15%, Z-score 10%, Piotroski 10%)",
-                            ]
-                        ],
-                        spacing="2",
+                        # Non-financial
+                        rx.text("Non-financial companies", class_name="text-xs font-medium mt-1", style={"color": _POWDER}),
+                        _check("Profitability 25% — ROA, ROE, net margin"),
+                        _check("Liquidity 20% — current, quick, cash ratios"),
+                        _check("Solvency 20% — D/E, D/A, interest coverage"),
+                        _check("Activity 15% — asset turnover, DSO, inventory turns"),
+                        _check("Altman Z-Score 10% — Z' private-firm variant"),
+                        _check("Piotroski F-Score 10% — 9-point fundamental signal"),
+                        # Banks
+                        rx.text("Banks", class_name="text-xs font-medium mt-2", style={"color": _POWDER}),
+                        _check("CAMELS-inspired: Capital 25%, Asset Quality 25%, Earnings 20%, Liquidity 20%, Efficiency 10%"),
+                        # Insurance
+                        rx.text("Insurance", class_name="text-xs font-medium mt-2", style={"color": _POWDER}),
+                        _check("IRIS/Solvency II: Underwriting 30%, Solvency 25%, Profitability 25%, Liquidity 20%"),
+                        # Finance / NBFI
+                        rx.text("Finance / NBFI", class_name="text-xs font-medium mt-2", style={"color": _POWDER}),
+                        _check("Profitability 30%, Solvency 25%, Liquidity 25%, Activity 20%"),
+                        spacing="1",
                         align="start",
+                        width="100%",
                     ),
                 ),
-                rx.box(
-                    rx.text("Known Limitations", class_name="text-xs font-semibold uppercase tracking-wider mb-2", style={"color": _TEXT}),
-                    rx.vstack(
-                        *[
-                            rx.hstack(
-                                rx.icon("alert-triangle", size=12, class_name="text-amber-400 mt-0.5 shrink-0"),
-                                rx.text(t, class_name="text-xs", style={"color": _MUTED}),
-                                spacing="2",
-                                align="start",
-                            )
-                            for t in [
-                                "Dataset: MSE companies only, 1–2 years of data",
-                                "DEPI index always N/A — MSE filings don't disclose depreciation separately",
-                                "Benchmarks use global standards; MSE live averages require more data",
-                            ]
-                        ],
-                        spacing="2",
-                        align="start",
+                # Column 2 — Universal Adjustments + Limitations
+                rx.vstack(
+                    rx.box(
+                        _section_label("Universal Adjustments"),
+                        rx.vstack(
+                            _check("Beneish M-Score — 8 accounting-ratio fraud screen applied to all sectors; −10 pt penalty when M > −1.78 and ≥5 indices are available"),
+                            _check("Missing-data normalisation — if a pillar has no data its weight is redistributed proportionally to pillars that do"),
+                            spacing="2",
+                            align="start",
+                        ),
+                        width="100%",
                     ),
+                    rx.box(
+                        _section_label("Known Limitations"),
+                        rx.vstack(
+                            _warn("Piotroski F-Score and Altman Z-Score are not applied to Banking, Insurance, or Finance sectors — those sectors use their own dedicated frameworks above"),
+                            _warn("Beneish DEPI index is always N/A — MSE filings do not disclose depreciation separately"),
+                            _warn("Altman Z' uses the standard private-firm model; no Mongolia-specific recalibration has been done"),
+                            _warn("Dataset: MSE-listed companies only, typically 1–2 years of financial data"),
+                            _warn("Benchmarks are global standards — MSE-specific averages require a larger sample"),
+                            spacing="2",
+                            align="start",
+                        ),
+                        width="100%",
+                    ),
+                    spacing="5",
+                    align="start",
+                    width="100%",
                 ),
                 columns="2",
                 spacing="6",
@@ -224,7 +256,6 @@ def screener_page() -> rx.Component:
                                 rx.table.column_header_cell("Year", class_name="text-xs uppercase tracking-wider px-4 py-3", style={"color": _FAINT}),
                                 sort_header("Sector",       "sector"),
                                 sort_header("Health Score", "score"),
-                                sort_header("F-Score",      "f_score"),
                                 sort_header("ROE",          "roe"),
                                 rx.table.column_header_cell("", class_name="px-4 py-3"),
                             ),
