@@ -158,32 +158,35 @@ def health_gauge() -> rx.Component:
             data=s.company_gauge_data,
             start_angle=180,
             end_angle=0,
-            inner_radius="60%",
-            outer_radius="90%",
-            width=280,
-            height=160,
+            inner_radius="55%",
+            outer_radius="85%",
+            width="100%",
+            height=260,
         ),
-        rx.text(s.company_score.to_string() + " / 100", class_name="text-xl font-bold text-center -mt-4", style={"color": _TEXT}),
-        rx.text(s.company_health_label, class_name="text-sm text-center", style={"color": _MUTED}),
-        class_name="rounded-2xl p-5 flex flex-col items-center",
-        style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
+        rx.text(s.company_score.to_string() + " / 100", class_name="text-2xl font-bold text-center -mt-12", style={"color": _TEXT}),
+        rx.text(s.company_health_label, class_name="text-sm text-center mt-1", style={"color": _MUTED}),
+        class_name="rounded-2xl p-5 flex flex-col items-center justify-center",
+        style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}", "minHeight": "320px"},
     )
 
 
 def radar_chart_panel() -> rx.Component:
     s = AnalysisState
     return rx.box(
-        rx.text("Health Category Breakdown", class_name="font-semibold mb-3", style={"color": _TEXT}),
+        rx.text("Health Category Breakdown", class_name="font-semibold mb-2", style={"color": _TEXT}),
         rx.recharts.radar_chart(
             rx.recharts.polar_grid(),
-            rx.recharts.polar_angle_axis(data_key="category", tick={"fill": _MUTED, "fontSize": 11}),
+            rx.recharts.polar_angle_axis(data_key="category", tick={"fill": _MUTED, "fontSize": 12}),
             rx.recharts.radar(data_key="score", name="Health", fill=_BLUE, fill_opacity=0.2, stroke=_NAVY),
             data=s.company_radar_data,
-            width=300,
-            height=300,
+            cx="50%",
+            cy="50%",
+            outer_radius="65%",
+            width="100%",
+            height=320,
         ),
-        class_name="rounded-2xl p-5 flex flex-col items-center",
-        style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
+        class_name="rounded-2xl p-5 flex flex-col",
+        style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}", "minHeight": "320px"},
     )
 
 

@@ -3,151 +3,190 @@ import reflex as rx
 from ..components.layout import page_layout
 from ..state import PortfolioState
 
+_NAVY   = "#4361EE"
+_BLUE   = "#6B9FFF"
+_POWDER = "#B4C5E4"
+_TEXT   = "#DDE2F2"
+_MUTED  = "#8892A8"
+_FAINT  = "#5A627A"
+_CARD   = "#161B27"
+_BORDER = "#2A3050"
+
+
+def tip(text: str) -> rx.Component:
+    return rx.tooltip(
+        rx.icon("info", size=13, class_name="cursor-help shrink-0", style={"color": _POWDER + "70"}),
+        content=text,
+    )
+
+
+def col_header(label: str, tooltip_text: str) -> rx.Component:
+    return rx.table.column_header_cell(
+        rx.hstack(
+            rx.text(label, class_name="text-xs uppercase tracking-wider", style={"color": _FAINT}),
+            tip(tooltip_text),
+            spacing="1",
+            align="center",
+        ),
+        class_name="px-4 py-3",
+    )
+
 
 def holding_row(holding: dict) -> rx.Component:
     return rx.table.row(
         rx.table.cell(
-            rx.link(
-                holding["company"],
-                href=holding["url"],
-                class_name="text-green-400 hover:text-green-300 font-medium",
+            rx.tooltip(
+                rx.link(
+                    holding["company"],
+                    href=holding["url"],
+                    class_name="font-semibold hover:underline text-sm",
+                    style={"color": _BLUE},
+                ),
+                content="Click to view full company analysis",
             ),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
             rx.hstack(
-                rx.input(
-                    default_value=holding["weight_pct"],
-                    on_blur=lambda v: PortfolioState.set_holding_weight(holding["company"], v),
-                    class_name=(
-                        "bg-transparent text-slate-300 text-sm font-mono w-16 text-right "
-                        "border border-slate-700 rounded px-1"
+                rx.tooltip(
+                    rx.hstack(
+                        rx.input(
+                            default_value=holding["weight_pct"],
+                            on_blur=lambda v: PortfolioState.set_holding_weight(holding["company"], v),
+                            class_name=(
+                                "bg-transparent text-sm font-mono w-16 text-right "
+                                "border rounded px-1"
+                            ),
+                            style={"color": _TEXT, "borderColor": _BORDER},
+                            type="number",
+                            min="0",
+                            max="100",
+                            step="0.1",
+                        ),
+                        rx.text("%", class_name="text-sm", style={"color": _MUTED}),
+                        spacing="1",
+                        align="center",
                     ),
-                    type="number",
-                    min="0",
-                    max="100",
-                    step="0.1",
+                    content="Portfolio allocation weight for this company (0–100%). Weights auto-rebalance when adding/removing companies.",
                 ),
-                rx.text("%", class_name="text-slate-500 text-sm"),
                 spacing="1",
                 align="center",
             ),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.text(
-                holding["score_str"],
-                class_name=rx.cond(
-                    holding["color"] == "green",
-                    "font-bold text-green-400",
-                    rx.cond(
-                        holding["color"] == "red",
-                        "font-bold text-red-400",
-                        "font-bold text-amber-400",
+            rx.tooltip(
+                rx.text(
+                    holding["score_str"],
+                    class_name=rx.cond(
+                        holding["color"] == "green",
+                        "font-bold text-green-400",
+                        rx.cond(
+                            holding["color"] == "red",
+                            "font-bold text-red-400",
+                            "font-bold text-amber-400",
+                        ),
                     ),
                 ),
+                content="Composite health score 0–100. Weighted blend of profitability (25%), liquidity (20%), solvency (20%), activity (15%), Altman Z-Score (10%), Piotroski F-Score (10%).",
             ),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.text(holding["label"], class_name="text-slate-400 text-sm"),
+            rx.tooltip(
+                rx.text(holding["label"], class_name="text-sm", style={"color": _MUTED}),
+                content="Qualitative rating derived from the health score: Excellent (≥80), Good (60–79), Fair (40–59), Weak (<40).",
+            ),
             class_name="py-3 px-4",
         ),
         rx.table.cell(
-            rx.button(
-                rx.icon("trash-2", size=14),
-                on_click=PortfolioState.remove_from_portfolio(holding["company"]),
-                class_name=(
-                    "p-1 rounded text-slate-500 hover:text-red-400 "
-                    "hover:bg-red-500/10 transition-colors"
+            rx.tooltip(
+                rx.button(
+                    rx.icon("trash-2", size=14),
+                    on_click=PortfolioState.remove_from_portfolio(holding["company"]),
+                    class_name="p-1 rounded hover:text-red-400 hover:bg-red-900/20 transition-colors",
+                    style={"color": _MUTED},
+                    variant="ghost",
+                    size="1",
                 ),
-                variant="ghost",
-                size="1",
+                content="Remove this company from your portfolio. Remaining weights will rebalance equally.",
             ),
             class_name="py-3 px-4",
         ),
-        class_name="border-b border-slate-800 hover:bg-slate-900/50 transition-colors",
+        class_name="border-b hover:bg-blue-900/10 transition-colors",
+        style={"borderColor": _BORDER},
     )
 
 
 def holdings_tab_content() -> rx.Component:
-    """Holdings tab: header with blended health + holdings table or empty state."""
     return rx.vstack(
-        # Header row
         rx.hstack(
-            rx.heading("Portfolio", size="6", class_name="text-slate-100"),
+            rx.hstack(
+                rx.heading("Portfolio", size="6", class_name="font-bold", style={"color": _TEXT}),
+                tip("Your selected companies and their portfolio allocation weights."),
+                spacing="2",
+                align="center",
+            ),
             rx.spacer(),
             rx.cond(
                 PortfolioState.holdings.length() > 0,
-                rx.box(
-                    rx.text(
-                        "Blended Health",
-                        class_name="text-slate-400 text-xs uppercase tracking-wider",
+                rx.tooltip(
+                    rx.box(
+                        rx.text(
+                            "Blended Health",
+                            class_name="text-xs uppercase tracking-wider",
+                            style={"color": _MUTED},
+                        ),
+                        rx.text(
+                            PortfolioState.portfolio_health.to_string(),
+                            class_name="text-2xl font-bold",
+                            style={"color": _NAVY},
+                        ),
+                        class_name="rounded-lg px-5 py-3 text-center",
+                        style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
                     ),
-                    rx.text(
-                        PortfolioState.portfolio_health.to_string(),
-                        class_name="text-2xl font-bold text-green-400",
-                    ),
-                    class_name="bg-slate-900 rounded-lg border border-slate-800 px-5 py-3 text-center",
+                    content="Weighted average health score across all holdings, using each company's portfolio weight.",
                 ),
                 rx.box(),
             ),
             width="100%",
             align="center",
         ),
-        # Empty state or holdings table
         rx.cond(
             PortfolioState.holdings.length() == 0,
             rx.box(
                 rx.vstack(
-                    rx.icon("briefcase", size=40, class_name="text-slate-600"),
-                    rx.text(
-                        "No companies in portfolio yet.",
-                        class_name="text-slate-400",
-                    ),
+                    rx.icon("briefcase", size=40, style={"color": _POWDER + "50"}),
+                    rx.text("No companies in portfolio yet.", style={"color": _MUTED}),
                     rx.text(
                         "Go to the Screener and click + Add on any company.",
-                        class_name="text-slate-500 text-sm",
+                        class_name="text-sm",
+                        style={"color": _FAINT},
                     ),
                     rx.link(
                         "Go to Screener →",
                         href="/screener",
-                        class_name="text-green-400 hover:text-green-300 text-sm mt-2",
+                        class_name="text-sm mt-2",
+                        style={"color": _BLUE},
                     ),
                     spacing="2",
                     align="center",
                 ),
-                class_name=(
-                    "bg-slate-900 rounded-lg border border-slate-800 "
-                    "p-16 w-full flex items-center justify-center"
-                ),
+                class_name="rounded-2xl p-16 w-full flex items-center justify-center",
+                style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
             ),
             rx.box(
                 rx.table.root(
                     rx.table.header(
                         rx.table.row(
-                            rx.table.column_header_cell(
-                                "Company",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                            ),
-                            rx.table.column_header_cell(
-                                "Weight",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                            ),
-                            rx.table.column_header_cell(
-                                "Health Score",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                            ),
-                            rx.table.column_header_cell(
-                                "Label",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-3",
-                            ),
-                            rx.table.column_header_cell(
-                                "",
-                                class_name="px-4 py-3",
-                            ),
+                            col_header("Company", "Legal name of the listed MSE company."),
+                            col_header("Weight", "Target allocation weight in your portfolio (%). Must sum to 100%."),
+                            col_header("Health Score", "Composite 0–100 financial health score. Higher is better."),
+                            col_header("Label", "Qualitative rating: Excellent / Good / Fair / Weak."),
+                            rx.table.column_header_cell("", class_name="px-4 py-3"),
                         ),
-                        class_name="bg-slate-900/50",
+                        class_name="border-b",
+                        style={"borderColor": _BORDER, "backgroundColor": _POWDER + "08"},
                     ),
                     rx.table.body(
                         rx.foreach(PortfolioState.holdings, holding_row),
@@ -155,7 +194,8 @@ def holdings_tab_content() -> rx.Component:
                     variant="ghost",
                     class_name="w-full",
                 ),
-                class_name="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden w-full",
+                class_name="rounded-2xl overflow-hidden w-full",
+                style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
             ),
         ),
         spacing="5",
@@ -165,136 +205,241 @@ def holdings_tab_content() -> rx.Component:
     )
 
 
-def risk_metric_card(label: str, value, description: str) -> rx.Component:
-    return rx.box(
-        rx.text(label, class_name="text-slate-400 text-xs uppercase tracking-wider"),
-        rx.text(value, class_name="text-2xl font-bold text-green-400 mt-1"),
-        rx.text(description, class_name="text-slate-500 text-xs mt-1"),
-        class_name="bg-slate-900 rounded-lg border border-slate-800 p-4",
+def risk_metric_card(label: str, value, description: str, tooltip_text: str) -> rx.Component:
+    return rx.tooltip(
+        rx.box(
+            rx.text(label, class_name="text-xs uppercase tracking-wider", style={"color": _MUTED}),
+            rx.text(value, class_name="text-2xl font-bold mt-1", style={"color": _NAVY}),
+            rx.text(description, class_name="text-xs mt-1", style={"color": _FAINT}),
+            class_name="rounded-lg p-4 flex-1",
+            style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
+        ),
+        content=tooltip_text,
     )
 
 
 def optimization_row(row: dict) -> rx.Component:
     return rx.table.row(
         rx.table.cell(
-            rx.text(row["company"], class_name="text-slate-300"),
+            rx.text(row["company"], class_name="text-sm", style={"color": _TEXT}),
             class_name="py-2 px-4",
         ),
         rx.table.cell(
-            rx.text(row["current"] + "%", class_name="text-slate-400 font-mono"),
-            class_name="py-2 px-4",
-        ),
-        rx.table.cell(
-            rx.hstack(
-                rx.text(row["optimal"] + "%", class_name="text-green-400 font-mono"),
-                rx.text(row["arrow"], class_name="text-slate-500"),
-                spacing="1",
+            rx.tooltip(
+                rx.text(row["current"] + "%", class_name="font-mono text-sm", style={"color": _MUTED}),
+                content="Your current manual allocation weight.",
             ),
             class_name="py-2 px-4",
         ),
-        class_name="border-b border-slate-800",
+        rx.table.cell(
+            rx.tooltip(
+                rx.hstack(
+                    rx.text(row["optimal"] + "%", class_name="font-mono text-sm", style={"color": _BLUE}),
+                    rx.text(row["arrow"], style={"color": _FAINT}),
+                    spacing="1",
+                ),
+                content="Weight recommended by the Max Sharpe optimizer to maximize risk-adjusted return.",
+            ),
+            class_name="py-2 px-4",
+        ),
+        class_name="border-b",
+        style={"borderColor": _BORDER},
+    )
+
+
+def stats_row(row: dict) -> rx.Component:
+    return rx.table.row(
+        rx.table.cell(
+            rx.text(row["company"], class_name="text-sm font-medium", style={"color": _TEXT}),
+            class_name="py-2 px-4",
+        ),
+        rx.table.cell(
+            rx.tooltip(
+                rx.text(row["daily_return"], class_name="font-mono text-xs", style={"color": _MUTED}),
+                content="Average daily return based on historical price data.",
+            ),
+            class_name="py-2 px-4",
+        ),
+        rx.table.cell(
+            rx.tooltip(
+                rx.text(row["annual_return"], class_name="font-mono text-xs", style={"color": _BLUE}),
+                content="Annualized return (daily return × 252 trading days).",
+            ),
+            class_name="py-2 px-4",
+        ),
+        rx.table.cell(
+            rx.tooltip(
+                rx.text(row["daily_vol"], class_name="font-mono text-xs", style={"color": _MUTED}),
+                content="Standard deviation of daily returns — measures day-to-day price variability.",
+            ),
+            class_name="py-2 px-4",
+        ),
+        rx.table.cell(
+            rx.tooltip(
+                rx.text(row["annual_vol"], class_name="font-mono text-xs text-amber-400"),
+                content="Annualized volatility (daily vol × √252). Higher means more risk.",
+            ),
+            class_name="py-2 px-4",
+        ),
+        rx.table.cell(
+            rx.tooltip(
+                rx.text(row["sharpe"], class_name="font-mono text-xs font-bold", style={"color": _NAVY}),
+                content="Sharpe Ratio = Annualized Return / Annualized Volatility. Higher is better; >1 is considered good.",
+            ),
+            class_name="py-2 px-4",
+        ),
+        class_name="border-b",
+        style={"borderColor": _BORDER},
     )
 
 
 def analysis_tab_content() -> rx.Component:
-    """Analysis tab: sector donut, risk metrics, frontier, optimization table."""
     return rx.cond(
         PortfolioState.can_show_analysis,
-        # --- Analysis content ---
         rx.vstack(
-            # Row 1: Sector donut (left) + 3 risk metric cards (right)
-            rx.hstack(
-                # Sector donut (per D-20)
+            # Row 1: Sector donut + risk cards
+            rx.grid(
                 rx.box(
-                    rx.text(
-                        "Sector Allocation",
-                        class_name="text-slate-400 text-xs uppercase tracking-wider mb-2",
+                    rx.hstack(
+                        rx.text(
+                            "Sector Allocation",
+                            class_name="text-xs uppercase tracking-wider",
+                            style={"color": _MUTED},
+                        ),
+                        tip("Breakdown of your portfolio by sector, weighted by allocation. Helps identify concentration risk."),
+                        spacing="2",
+                        align="center",
+                        class_name="mb-2",
                     ),
                     rx.recharts.pie_chart(
                         rx.recharts.pie(
+                            rx.foreach(
+                                PortfolioState.sector_chart_data,
+                                lambda item: rx.recharts.cell(fill=item["fill"]),
+                            ),
                             data=PortfolioState.sector_chart_data,
                             data_key="value",
                             name_key="name",
-                            inner_radius="50%",
-                            outer_radius="80%",
-                            fill="#4ade80",
+                            inner_radius="40%",
+                            outer_radius="70%",
                             label=True,
                         ),
                         rx.recharts.legend(),
-                        width=300,
-                        height=250,
+                        width="100%",
+                        height=300,
                     ),
-                    class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 flex-1",
+                    class_name="rounded-2xl p-4",
+                    style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
                 ),
-                # 3 risk cards (per D-12, D-13)
                 rx.vstack(
                     risk_metric_card(
                         "Sortino Ratio",
                         PortfolioState.sortino_str,
                         "Risk-adjusted return (downside only)",
+                        "Sortino Ratio measures return per unit of downside risk only (ignores upside volatility). Higher is better; >1 is generally considered good.",
                     ),
                     risk_metric_card(
                         "Max Drawdown",
                         PortfolioState.max_drawdown_str,
                         "Largest peak-to-trough decline",
-                    ),
-                    risk_metric_card(
-                        "CVaR (95%)",
-                        PortfolioState.cvar_str,
-                        "Expected loss in worst 5% of days",
+                        "Maximum Drawdown is the largest observed loss from a portfolio peak to a subsequent trough. A smaller (less negative) value indicates lower downside risk.",
                     ),
                     spacing="3",
+                    height="100%",
                 ),
+                columns="2",
                 spacing="4",
                 width="100%",
-                align="start",
             ),
-            # Row 2: Efficient frontier scatter plot (per D-15, D-16, D-17)
+            # Row 2: Efficient frontier
             rx.box(
-                rx.text(
-                    "Efficient Frontier",
-                    class_name="text-slate-400 text-xs uppercase tracking-wider mb-2",
+                rx.hstack(
+                    rx.text(
+                        "Efficient Frontier",
+                        class_name="text-xs uppercase tracking-wider",
+                        style={"color": _MUTED},
+                    ),
+                    tip("Each grey dot is a randomly simulated portfolio. The blue dot is your current portfolio. Portfolios further up-left offer better return for less risk."),
+                    spacing="2",
+                    align="center",
+                    class_name="mb-2",
                 ),
                 rx.recharts.scatter_chart(
                     rx.recharts.scatter(
                         data=PortfolioState.frontier_data,
                         name="Frontier",
-                        fill="#475569",
+                        fill=_POWDER + "50",
                     ),
                     rx.recharts.scatter(
                         data=PortfolioState.current_point_data,
                         name="Current",
-                        fill="#4ade80",
+                        fill=_BLUE,
                     ),
-                    rx.recharts.x_axis(data_key="risk", name="Risk (%)", type_="number"),
-                    rx.recharts.y_axis(data_key="return", name="Return (%)", type_="number"),
+                    rx.recharts.x_axis(data_key="risk", name="Risk (%)", type_="number", tick={"fill": _FAINT, "fontSize": 11}),
+                    rx.recharts.y_axis(data_key="return", name="Return (%)", type_="number", tick={"fill": _FAINT, "fontSize": 11}),
                     width="100%",
                     height=350,
                 ),
-                class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 w-full",
+                class_name="rounded-2xl p-4 w-full",
+                style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
             ),
-            # Row 3: Optimization table + Apply button (per D-09, D-10)
+            # Row 3: Stats table
             rx.box(
-                rx.text(
-                    "Optimization",
-                    class_name="text-slate-400 text-xs uppercase tracking-wider mb-2",
+                rx.hstack(
+                    rx.text(
+                        "Company Statistics",
+                        class_name="text-xs uppercase tracking-wider",
+                        style={"color": _MUTED},
+                    ),
+                    tip("Per-company return and risk statistics derived from historical price data."),
+                    spacing="2",
+                    align="center",
+                    class_name="mb-2",
                 ),
                 rx.table.root(
                     rx.table.header(
                         rx.table.row(
-                            rx.table.column_header_cell(
-                                "Company",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-2",
-                            ),
-                            rx.table.column_header_cell(
-                                "Current",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-2",
-                            ),
-                            rx.table.column_header_cell(
-                                "Optimal",
-                                class_name="text-slate-400 text-xs uppercase tracking-wider px-4 py-2",
-                            ),
+                            col_header("Company", "MSE-listed company name."),
+                            col_header("Daily Return", "Average daily price return."),
+                            col_header("Annual Return", "Annualized return (daily × 252)."),
+                            col_header("Daily Vol", "Standard deviation of daily returns."),
+                            col_header("Annual Vol", "Annualized volatility (daily × √252)."),
+                            col_header("Sharpe", "Sharpe Ratio = Annual Return / Annual Vol. Higher is better."),
                         ),
+                        class_name="border-b",
+                        style={"borderColor": _BORDER, "backgroundColor": _POWDER + "08"},
+                    ),
+                    rx.table.body(
+                        rx.foreach(PortfolioState.individual_stats, stats_row),
+                    ),
+                    variant="ghost",
+                    class_name="w-full",
+                ),
+                class_name="rounded-2xl p-4 w-full",
+                style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
+            ),
+            # Row 4: Optimization
+            rx.box(
+                rx.hstack(
+                    rx.text(
+                        "Optimization",
+                        class_name="text-xs uppercase tracking-wider",
+                        style={"color": _MUTED},
+                    ),
+                    tip("Compares your current weights against mathematically optimal allocations using Modern Portfolio Theory."),
+                    spacing="2",
+                    align="center",
+                    class_name="mb-2",
+                ),
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            col_header("Company", "MSE-listed company name."),
+                            col_header("Current", "Your current portfolio weight."),
+                            col_header("Optimal (Max Sharpe)", "Weight that maximizes the Sharpe Ratio — best risk-adjusted return."),
+                        ),
+                        class_name="border-b",
+                        style={"borderColor": _BORDER, "backgroundColor": _POWDER + "08"},
                     ),
                     rx.table.body(
                         rx.foreach(PortfolioState.optimization_data, optimization_row),
@@ -302,33 +447,60 @@ def analysis_tab_content() -> rx.Component:
                     variant="ghost",
                     class_name="w-full",
                 ),
-                rx.button(
-                    "Apply Optimal Weights",
-                    on_click=PortfolioState.apply_optimal_weights,
-                    class_name="mt-3 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded text-sm font-medium",
+                rx.hstack(
+                    rx.tooltip(
+                        rx.button(
+                            rx.icon("shield", size=14),
+                            "Min Risk",
+                            on_click=PortfolioState.apply_min_risk_weights,
+                            class_name="mt-3 px-4 py-2 rounded text-sm font-medium gap-1 text-white cursor-pointer",
+                            style={"backgroundColor": _BLUE},
+                        ),
+                        content="Apply minimum-variance weights — minimizes portfolio volatility regardless of return.",
+                    ),
+                    rx.tooltip(
+                        rx.button(
+                            rx.icon("trending-up", size=14),
+                            "Max Return",
+                            on_click=PortfolioState.apply_max_return_weights,
+                            class_name="mt-3 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded text-sm font-medium gap-1 cursor-pointer",
+                        ),
+                        content="Apply maximum-return weights — concentrates in the highest-returning asset. High risk.",
+                    ),
+                    rx.tooltip(
+                        rx.button(
+                            rx.icon("zap", size=14),
+                            "Max Sharpe (Efficient)",
+                            on_click=PortfolioState.apply_optimal_weights,
+                            class_name="mt-3 text-white px-4 py-2 rounded text-sm font-medium gap-1 cursor-pointer",
+                            style={"backgroundColor": _NAVY},
+                        ),
+                        content="Apply Max Sharpe weights — the efficient frontier portfolio with the best risk-adjusted return.",
+                    ),
+                    spacing="3",
+                    wrap="wrap",
                 ),
-                class_name="bg-slate-900 rounded-lg border border-slate-800 p-4 w-full",
+                class_name="rounded-2xl p-4 w-full",
+                style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
             ),
             spacing="4",
             width="100%",
             align="start",
             padding_top="4",
         ),
-        # --- Placeholder (fewer than 2 holdings with price data) ---
         rx.box(
             rx.vstack(
-                rx.icon("bar-chart-3", size=40, class_name="text-slate-600"),
+                rx.icon("bar-chart-3", size=40, style={"color": _POWDER + "50"}),
                 rx.text(
                     "Add at least 2 companies with price history to see portfolio analysis.",
-                    class_name="text-slate-400 text-center",
+                    class_name="text-center",
+                    style={"color": _MUTED},
                 ),
                 spacing="2",
                 align="center",
             ),
-            class_name=(
-                "bg-slate-900 rounded-lg border border-slate-800 "
-                "p-16 w-full flex items-center justify-center"
-            ),
+            class_name="rounded-2xl p-16 w-full flex items-center justify-center",
+            style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
         ),
     )
 
@@ -341,22 +513,17 @@ def portfolio_page() -> rx.Component:
                     rx.tabs.trigger(
                         "Holdings",
                         value="holdings",
-                        class_name=(
-                            "text-slate-400 data-[state=active]:text-green-400 "
-                            "data-[state=active]:border-b-2 data-[state=active]:border-green-400 "
-                            "px-4 py-2 text-sm font-medium"
-                        ),
+                        class_name="data-[state=active]:border-b-2 px-4 py-2 text-sm font-medium",
+                        style={"color": _MUTED},
                     ),
                     rx.tabs.trigger(
                         "Analysis",
                         value="analysis",
-                        class_name=(
-                            "text-slate-400 data-[state=active]:text-green-400 "
-                            "data-[state=active]:border-b-2 data-[state=active]:border-green-400 "
-                            "px-4 py-2 text-sm font-medium"
-                        ),
+                        class_name="data-[state=active]:border-b-2 px-4 py-2 text-sm font-medium",
+                        style={"color": _MUTED},
                     ),
-                    class_name="border-b border-slate-800",
+                    class_name="border-b",
+                    style={"borderColor": _BORDER},
                 ),
                 rx.tabs.content(holdings_tab_content(), value="holdings"),
                 rx.tabs.content(analysis_tab_content(), value="analysis"),
