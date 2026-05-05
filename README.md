@@ -23,6 +23,7 @@ Finance/NBFI subsectors (Securities, ББСБ Lending, Investment/Holding) are a
 
 ### Company Detail Page — 5-Tab Layout
 
+- **Overview** — composite health gauge (radial bar) + radar breakdown chart, then a Key Metrics card (ROE, ROA, Net Margin, Gross Margin, Operating Margin, Debt/Equity, Current Ratio, Quick Ratio, Altman Z-Score) alongside a Risk Signals card
 - **Ratios** — sector-aware table with green/amber/red color coding against calibrated MSE benchmarks
 - **Forensic** — standard companies: Piotroski F-Score + Beneish M-Score; Banking/Insurance/Finance: 8-criterion sector forensic score + YoY bar chart
 - **Valuation** — 6 subsector-specific card grids with a cash flow metric on every grid: standard (EV/EBIT, FCF Yield, Free Cash Flow M₮, P/E, P/BV), banking (P/E, P/BV, P/TBV, P/PPOP, P/NII, Op. Cash Flow M₮), NBFI (P/E, P/BV, P/PPOP, P/NII, Op. Cash Flow M₮), holding (P/E, P/NAV, P/Inv Sec, Op. Cash Flow M₮), securities (P/E, P/BV, P/Revenue, Op. Cash Flow M₮), insurance (P/E, P/BV, P/NPE, P/UWP, Op. Cash Flow M₮); historical OHLCV price chart with 1M/6M/1Y/All range toggle
