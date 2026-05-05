@@ -541,6 +541,7 @@ class AnalysisState(UploadState):
     company_ev_ebitda: str = ""
     company_fcf: str = ""
     company_fcf_yield: str = ""
+    company_ocf: str = ""
     company_pe: str = ""
     company_pbv: str = ""
     company_shares_outstanding: str = ""
@@ -1122,6 +1123,7 @@ class AnalysisState(UploadState):
             self.company_ev_ebitda = "N/A"
             self.company_fcf = "N/A"
             self.company_fcf_yield = "N/A"
+            self.company_ocf = "N/A"
             self.company_pe = "N/A"
             self.company_pbv = "N/A"
             self.company_ptbv = "N/A"
@@ -1202,6 +1204,8 @@ class AnalysisState(UploadState):
         self.company_fcf = _fmt(raw_fcf / 1_000_000 if raw_fcf is not None else None, 1)
         fcf = result["fcf_yield"]
         self.company_fcf_yield = _fmt(fcf * 100 if fcf is not None else None, 1)
+        raw_ocf = result["ocf"]
+        self.company_ocf = _fmt(raw_ocf / 1_000_000 if raw_ocf is not None else None, 1)
         self.company_pe = _fmt(result["pe"], 1)
         self.company_pbv = _fmt(result["pbv"], 1)
         # Bank / NBFI

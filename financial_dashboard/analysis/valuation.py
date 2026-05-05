@@ -78,6 +78,7 @@ def compute_valuation_metrics(
         "ev_ebitda": None,
         "fcf":       None,
         "fcf_yield": None,
+        "ocf":       None,
         # Universal
         "pe":        None,
         "pbv":       None,
@@ -115,6 +116,9 @@ def compute_valuation_metrics(
 
     def _scale(v):
         return v * reporting_unit_multiplier if v is not None else None
+
+    # OCF — available for all sectors
+    result["ocf"] = _scale(cash_flow.get("operating_cash_flow"))
 
     # ------------------------------------------------------------------
     # P/E — all sectors (positive net income only)

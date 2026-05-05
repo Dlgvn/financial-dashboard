@@ -842,38 +842,43 @@ def valuation_tab_content() -> rx.Component:
         columns="5", spacing="4", width="100%",
     )
     bank_cards = rx.grid(
-        valuation_card("P / E",    s.company_pe,      "x", has_shares, "Price-to-Earnings."),
-        valuation_card("P / BV",   s.company_pbv,     "x", has_shares, "Price-to-Book Value."),
-        valuation_card("P / TBV",  s.company_ptbv,    "x", has_shares, "Price-to-Tangible Book Value. Excludes intangibles. Key bank valuation metric."),
-        valuation_card("P / PPOP", s.company_p_ppop,  "x", has_shares, "Price-to-Pre-Provision Operating Profit. Shows core earnings power ex-credit cost."),
-        valuation_card("P / NII",  s.company_p_nii,   "x", has_shares, "Price-to-Net Interest Income. Core banking revenue multiple."),
-        columns="5", spacing="4", width="100%",
+        valuation_card("P / E",    s.company_pe,      "x",  has_shares, "Price-to-Earnings."),
+        valuation_card("P / BV",   s.company_pbv,     "x",  has_shares, "Price-to-Book Value."),
+        valuation_card("P / TBV",  s.company_ptbv,    "x",  has_shares, "Price-to-Tangible Book Value. Excludes intangibles. Key bank valuation metric."),
+        valuation_card("P / PPOP", s.company_p_ppop,  "x",  has_shares, "Price-to-Pre-Provision Operating Profit. Shows core earnings power ex-credit cost."),
+        valuation_card("P / NII",  s.company_p_nii,   "x",  has_shares, "Price-to-Net Interest Income. Core banking revenue multiple."),
+        valuation_card("Op. Cash Flow", s.company_ocf, "M₮", has_shares, "Operating Cash Flow. Cash generated from core banking operations before investing and financing activities."),
+        columns="6", spacing="4", width="100%",
     )
     nbfi_cards = rx.grid(
-        valuation_card("P / E",    s.company_pe,     "x", has_shares),
-        valuation_card("P / BV",   s.company_pbv,    "x", has_shares),
-        valuation_card("P / PPOP", s.company_p_ppop, "x", has_shares, "Price-to-Pre-Provision Operating Profit."),
-        valuation_card("P / NII",  s.company_p_nii,  "x", has_shares, "Price-to-Net Interest Income."),
-        columns="4", spacing="4", width="100%",
+        valuation_card("P / E",    s.company_pe,     "x",  has_shares),
+        valuation_card("P / BV",   s.company_pbv,    "x",  has_shares),
+        valuation_card("P / PPOP", s.company_p_ppop, "x",  has_shares, "Price-to-Pre-Provision Operating Profit."),
+        valuation_card("P / NII",  s.company_p_nii,  "x",  has_shares, "Price-to-Net Interest Income."),
+        valuation_card("Op. Cash Flow", s.company_ocf, "M₮", has_shares, "Operating Cash Flow. Cash generated from core lending and financing operations."),
+        columns="5", spacing="4", width="100%",
     )
     holding_cards = rx.grid(
-        valuation_card("P / E",       s.company_pe,        "x", has_shares),
-        valuation_card("P / NAV",     s.company_pbv,       "x", has_shares, "Price-to-Net Asset Value. Key metric for holding/investment companies."),
-        valuation_card("P / Inv Sec", s.company_p_inv_sec, "x", has_shares, "Price-to-Investment Securities. Compares market cap to investment portfolio."),
-        columns="3", spacing="4", width="100%",
+        valuation_card("P / E",       s.company_pe,        "x",  has_shares),
+        valuation_card("P / NAV",     s.company_pbv,       "x",  has_shares, "Price-to-Net Asset Value. Key metric for holding/investment companies."),
+        valuation_card("P / Inv Sec", s.company_p_inv_sec, "x",  has_shares, "Price-to-Investment Securities. Compares market cap to investment portfolio."),
+        valuation_card("Op. Cash Flow", s.company_ocf,     "M₮", has_shares, "Operating Cash Flow. Cash generated from portfolio and management operations."),
+        columns="4", spacing="4", width="100%",
     )
     securities_cards = rx.grid(
-        valuation_card("P / E",       s.company_pe,        "x", has_shares),
-        valuation_card("P / BV",      s.company_pbv,       "x", has_shares),
-        valuation_card("P / Revenue", s.company_p_revenue, "x", has_shares, "Price-to-Revenue. Used for securities firms without stable earnings."),
-        columns="3", spacing="4", width="100%",
+        valuation_card("P / E",       s.company_pe,        "x",  has_shares),
+        valuation_card("P / BV",      s.company_pbv,       "x",  has_shares),
+        valuation_card("P / Revenue", s.company_p_revenue, "x",  has_shares, "Price-to-Revenue. Used for securities firms without stable earnings."),
+        valuation_card("Op. Cash Flow", s.company_ocf,     "M₮", has_shares, "Operating Cash Flow. Cash generated from brokerage and advisory operations."),
+        columns="4", spacing="4", width="100%",
     )
     insurance_cards = rx.grid(
-        valuation_card("P / E",   s.company_pe,    "x", has_shares),
-        valuation_card("P / BV",  s.company_pbv,   "x", has_shares),
-        valuation_card("P / NPE", s.company_p_npe, "x", has_shares, "Price-to-Net Premiums Earned. Core insurance revenue multiple."),
-        valuation_card("P / UWP", s.company_p_uwp, "x", has_shares, "Price-to-Underwriting Profit. Measures market value relative to core insurance profit."),
-        columns="4", spacing="4", width="100%",
+        valuation_card("P / E",   s.company_pe,    "x",  has_shares),
+        valuation_card("P / BV",  s.company_pbv,   "x",  has_shares),
+        valuation_card("P / NPE", s.company_p_npe, "x",  has_shares, "Price-to-Net Premiums Earned. Core insurance revenue multiple."),
+        valuation_card("P / UWP", s.company_p_uwp, "x",  has_shares, "Price-to-Underwriting Profit. Measures market value relative to core insurance profit."),
+        valuation_card("Op. Cash Flow", s.company_ocf, "M₮", has_shares, "Operating Cash Flow. Cash from underwriting and claims operations before investing activities."),
+        columns="5", spacing="4", width="100%",
     )
 
     cards_row = rx.cond(
