@@ -539,6 +539,7 @@ class AnalysisState(UploadState):
 
     # Valuation display vars
     company_ev_ebitda: str = ""
+    company_fcf: str = ""
     company_fcf_yield: str = ""
     company_pe: str = ""
     company_pbv: str = ""
@@ -1119,6 +1120,7 @@ class AnalysisState(UploadState):
         price_file = PRICES_DIR / price_filename(company_name)
         if not price_file.exists():
             self.company_ev_ebitda = "N/A"
+            self.company_fcf = "N/A"
             self.company_fcf_yield = "N/A"
             self.company_pe = "N/A"
             self.company_pbv = "N/A"
@@ -1196,6 +1198,8 @@ class AnalysisState(UploadState):
         # Format results for display
         self.company_valuation_sector = result["sector"]
         self.company_ev_ebitda = _fmt(result["ev_ebitda"], 1)
+        raw_fcf = result["fcf"]
+        self.company_fcf = _fmt(raw_fcf / 1_000_000 if raw_fcf is not None else None, 1)
         fcf = result["fcf_yield"]
         self.company_fcf_yield = _fmt(fcf * 100 if fcf is not None else None, 1)
         self.company_pe = _fmt(result["pe"], 1)

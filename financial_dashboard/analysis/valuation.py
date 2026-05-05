@@ -76,6 +76,7 @@ def compute_valuation_metrics(
         # Standard
         "ev":        None,
         "ev_ebitda": None,
+        "fcf":       None,
         "fcf_yield": None,
         # Universal
         "pe":        None,
@@ -172,6 +173,7 @@ def compute_valuation_metrics(
         investing_cf = _scale(cash_flow.get("investing_cash_flow"))
         if ocf is not None:
             fcf = ocf + investing_cf if investing_cf is not None else ocf
+            result["fcf"] = fcf
             result["fcf_yield"] = _safe_div(fcf, market_cap)
 
     # ------------------------------------------------------------------
