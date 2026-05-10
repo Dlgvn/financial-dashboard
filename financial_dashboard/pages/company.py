@@ -23,6 +23,24 @@ def info_icon(tooltip_text: str) -> rx.Component:
     )
 
 
+def _key_metrics_rows(rows: list) -> rx.Component:
+    return rx.vstack(
+        *[
+            rx.hstack(
+                rx.text(label, class_name="text-sm font-semibold flex-1", style={"color": _MUTED}),
+                rx.text(val, class_name="text-lg font-mono font-bold", style={"color": _BLUE}),
+                rx.text(unit, class_name="text-sm", style={"color": _FAINT}),
+                spacing="2", align="center",
+                class_name=f"py-3 {'border-b' if i < len(rows) - 1 else ''}",
+                style={"borderColor": _BORDER},
+            )
+            for i, (label, val, unit) in enumerate(rows)
+        ],
+        spacing="0",
+        width="100%",
+    )
+
+
 def score_card(title: str, value: rx.Var, unit: str = "") -> rx.Component:
     return rx.box(
         rx.text(title, class_name="text-xs font-semibold uppercase tracking-wider mb-1", style={"color": _MUTED}),
@@ -203,7 +221,7 @@ def overview_tab_content() -> rx.Component:
             width="100%",
         ),
         rx.grid(
-            # Key metrics
+            # Key metrics — sector-aware
             rx.box(
                 rx.hstack(
                     rx.text("Key Metrics", class_name="font-semibold text-sm", style={"color": _TEXT}),
@@ -212,30 +230,59 @@ def overview_tab_content() -> rx.Component:
                     align="center",
                     class_name="mb-4",
                 ),
-                rx.vstack(
-                    *[
-                        rx.hstack(
-                            rx.text(label, class_name="text-sm font-semibold flex-1", style={"color": _MUTED}),
-                            rx.text(val, class_name="text-lg font-mono font-bold", style={"color": _BLUE}),
-                            rx.text(unit, class_name="text-sm", style={"color": _FAINT}),
-                            spacing="2", align="center",
-                            class_name=f"py-3 {'border-b' if i < 8 else ''}",
-                            style={"borderColor": _BORDER},
-                        )
-                        for i, (label, val, unit) in enumerate([
-                            ("ROE",              s.company_roe,            "%"),
-                            ("ROA",              s.company_roa,            "%"),
-                            ("Net Margin",       s.company_net_margin,     "%"),
-                            ("Gross Margin",     s.company_gross_margin,   "%"),
-                            ("Operating Margin", s.company_operating_margin, "%"),
-                            ("Debt / Equity",    s.company_debt_equity,    "x"),
-                            ("Current Ratio",    s.company_current_ratio,  "x"),
-                            ("Quick Ratio",      s.company_quick_ratio,    "x"),
-                            ("Altman Z-Score",   s.company_z_score,        ""),
-                        ])
-                    ],
-                    spacing="0",
-                    width="100%",
+                rx.cond(
+                    s.company_sector == "Banking",
+                    _key_metrics_rows([
+                        ("ROE",               s.company_bank_roe,              "%"),
+                        ("ROA",               s.company_bank_roa,              "%"),
+                        ("Net Interest Margin", s.company_bank_nim,            "%"),
+                        ("NPL Ratio",         s.company_bank_npl_ratio,        "%"),
+                        ("Loan-to-Deposit",   s.company_bank_ldr,              "%"),
+                        ("Coverage Ratio",    s.company_bank_coverage_ratio,   "x"),
+                        ("Cost-to-Income",    s.company_bank_cost_to_income,   "%"),
+                        ("Equity / Assets",   s.company_bank_equity_to_assets, "%"),
+                        ("Net Margin",        s.company_bank_net_margin,       "%"),
+                    ]),
+                    rx.cond(
+                        s.company_sector == "Insurance",
+                        _key_metrics_rows([
+                            ("ROE",               s.company_ins_roe,                "%"),
+                            ("ROA",               s.company_ins_roa,                "%"),
+                            ("Loss Ratio",        s.company_ins_loss_ratio,         "%"),
+                            ("Expense Ratio",     s.company_ins_expense_ratio,      "%"),
+                            ("Combined Ratio",    s.company_ins_combined_ratio,     "%"),
+                            ("Solvency Ratio",    s.company_ins_solvency_ratio,     "%"),
+                            ("Reserve Coverage",  s.company_ins_reserve_coverage,   "x"),
+                            ("Underwriting Margin", s.company_ins_underwriting_margin, "%"),
+                            ("Net Margin",        s.company_ins_net_margin,         "%"),
+                        ]),
+                        rx.cond(
+                            s.company_sector == "Finance",
+                            _key_metrics_rows([
+                                ("ROE",               s.company_fin_roe,              "%"),
+                                ("ROA",               s.company_fin_roa,              "%"),
+                                ("Net Interest Margin", s.company_fin_nim,            "%"),
+                                ("Interest Spread",   s.company_fin_interest_spread,  "%"),
+                                ("NPA Ratio",         s.company_fin_npa_ratio,        "%"),
+                                ("Provision Coverage", s.company_fin_provision_coverage, "x"),
+                                ("Cost-to-Income",    s.company_fin_cost_to_income,   "%"),
+                                ("Debt / Equity",     s.company_fin_debt_to_equity,   "x"),
+                                ("Net Margin",        s.company_fin_net_margin,       "%"),
+                            ]),
+                            # Standard (default)
+                            _key_metrics_rows([
+                                ("ROE",              s.company_roe,              "%"),
+                                ("ROA",              s.company_roa,              "%"),
+                                ("Net Margin",       s.company_net_margin,       "%"),
+                                ("Gross Margin",     s.company_gross_margin,     "%"),
+                                ("Operating Margin", s.company_operating_margin, "%"),
+                                ("Debt / Equity",    s.company_debt_equity,      "x"),
+                                ("Current Ratio",    s.company_current_ratio,    "x"),
+                                ("Quick Ratio",      s.company_quick_ratio,      "x"),
+                                ("Altman Z-Score",   s.company_z_score,          ""),
+                            ]),
+                        ),
+                    ),
                 ),
                 class_name="rounded-2xl p-5",
                 style={"backgroundColor": _CARD, "border": f"1px solid {_BORDER}"},
