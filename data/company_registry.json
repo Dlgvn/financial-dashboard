@@ -5,7 +5,8 @@
     "mse_id": 90,
     "ticker": "APU",
     "tier": "I",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE A"
   },
   {
     "name": "Талх чихэр",
@@ -13,7 +14,8 @@
     "mse_id": 22,
     "ticker": "TCK",
     "tier": "I",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": "MSE B"
   },
   {
     "name": "Дархан нэхий ХК",
@@ -21,7 +23,8 @@
     "mse_id": 71,
     "ticker": "NEH",
     "tier": "I",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": "MSE A"
   },
   {
     "name": "Сүү",
@@ -29,7 +32,8 @@
     "mse_id": 135,
     "ticker": "SUU",
     "tier": "I",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": "MSE A"
   },
   {
     "name": "Ард финаншл груп",
@@ -41,7 +45,8 @@
     "aliases": [
       "Ард санхүүгийн нэгдэл"
     ],
-    "sub_sector": "Investment/Holding"
+    "sub_sector": "Investment/Holding",
+    "mse_index": "MSE A"
   },
   {
     "name": "Говь",
@@ -49,7 +54,8 @@
     "mse_id": 354,
     "ticker": "GOV",
     "tier": "I",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": "MSE A"
   },
   {
     "name": "Тавантолгой",
@@ -57,7 +63,8 @@
     "mse_id": 458,
     "ticker": "TTL",
     "tier": "I",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE A"
   },
   {
     "name": "Бидисек",
@@ -66,7 +73,8 @@
     "ticker": "BDS",
     "tier": "I",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "mse_index": "MSE A"
   },
   {
     "name": "Монгол шуудан",
@@ -74,7 +82,8 @@
     "mse_id": 541,
     "ticker": "MNP",
     "tier": "I",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE A"
   },
   {
     "name": "МИК холдинг Групп",
@@ -83,7 +92,8 @@
     "ticker": "MIK",
     "tier": "I",
     "sector": "Finance",
-    "sub_sector": "Investment/Holding"
+    "sub_sector": "Investment/Holding",
+    "mse_index": "MSE A"
   },
   {
     "name": "МонголБазальт",
@@ -91,7 +101,8 @@
     "mse_id": 544,
     "ticker": "MBW",
     "tier": "I",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE A"
   },
   {
     "name": "ЛЭНДМН",
@@ -100,7 +111,8 @@
     "ticker": "LEND",
     "tier": "I",
     "sector": "Finance",
-    "sub_sector": "ББСБ (Lending NBFI)"
+    "sub_sector": "ББСБ (Lending NBFI)",
+    "mse_index": "MSE A"
   },
   {
     "name": "Мандалженерал даатгал",
@@ -111,7 +123,8 @@
     "sector": "Insurance",
     "aliases": [
       "Мандал даатгал"
-    ]
+    ],
+    "mse_index": "MSE A"
   },
   {
     "name": "Ард даатгал",
@@ -119,7 +132,8 @@
     "mse_id": 548,
     "ticker": "AIC",
     "tier": "I",
-    "sector": "Insurance"
+    "sector": "Insurance",
+    "mse_index": "MSE A"
   },
   {
     "name": "Түмэн шувуут",
@@ -127,7 +141,8 @@
     "mse_id": 549,
     "ticker": "TUM",
     "tier": "I",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": "MSE A"
   },
   {
     "name": "Ард кредит",
@@ -136,7 +151,8 @@
     "ticker": "ADB",
     "tier": "I",
     "sector": "Finance",
-    "sub_sector": "ББСБ (Lending NBFI)"
+    "sub_sector": "ББСБ (Lending NBFI)",
+    "mse_index": "MSE A"
   },
   {
     "name": "Моносхүнс",
@@ -144,7 +160,8 @@
     "mse_id": 551,
     "ticker": "MFC",
     "tier": "I",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": "MSE A"
   },
   {
     "name": "Инвескор ББСБ ХК",
@@ -153,7 +170,8 @@
     "ticker": "INV",
     "tier": "I",
     "sector": "Finance",
-    "sub_sector": "ББСБ (Lending NBFI)"
+    "sub_sector": "ББСБ (Lending NBFI)",
+    "mse_index": "MSE A"
   },
   {
     "name": "Бодь даатгал ХХК",
@@ -161,7 +179,8 @@
     "mse_id": 554,
     "ticker": "BODI",
     "tier": "I",
-    "sector": "Insurance"
+    "sector": "Insurance",
+    "mse_index": "MSE B"
   },
   {
     "name": "Премиум нэксус ХК",
@@ -169,7 +188,8 @@
     "mse_id": 557,
     "ticker": "PRMX",
     "tier": "I",
-    "sector": "Holding"
+    "sector": "Holding",
+    "mse_index": "MSE A"
   },
   {
     "name": "Сэндли ББСБ",
@@ -181,7 +201,8 @@
     "aliases": [
       "Сэндли ББСБ ХК"
     ],
-    "sub_sector": "ББСБ (Lending NBFI)"
+    "sub_sector": "ББСБ (Lending NBFI)",
+    "mse_index": "MSE B"
   },
   {
     "name": "Голомт банк",
@@ -189,7 +210,8 @@
     "mse_id": 562,
     "ticker": "GLMT",
     "tier": "I",
-    "sector": "Banking"
+    "sector": "Banking",
+    "mse_index": "MSE A"
   },
   {
     "name": "Хаан банк",
@@ -197,7 +219,8 @@
     "mse_id": 563,
     "ticker": "KHAN",
     "tier": "I",
-    "sector": "Banking"
+    "sector": "Banking",
+    "mse_index": "MSE A"
   },
   {
     "name": "Төрийн банк",
@@ -205,7 +228,8 @@
     "mse_id": 564,
     "ticker": "SBM",
     "tier": "I",
-    "sector": "Banking"
+    "sector": "Banking",
+    "mse_index": "MSE A"
   },
   {
     "name": "Газар шим үйлдвэр ХК",
@@ -213,7 +237,8 @@
     "mse_id": 565,
     "ticker": "GAZR",
     "tier": "I",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE B"
   },
   {
     "name": "Худалдаа xөгжлийн банк",
@@ -221,7 +246,8 @@
     "mse_id": 567,
     "ticker": "TDB",
     "tier": "I",
-    "sector": "Banking"
+    "sector": "Banking",
+    "mse_index": "MSE A"
   },
   {
     "name": "Хас Банк",
@@ -229,7 +255,8 @@
     "mse_id": 568,
     "ticker": "XAC",
     "tier": "I",
-    "sector": "Banking"
+    "sector": "Banking",
+    "mse_index": "MSE A"
   },
   {
     "name": "Монложистикс Холдинг ХК",
@@ -237,7 +264,8 @@
     "mse_id": 569,
     "ticker": "MLG",
     "tier": "I",
-    "sector": "Transport"
+    "sector": "Transport",
+    "mse_index": "MSE A"
   },
   {
     "name": "Монгол савхи",
@@ -245,7 +273,8 @@
     "mse_id": 2,
     "ticker": "UYN",
     "tier": "II",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE B"
   },
   {
     "name": "Улаанбаатар хивс",
@@ -253,7 +282,8 @@
     "mse_id": 7,
     "ticker": "UBH",
     "tier": "II",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": "MSE B"
   },
   {
     "name": "Монгол нэхмэл",
@@ -261,7 +291,8 @@
     "mse_id": 9,
     "ticker": "MNH",
     "tier": "II",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": "MSE B"
   },
   {
     "name": "БаянголЗочидБуудал",
@@ -269,7 +300,8 @@
     "mse_id": 13,
     "ticker": "BNG",
     "tier": "II",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": "MSE B"
   },
   {
     "name": "Атарөргөө",
@@ -277,7 +309,8 @@
     "mse_id": 17,
     "ticker": "ATR",
     "tier": "II",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": "MSE B"
   },
   {
     "name": "Монинжбар",
@@ -285,7 +318,8 @@
     "mse_id": 25,
     "ticker": "MIB",
     "tier": "II",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE B"
   },
   {
     "name": "Жуулчин дьюти фри",
@@ -293,7 +327,8 @@
     "mse_id": 34,
     "ticker": "JDF",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Мон-Ит Булигаар",
@@ -301,7 +336,8 @@
     "mse_id": 38,
     "ticker": "MBG",
     "tier": "II",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": "MSE B"
   },
   {
     "name": "Гутал",
@@ -309,7 +345,8 @@
     "mse_id": 88,
     "ticker": "GTL",
     "tier": "II",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE B"
   },
   {
     "name": "Монгол даатгал",
@@ -320,7 +357,8 @@
     "sector": "Insurance",
     "aliases": [
       "Монгол даатгал ХК"
-    ]
+    ],
+    "mse_index": "MSE B"
   },
   {
     "name": "Ариг гал",
@@ -328,7 +366,8 @@
     "mse_id": 191,
     "ticker": "EER",
     "tier": "II",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": "MSE B"
   },
   {
     "name": "Улаанбаатар БҮК",
@@ -336,7 +375,8 @@
     "mse_id": 195,
     "ticker": "BUK",
     "tier": "II",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE B"
   },
   {
     "name": "Махимпэкс",
@@ -344,7 +384,8 @@
     "mse_id": 208,
     "ticker": "MMX",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Телеком Монголиа",
@@ -352,7 +393,8 @@
     "mse_id": 209,
     "ticker": "MCH",
     "tier": "II",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE B"
   },
   {
     "name": "Ган хийц",
@@ -360,7 +402,8 @@
     "mse_id": 234,
     "ticker": "GHC",
     "tier": "II",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE B"
   },
   {
     "name": "Крипто нэйшн",
@@ -372,7 +415,8 @@
     "sub_sector": "Securities",
     "aliases": [
       "Крипто үндэстэн"
-    ]
+    ],
+    "mse_index": "MSE B"
   },
   {
     "name": "Шарын гол",
@@ -380,7 +424,8 @@
     "mse_id": 309,
     "ticker": "SHG",
     "tier": "II",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE B"
   },
   {
     "name": "Дархан зочид буудал",
@@ -388,7 +433,8 @@
     "mse_id": 366,
     "ticker": "DZG",
     "tier": "II",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": "MSE B"
   },
   {
     "name": "Хасу Мандал",
@@ -396,7 +442,8 @@
     "mse_id": 378,
     "ticker": "HSR",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Материалимпэкс",
@@ -404,7 +451,8 @@
     "mse_id": 379,
     "ticker": "MIE",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Багануур",
@@ -412,7 +460,8 @@
     "mse_id": 396,
     "ticker": "BAN",
     "tier": "II",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE B"
   },
   {
     "name": "Хөвсгөл алтан дуулга",
@@ -420,7 +469,8 @@
     "mse_id": 402,
     "ticker": "ADU",
     "tier": "II",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": "MSE B"
   },
   {
     "name": "Тандем инвест",
@@ -433,7 +483,8 @@
     "aliases": [
       "\"Тандэм Инвэст ББСБ\" ХК",
       "Тандем Инвест ББСБ ХК"
-    ]
+    ],
+    "mse_index": "MSE B"
   },
   {
     "name": "Техникимпорт",
@@ -441,7 +492,8 @@
     "mse_id": 441,
     "ticker": "TEX",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Могойн гол",
@@ -449,7 +501,8 @@
     "mse_id": 444,
     "ticker": "BDL",
     "tier": "II",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": "MSE B"
   },
   {
     "name": "Баянтээг",
@@ -457,7 +510,8 @@
     "mse_id": 445,
     "ticker": "BTG",
     "tier": "II",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE B"
   },
   {
     "name": "Шивээ Овоо",
@@ -465,7 +519,8 @@
     "mse_id": 460,
     "ticker": "SHV",
     "tier": "II",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE B"
   },
   {
     "name": "Эрчим Баян-Өлгий",
@@ -473,7 +528,8 @@
     "mse_id": 466,
     "ticker": "BOE",
     "tier": "II",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": "MSE B"
   },
   {
     "name": "УлсынИхДэлгүүр",
@@ -481,7 +537,8 @@
     "mse_id": 484,
     "ticker": "UID",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Женко тур бюро",
@@ -489,7 +546,8 @@
     "mse_id": 521,
     "ticker": "JTB",
     "tier": "II",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": "MSE B"
   },
   {
     "name": "ХБ Ойл",
@@ -497,7 +555,8 @@
     "mse_id": 525,
     "ticker": "HBO",
     "tier": "II",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": "MSE B"
   },
   {
     "name": "Хермэс центр",
@@ -505,7 +564,8 @@
     "mse_id": 528,
     "ticker": "HRM",
     "tier": "II",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": "MSE B"
   },
   {
     "name": "Ремикон",
@@ -513,7 +573,8 @@
     "mse_id": 530,
     "ticker": "RMC",
     "tier": "II",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": "MSE B"
   },
   {
     "name": "И Транс ложистикс",
@@ -521,7 +582,8 @@
     "mse_id": 537,
     "ticker": "ETR",
     "tier": "II",
-    "sector": "Transport"
+    "sector": "Transport",
+    "mse_index": "MSE B"
   },
   {
     "name": "Айтулс",
@@ -529,7 +591,8 @@
     "mse_id": 543,
     "ticker": "ITLS",
     "tier": "II",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE B"
   },
   {
     "name": "Эрдэнэ Ресурс",
@@ -537,7 +600,8 @@
     "mse_id": 546,
     "ticker": "ERDN",
     "tier": "II",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": "MSE B"
   },
   {
     "name": "Инновэйшн инвестмент",
@@ -546,7 +610,8 @@
     "ticker": "QPAY",
     "tier": "II",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "mse_index": "MSE B"
   },
   {
     "name": "МГЛ Аква",
@@ -554,7 +619,8 @@
     "mse_id": 572,
     "ticker": "MGLA",
     "tier": "II",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": "MSE B"
   },
   {
     "name": "Тэнгэр даатгал",
@@ -562,7 +628,8 @@
     "mse_id": 573,
     "ticker": "TNGD",
     "tier": "II",
-    "sector": "Insurance"
+    "sector": "Insurance",
+    "mse_index": "MSE B"
   },
   {
     "name": "Хурд",
@@ -570,7 +637,8 @@
     "mse_id": 8,
     "ticker": "HRD",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Моннос",
@@ -578,7 +646,8 @@
     "mse_id": 23,
     "ticker": "MNS",
     "tier": "III",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": null
   },
   {
     "name": "АСБИ",
@@ -586,7 +655,8 @@
     "mse_id": 33,
     "ticker": "CND",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Монгол керамик",
@@ -594,7 +664,8 @@
     "mse_id": 40,
     "ticker": "KEK",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Тавилга",
@@ -602,7 +673,8 @@
     "mse_id": 41,
     "ticker": "TVL",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Сонсголон барmaт",
@@ -610,7 +682,8 @@
     "mse_id": 54,
     "ticker": "SSG",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Хусуг трэйд",
@@ -618,7 +691,8 @@
     "mse_id": 56,
     "ticker": "HSG",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Жуулчин говь",
@@ -626,7 +700,8 @@
     "mse_id": 61,
     "ticker": "JGV",
     "tier": "III",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": null
   },
   {
     "name": "Хүннү менежмент",
@@ -634,7 +709,8 @@
     "mse_id": 65,
     "ticker": "HBZ",
     "tier": "III",
-    "sector": "Holding"
+    "sector": "Holding",
+    "mse_index": null
   },
   {
     "name": "Нэхэсгүй эдлэл",
@@ -642,7 +718,8 @@
     "mse_id": 67,
     "ticker": "NXE",
     "tier": "III",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": null
   },
   {
     "name": "Монгол алт",
@@ -650,7 +727,8 @@
     "mse_id": 68,
     "ticker": "ERS",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Бухуг",
@@ -658,7 +736,8 @@
     "mse_id": 69,
     "ticker": "BHG",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Хөвсгөл",
@@ -666,7 +745,8 @@
     "mse_id": 78,
     "ticker": "HVL",
     "tier": "III",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": null
   },
   {
     "name": "Мандалговь импэкс",
@@ -674,7 +754,8 @@
     "mse_id": 80,
     "ticker": "MNG",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Говийн өндөр",
@@ -682,7 +763,8 @@
     "mse_id": 86,
     "ticker": "JGL",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Увс хүнс",
@@ -690,7 +772,8 @@
     "mse_id": 94,
     "ticker": "HUN",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Гурил",
@@ -698,7 +781,8 @@
     "mse_id": 96,
     "ticker": "GUR",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Сор",
@@ -706,7 +790,8 @@
     "mse_id": 97,
     "ticker": "SOR",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Өлзий Дундговь",
@@ -714,7 +799,8 @@
     "mse_id": 98,
     "ticker": "ULZ",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Хөвсгөл геологи",
@@ -722,7 +808,8 @@
     "mse_id": 108,
     "ticker": "HUV",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "МНД",
@@ -730,7 +817,8 @@
     "mse_id": 118,
     "ticker": "DLH",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Алтай",
@@ -738,7 +826,8 @@
     "mse_id": 119,
     "ticker": "ALA",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Монголын хөгжлийн үндэсний нэгдэл",
@@ -746,7 +835,8 @@
     "mse_id": 120,
     "ticker": "HAM",
     "tier": "III",
-    "sector": "Holding"
+    "sector": "Holding",
+    "mse_index": null
   },
   {
     "name": "Глобал Монголиа холдингс",
@@ -754,7 +844,8 @@
     "mse_id": 125,
     "ticker": "HML",
     "tier": "III",
-    "sector": "Holding"
+    "sector": "Holding",
+    "mse_index": null
   },
   {
     "name": "Хэрлэн хивс",
@@ -762,7 +853,8 @@
     "mse_id": 133,
     "ticker": "HRL",
     "tier": "III",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": null
   },
   {
     "name": "Люкс Занаду групп",
@@ -770,7 +862,8 @@
     "mse_id": 136,
     "ticker": "BAZ",
     "tier": "III",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": null
   },
   {
     "name": "Төмрийн завод",
@@ -778,7 +871,8 @@
     "mse_id": 142,
     "ticker": "TMZ",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Хорин хоёрдугаар баaz",
@@ -786,7 +880,8 @@
     "mse_id": 143,
     "ticker": "AHH",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "ЕСЖ финанс",
@@ -798,7 +893,8 @@
     "sub_sector": "Securities",
     "aliases": [
       "Силк нэт"
-    ]
+    ],
+    "mse_index": null
   },
   {
     "name": "Глобал лайф технологи",
@@ -806,7 +902,8 @@
     "mse_id": 152,
     "ticker": "BAJ",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Эрдэнэт хүнс",
@@ -814,7 +911,8 @@
     "mse_id": 154,
     "ticker": "TAS",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Эрдэнэс солюшнс",
@@ -822,7 +920,8 @@
     "mse_id": 175,
     "ticker": "AMT",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Блюскай секьюритис",
@@ -831,7 +930,8 @@
     "ticker": "BSKY",
     "tier": "III",
     "sector": "Finance",
-    "sub_sector": "Securities"
+    "sub_sector": "Securities",
+    "mse_index": null
   },
   {
     "name": "Хархорин",
@@ -839,7 +939,8 @@
     "mse_id": 179,
     "ticker": "HHN",
     "tier": "III",
-    "sector": "Tourism"
+    "sector": "Tourism",
+    "mse_index": null
   },
   {
     "name": "Азык",
@@ -847,7 +948,8 @@
     "mse_id": 187,
     "ticker": "ALD",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Номин хишиг",
@@ -855,7 +957,8 @@
     "mse_id": 196,
     "ticker": "TGS",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Ачит алкаби",
@@ -863,7 +966,8 @@
     "mse_id": 200,
     "ticker": "NOG",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Ногоон хөгжлийн үндэсний нэгдэл",
@@ -871,7 +975,8 @@
     "mse_id": 201,
     "ticker": "JLT",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Завхан баялаг",
@@ -879,7 +984,8 @@
     "mse_id": 204,
     "ticker": "BLG",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Борнуур",
@@ -887,7 +993,8 @@
     "mse_id": 207,
     "ticker": "BOR",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Тав",
@@ -895,7 +1002,8 @@
     "mse_id": 214,
     "ticker": "TAV",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Тээвэр Дархан",
@@ -903,7 +1011,8 @@
     "mse_id": 217,
     "ticker": "TEE",
     "tier": "III",
-    "sector": "Transport"
+    "sector": "Transport",
+    "mse_index": null
   },
   {
     "name": "Алтайн зам",
@@ -911,7 +1020,8 @@
     "mse_id": 227,
     "ticker": "AZH",
     "tier": "III",
-    "sector": "Transport"
+    "sector": "Transport",
+    "mse_index": null
   },
   {
     "name": "Арвижих",
@@ -919,7 +1029,8 @@
     "mse_id": 231,
     "ticker": "ARJ",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Монгол шевро",
@@ -927,7 +1038,8 @@
     "mse_id": 236,
     "ticker": "MVO",
     "tier": "III",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": null
   },
   {
     "name": "Бүтээлч үйлс",
@@ -935,7 +1047,8 @@
     "mse_id": 239,
     "ticker": "BLC",
     "tier": "III",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": null
   },
   {
     "name": "Еуроазиа Кэпитал Холдинг",
@@ -943,7 +1056,8 @@
     "mse_id": 246,
     "ticker": "SUN",
     "tier": "III",
-    "sector": "Holding"
+    "sector": "Holding",
+    "mse_index": null
   },
   {
     "name": "Дархан гурил тэжээл",
@@ -951,7 +1065,8 @@
     "mse_id": 252,
     "ticker": "DAR",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Дархан хөвөн",
@@ -959,7 +1074,8 @@
     "mse_id": 254,
     "ticker": "DAH",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Стандарт пропертий групп",
@@ -967,7 +1083,8 @@
     "mse_id": 269,
     "ticker": "BBD",
     "tier": "III",
-    "sector": "Real Estate"
+    "sector": "Real Estate",
+    "mse_index": null
   },
   {
     "name": "Монгол дизель",
@@ -975,7 +1092,8 @@
     "mse_id": 290,
     "ticker": "MDZ",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Дэвшил Мандал",
@@ -983,7 +1101,8 @@
     "mse_id": 300,
     "ticker": "DMA",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Дорнод худалдаа",
@@ -991,7 +1110,8 @@
     "mse_id": 311,
     "ticker": "DES",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Силикат",
@@ -999,7 +1119,8 @@
     "mse_id": 317,
     "ticker": "SIL",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Улаансан",
@@ -1007,7 +1128,8 @@
     "mse_id": 325,
     "ticker": "UNS",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Орхондалай",
@@ -1015,7 +1137,8 @@
     "mse_id": 331,
     "ticker": "ORD",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Монгео",
@@ -1023,7 +1146,8 @@
     "mse_id": 332,
     "ticker": "MOG",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Аутозам",
@@ -1031,7 +1155,8 @@
     "mse_id": 369,
     "ticker": "AAR",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Хишиг уул",
@@ -1039,7 +1164,8 @@
     "mse_id": 376,
     "ticker": "HSX",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Эрдэнэт суварга",
@@ -1047,7 +1173,8 @@
     "mse_id": 377,
     "ticker": "SVR",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Дархан хүнс",
@@ -1055,7 +1182,8 @@
     "mse_id": 380,
     "ticker": "DHU",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "ГДАКС",
@@ -1063,7 +1191,8 @@
     "mse_id": 385,
     "ticker": "SOH",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Тушиг уул",
@@ -1071,7 +1200,8 @@
     "mse_id": 386,
     "ticker": "TUS",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Өндөрхаан",
@@ -1079,7 +1209,8 @@
     "mse_id": 389,
     "ticker": "ONH",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Ар Баянхангай",
@@ -1087,7 +1218,8 @@
     "mse_id": 394,
     "ticker": "ABH",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Тэнгэрлийг медиа групп",
@@ -1095,7 +1227,8 @@
     "mse_id": 408,
     "ticker": "TNGR",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Орхон хөгжил",
@@ -1103,7 +1236,8 @@
     "mse_id": 409,
     "ticker": "HJL",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Стандарт ноос",
@@ -1111,7 +1245,8 @@
     "mse_id": 420,
     "ticker": "ALI",
     "tier": "III",
-    "sector": "Textiles"
+    "sector": "Textiles",
+    "mse_index": null
   },
   {
     "name": "Эрээнцав",
@@ -1119,7 +1254,8 @@
     "mse_id": 425,
     "ticker": "ECV",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Хөвсгөл хүнс",
@@ -1127,7 +1263,8 @@
     "mse_id": 431,
     "ticker": "HHS",
     "tier": "III",
-    "sector": "Food"
+    "sector": "Food",
+    "mse_index": null
   },
   {
     "name": "Буунийн худалдаа",
@@ -1135,7 +1272,8 @@
     "mse_id": 435,
     "ticker": "BHL",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Увс чацаргана",
@@ -1143,7 +1281,8 @@
     "mse_id": 448,
     "ticker": "CHR",
     "tier": "III",
-    "sector": "Agriculture"
+    "sector": "Agriculture",
+    "mse_index": null
   },
   {
     "name": "Аутоимпэкс",
@@ -1151,7 +1290,8 @@
     "mse_id": 452,
     "ticker": "AOI",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Хүнгэн бетон",
@@ -1159,7 +1299,8 @@
     "mse_id": 454,
     "ticker": "HBT",
     "tier": "III",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": null
   },
   {
     "name": "Хар тарваагатай",
@@ -1167,7 +1308,8 @@
     "mse_id": 455,
     "ticker": "TVT",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Их барилга",
@@ -1175,7 +1317,8 @@
     "mse_id": 459,
     "ticker": "IBA",
     "tier": "III",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": null
   },
   {
     "name": "Адуунчулуун",
@@ -1183,7 +1326,8 @@
     "mse_id": 461,
     "ticker": "ADL",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Талын гал",
@@ -1191,7 +1335,8 @@
     "mse_id": 464,
     "ticker": "TAL",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Эрдэнэт аутозам",
@@ -1199,7 +1344,8 @@
     "mse_id": 469,
     "ticker": "EAZ",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Мон Нэб",
@@ -1211,7 +1357,8 @@
     "aliases": [
       "Моннаб"
     ],
-    "sub_sector": "ББСБ (Lending NBFI)"
+    "sub_sector": "ББСБ (Lending NBFI)",
+    "mse_index": null
   },
   {
     "name": "Барилга корпораци",
@@ -1219,7 +1366,8 @@
     "mse_id": 476,
     "ticker": "BRC",
     "tier": "III",
-    "sector": "Construction"
+    "sector": "Construction",
+    "mse_index": null
   },
   {
     "name": "Хот дэвэлопмент",
@@ -1227,7 +1375,8 @@
     "mse_id": 490,
     "ticker": "SDT",
     "tier": "III",
-    "sector": "Real Estate"
+    "sector": "Real Estate",
+    "mse_index": null
   },
   {
     "name": "Бэрх уул",
@@ -1235,7 +1384,8 @@
     "mse_id": 492,
     "ticker": "BEU",
     "tier": "III",
-    "sector": "Mining"
+    "sector": "Mining",
+    "mse_index": null
   },
   {
     "name": "Монгол секьюритис",
@@ -1247,7 +1397,8 @@
     "sub_sector": "Securities",
     "aliases": [
       "Монгол секюритиес"
-    ]
+    ],
+    "mse_index": null
   },
   {
     "name": "Дархан ус сувaг",
@@ -1255,7 +1406,8 @@
     "mse_id": 505,
     "ticker": "DUS",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Эрдэнэт ус, дулаан түгээх сүлжээ",
@@ -1263,7 +1415,8 @@
     "mse_id": 506,
     "ticker": "EUD",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Дархан Сэлэнгийн цахилгаан түгээх сүлжээ",
@@ -1271,7 +1424,8 @@
     "mse_id": 508,
     "ticker": "DSS",
     "tier": "III",
-    "sector": "Energy"
+    "sector": "Energy",
+    "mse_index": null
   },
   {
     "name": "Монгол шилтгээн",
@@ -1279,7 +1433,8 @@
     "mse_id": 517,
     "ticker": "MSH",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Фронтир Лэнд Групп",
@@ -1287,7 +1442,8 @@
     "mse_id": 524,
     "ticker": "MDR",
     "tier": "III",
-    "sector": "Real Estate"
+    "sector": "Real Estate",
+    "mse_index": null
   },
   {
     "name": "Оллоо",
@@ -1295,7 +1451,8 @@
     "mse_id": 527,
     "ticker": "OLL",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   },
   {
     "name": "Хөх ган",
@@ -1303,7 +1460,8 @@
     "mse_id": 532,
     "ticker": "HGN",
     "tier": "III",
-    "sector": "Manufacturing"
+    "sector": "Manufacturing",
+    "mse_index": null
   },
   {
     "name": "Монголын төмөр зам",
@@ -1311,7 +1469,8 @@
     "mse_id": 536,
     "ticker": "MTZ",
     "tier": "III",
-    "sector": "Transport"
+    "sector": "Transport",
+    "mse_index": null
   },
   {
     "name": "Мэрэкс",
@@ -1319,7 +1478,8 @@
     "mse_id": 540,
     "ticker": "MRX",
     "tier": "III",
-    "sector": "Trade"
+    "sector": "Trade",
+    "mse_index": null
   },
   {
     "name": "Гранд системс",
@@ -1327,6 +1487,7 @@
     "mse_id": 571,
     "ticker": "GRS",
     "tier": "III",
-    "sector": "Services"
+    "sector": "Services",
+    "mse_index": null
   }
 ]
