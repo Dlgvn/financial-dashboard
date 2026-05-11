@@ -2,6 +2,8 @@
 
 > Fundamental analysis platform for companies listed on the Mongolian Stock Exchange
 
+The Mongolian Stock Exchange lists over 200 companies, yet investors have no dedicated tool for structured fundamental analysis — financial statements are published as raw Excel files with no standardised ratios, no scoring, and no cross-company comparison. MSE Analytica fills that gap: upload any MSE Excel filing and instantly get sector-aware ratio analysis, composite health scoring, forensic signals, and valuation multiples — all calibrated to the realities of the Mongolian market.
+
 Built as a Capstone Project. Designed for Mongolian equity analysts and investors who need a structured, sector-aware workflow for evaluating MSE-listed companies.
 
 ---
@@ -23,12 +25,37 @@ Finance/NBFI subsectors (Securities, ББСБ Lending, Investment/Holding) are a
 
 ### Company Detail Page — 5-Tab Layout
 
-- **Overview** — composite health gauge (radial bar) + radar breakdown chart, then a Key Metrics card (ROE, ROA, Net Margin, Gross Margin, Operating Margin, Debt/Equity, Current Ratio, Quick Ratio, Altman Z-Score) alongside a Risk Signals card
-- **Ratios** — sector-aware table with green/amber/red color coding against calibrated MSE benchmarks
-- **Forensic** — standard companies: Piotroski F-Score + Beneish M-Score; Banking/Insurance/Finance: 8-criterion sector forensic score + YoY bar chart
-- **Valuation** — 6 subsector-specific card grids with a cash flow metric on every grid: standard (EV/EBIT, FCF Yield, Free Cash Flow M₮, P/E, P/BV), banking (P/E, P/BV, P/TBV, P/PPOP, P/NII, Op. Cash Flow M₮), NBFI (P/E, P/BV, P/PPOP, P/NII, Op. Cash Flow M₮), holding (P/E, P/NAV, P/Inv Sec, Op. Cash Flow M₮), securities (P/E, P/BV, P/Revenue, Op. Cash Flow M₮), insurance (P/E, P/BV, P/NPE, P/UWP, Op. Cash Flow M₮); historical OHLCV price chart with 1M/6M/1Y/All range toggle
-- **DuPont** — 3-factor decomposition (Standard/Insurance/Finance: Net Margin × Asset Turnover × Equity Multiplier; Banking: ROA × Equity Multiplier); current vs. prior year comparison
-- **Red Flags** — rule-based flags appear instantly on page load, then replaced by Groq AI (Llama 3.3 70B) sector-aware flags with HIGH/MEDIUM/LOW/CLEAR severity badges
+- **Overview**
+  - Composite health gauge (radial bar) + radar breakdown chart
+  - Key Metrics card: ROE, ROA, Net Margin, Gross Margin, Operating Margin, Debt/Equity, Current Ratio, Quick Ratio, Altman Z-Score
+  - Risk Signals card alongside Key Metrics
+
+- **Ratios**
+  - Sector-aware ratio table with green / amber / red color coding against calibrated MSE benchmarks
+
+- **Forensic**
+  - Standard companies: Piotroski F-Score + Beneish M-Score
+  - Banking / Insurance / Finance: 8-criterion sector forensic score + YoY bar chart
+
+- **Valuation**
+  - Subsector-specific card grids (cash flow metric on every grid):
+    - Standard: EV/EBIT, FCF Yield, Free Cash Flow M₮, P/E, P/BV
+    - Banking: P/E, P/BV, P/TBV, P/PPOP, P/NII, Op. Cash Flow M₮
+    - NBFI: P/E, P/BV, P/PPOP, P/NII, Op. Cash Flow M₮
+    - Holding: P/E, P/NAV, P/Inv Sec, Op. Cash Flow M₮
+    - Securities: P/E, P/BV, P/Revenue, Op. Cash Flow M₮
+    - Insurance: P/E, P/BV, P/NPE, P/UWP, Op. Cash Flow M₮
+  - Historical OHLCV price chart with 1M / 6M / 1Y / All range toggle
+
+- **DuPont**
+  - 3-factor decomposition:
+    - Standard / Insurance / Finance: Net Margin × Asset Turnover × Equity Multiplier
+    - Banking: ROA × Equity Multiplier
+  - Current vs. prior year comparison
+
+- **Red Flags**
+  - Rule-based flags appear instantly on page load
+  - Replaced by Groq AI (Llama 3.3 70B) sector-aware flags with HIGH / MEDIUM / LOW / CLEAR severity badges
 
 ### Company Screener
 
@@ -53,9 +80,9 @@ Sortable, filterable table across all uploaded companies with an expandable Meth
 
 ### Composite Health Score (0–100)
 
-Weighted blend of subscores derived from linear interpolation of raw ratios onto calibrated MSE ranges. Weights vary by sector:
+Weighted blend of subscores derived from linear interpolation of raw ratios onto calibrated MSE ranges. Each sector uses its own composite function and weighting framework.
 
-**Standard:**
+**Standard** (basis: MSE-calibrated benchmarks + Altman/Piotroski models)
 
 | Component | Weight |
 |-----------|--------|
@@ -70,7 +97,47 @@ Missing components redistribute weight proportionally. Beneish penalty: −10 pt
 
 Labels: **≥80 Excellent** · **60–79 Good** · **40–59 Fair** · **<40 Weak**
 
-Banking, Insurance, and Finance use sector-specific composite functions with CAMEL-inspired weighting.
+---
+
+**Banking** (basis: CAMELS framework — FDIC, IMF, World Bank)
+
+| Component | Weight | Key Ratios |
+|-----------|--------|------------|
+| Capital Adequacy | 25% | Equity/Assets, Equity Multiplier |
+| Asset Quality | 25% | NPL Ratio, Coverage Ratio, Loan Loss Reserve |
+| Earnings | 20% | NIM, ROA, ROE, Cost-to-Income |
+| Liquidity | 20% | LDR, Cash-to-Deposits, Loans-to-Assets |
+| Efficiency | 10% | Cost-to-Income ratio |
+
+Labels: **≥70 Healthy** · **40–69 Caution** · **<40 Distress**
+
+---
+
+**Insurance** (basis: IRIS screening, Solvency II, A.M. Best / S&P criteria, Mongolia FRC standards)
+
+| Component | Weight | Key Ratios |
+|-----------|--------|------------|
+| Underwriting Quality | 30% | Combined Ratio, Loss Ratio, Expense Ratio |
+| Solvency / Capital | 25% | Solvency Ratio, Leverage, Reserve Coverage |
+| Profitability | 25% | ROA, ROE, Net Margin, Underwriting Margin |
+| Liquidity | 20% | OCF Ratio, Cash-to-Liabilities, Investment Ratio |
+
+Note: if underwriting data is unavailable, its weight redistributes to profitability.
+
+Labels: **≥70 Healthy** · **40–69 Caution** · **<40 Distress**
+
+---
+
+**Finance / NBFI** (basis: CARE Ratings NBFC methodology, IMF FSAP NBFI indicators)
+
+| Component | Weight | Key Ratios |
+|-----------|--------|------------|
+| Profitability | 30% | NIM, ROA, ROE, Net Margin, Interest Spread |
+| Capital / Leverage | 25% | Debt/Equity, Equity Ratio |
+| Efficiency | 25% | Cost-to-Income, Asset Utilisation |
+| Liquidity | 20% | Cash Ratio, OCF Ratio, Loan-to-Assets |
+
+Labels: **≥70 Healthy** · **40–69 Caution** · **<40 Distress**
 
 ### Piotroski F-Score
 
