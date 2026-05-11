@@ -215,7 +215,7 @@ Zones: **Safe > 2.99** · **Grey 1.23–2.99** · **Distress < 1.23**
 
 ## Data Sources
 
-- **Financial statements:** [MSE Members Portal](https://members.mse.mn) — XLS/XLSX files for all listed companies
+- **Financial statements:** [MSE Portal]([https://members.mse.mn](https://mse.mn/uploads/finance/) — XLS/XLSX files for all listed companies
 - **Historical prices:** [old.mse.mn](https://old.mse.mn/mn/company/) — OHLCV data per company ID
 - **Company registry:** 68-company JSON with MSE IDs, sectors, subsectors, and name aliases
 
