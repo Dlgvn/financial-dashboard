@@ -1,58 +1,6 @@
 {
   "files": [
     {
-      "filename": "БаянголЗочидБуудал_2024.json",
-      "original_file": "_13 20244report.xls",
-      "company": "БаянголЗочидБуудал",
-      "year": "2024",
-      "sector": "Tourism",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.310528"
-    },
-    {
-      "filename": "Атарөргөө_2024.json",
-      "original_file": "_17 20244report.xls",
-      "company": "Атарөргөө",
-      "year": "2024",
-      "sector": "Construction",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.316819"
-    },
-    {
-      "filename": "Мон-Ит_Булигаар_2024.json",
-      "original_file": "_38 20244report.xls",
-      "company": "Мон-Ит Булигаар",
-      "year": "2024",
-      "sector": "Textiles",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.320879"
-    },
-    {
-      "filename": "Дархан_нэхий_ХК_2024.json",
-      "original_file": "_71 20244report.xls",
-      "company": "Дархан нэхий ХК",
-      "year": "2024",
-      "sector": "Textiles",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.324273"
-    },
-    {
       "filename": "АПУ_2024.json",
       "original_file": "_90 20244report.xls",
       "company": "АПУ",
@@ -63,7 +11,20 @@
         "income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.327454"
+      "parsed_at": "2026-05-12T11:52:06.693634"
+    },
+    {
+      "filename": "Монинжбар_2024.json",
+      "original_file": "_25 20244report.xls",
+      "company": "Монинжбар",
+      "year": "2024",
+      "sector": "Services",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.704369"
     },
     {
       "filename": "Сүү_2024.json",
@@ -76,319 +37,7 @@
         "income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.333561"
-    },
-    {
-      "filename": "Монгол_даатгал_ХК_2024.json",
-      "original_file": "_162 20244report.xls",
-      "company": "Монгол даатгал ХК",
-      "year": "2024",
-      "sector": "Insurance",
-      "sheets_parsed": [
-        "insurance_balance_sheet",
-        "insurance_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.337687"
-    },
-    {
-      "filename": "Махимпэкс_2024.json",
-      "original_file": "_208 20244report.xls",
-      "company": "Махимпэкс",
-      "year": "2024",
-      "sector": "Trade",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.342304"
-    },
-    {
-      "filename": "Крипто_үндэстэн_2024.json",
-      "original_file": "_308 20244report.xls",
-      "company": "Крипто үндэстэн",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.345865"
-    },
-    {
-      "filename": "Ард_санхүүгийн_нэгдэл_2025.json",
-      "original_file": "_326 20252report.xls",
-      "company": "Ард санхүүгийн нэгдэл",
-      "year": "2025",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.350784"
-    },
-    {
-      "filename": "Багануур_2024.json",
-      "original_file": "_396 20244report.xls",
-      "company": "Багануур",
-      "year": "2024",
-      "sector": "Mining",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.358376"
-    },
-    {
-      "filename": "\"Тандэм_Инвэст_ББСБ\"_ХК_2024.json",
-      "original_file": "_438 20244report.xls",
-      "company": "\"Тандэм Инвэст ББСБ\" ХК",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.361756"
-    },
-    {
-      "filename": "Тавантолгой_2024.json",
-      "original_file": "_458 20244report.xls",
-      "company": "Тавантолгой",
-      "year": "2024",
-      "sector": "Mining",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.368366"
-    },
-    {
-      "filename": "Моннаб_2024.json",
-      "original_file": "_471 20244report.xls",
-      "company": "Моннаб",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.371133"
-    },
-    {
-      "filename": "УлсынИхДэлгүүр_2024.json",
-      "original_file": "_484 20244report.xls",
-      "company": "УлсынИхДэлгүүр",
-      "year": "2024",
-      "sector": "Trade",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.375531"
-    },
-    {
-      "filename": "Монгол_шуудан_2024.json",
-      "original_file": "_541 20244report.xls",
-      "company": "Монгол шуудан",
-      "year": "2024",
-      "sector": "Services",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.378652"
-    },
-    {
-      "filename": "МИК_холдинг_Групп_2024.json",
-      "original_file": "_542 20244report.xls",
-      "company": "МИК холдинг Групп",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.381249"
-    },
-    {
-      "filename": "МонголБазальт_2024.json",
-      "original_file": "_544 20244report.xls",
-      "company": "МонголБазальт",
-      "year": "2024",
-      "sector": "Manufacturing",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.386855"
-    },
-    {
-      "filename": "Мандалженерал_даатгал_2024.json",
-      "original_file": "_547 20244report.xls",
-      "company": "Мандалженерал даатгал",
-      "year": "2024",
-      "sector": "Insurance",
-      "sheets_parsed": [
-        "insurance_balance_sheet",
-        "insurance_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.392975"
-    },
-    {
-      "filename": "Моносхүнс_2024.json",
-      "original_file": "_551 20244report.xls",
-      "company": "Моносхүнс",
-      "year": "2024",
-      "sector": "Food",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.403439"
-    },
-    {
-      "filename": "Инвескор_ББСБ_ХК_2024.json",
-      "original_file": "_553 20244report.xls",
-      "company": "Инвескор ББСБ ХК",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.408652"
-    },
-    {
-      "filename": "Премиум_нэксус_ХК_2024.json",
-      "original_file": "_557 20244report.xls",
-      "company": "Премиум нэксус ХК",
-      "year": "2024",
-      "sector": "Holding",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.418404"
-    },
-    {
-      "filename": "Төрийн_банк_2024.json",
-      "original_file": "_564 20244report.xls",
-      "company": "Төрийн банк",
-      "year": "2024",
-      "sector": "Banking",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.453515"
-    },
-    {
-      "filename": "ГАЗАР_ШИМ_ҮЙЛДВЭР_ХК_2024.json",
-      "original_file": "_565 20244report.xls",
-      "company": "ГАЗАР ШИМ ҮЙЛДВЭР ХК",
-      "year": "2024",
-      "sector": "Manufacturing",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.458162"
-    },
-    {
-      "filename": "Худалдаа_xөгжлийн_банк_2024.json",
-      "original_file": "_567 20244report.xls",
-      "company": "Худалдаа xөгжлийн банк",
-      "year": "2024",
-      "sector": "Banking",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.461299"
-    },
-    {
-      "filename": "Хас_Банк_2024.json",
-      "original_file": "_568 20244report.xls",
-      "company": "Хас Банк",
-      "year": "2024",
-      "sector": "Banking",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.465620"
-    },
-    {
-      "filename": "Монложистикс_Холдинг_ХК_2024.json",
-      "original_file": "_569 20244report.xls",
-      "company": "Монложистикс Холдинг ХК",
-      "year": "2024",
-      "sector": "Transport",
-      "sheets_parsed": [
-        "balance_sheet",
-        "income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.469456"
-    },
-    {
-      "filename": "Бодь_даатгал_ХХК_2024.json",
-      "original_file": "_573 20244report.xls",
-      "company": "Бодь даатгал ХХК",
-      "year": "2024",
-      "sector": "Insurance",
-      "sheets_parsed": [
-        "insurance_balance_sheet",
-        "insurance_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.472349"
-    },
-    {
-      "filename": "Силк_нэт_2022.json",
-      "original_file": "14820224report.xls",
-      "company": "Силк нэт",
-      "year": "2022",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.477679"
-    },
-    {
-      "filename": "Монгол_секюритиес_2022.json",
-      "original_file": "50320221report.xls",
-      "company": "Монгол секюритиес",
-      "year": "2022",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.485764"
+      "parsed_at": "2026-05-12T11:52:06.709842"
     },
     {
       "filename": "Бидисек_2024.json",
@@ -397,37 +46,24 @@
       "year": "2024",
       "sector": "Finance",
       "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
+        "securities_balance_sheet",
+        "securities_income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.489367"
+      "parsed_at": "2026-05-12T11:52:06.714238"
     },
     {
-      "filename": "ЛЭНДМН_2024.json",
-      "original_file": "54520244report.xls",
-      "company": "ЛЭНДМН",
+      "filename": "Инвескор_ББСБ_ХК_2024.json",
+      "original_file": "_553 20244report.xls",
+      "company": "Инвескор ББСБ ХК",
       "year": "2024",
       "sector": "Finance",
       "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
+        "balance_sheet",
+        "income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.494875"
-    },
-    {
-      "filename": "Сэндли_ББСБ_ХК_2024.json",
-      "original_file": "56120244report.xls",
-      "company": "Сэндли ББСБ ХК",
-      "year": "2024",
-      "sector": "Finance",
-      "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
-        "cash_flow"
-      ],
-      "parsed_at": "2026-04-27T20:35:12.504954"
+      "parsed_at": "2026-05-12T11:52:06.724855"
     },
     {
       "filename": "Голомт_банк_2024.json",
@@ -440,7 +76,202 @@
         "bank_income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.511263"
+      "parsed_at": "2026-05-12T11:52:06.731600"
+    },
+    {
+      "filename": "Махимпэкс_2024.json",
+      "original_file": "_208 20244report.xls",
+      "company": "Махимпэкс",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.736116"
+    },
+    {
+      "filename": "УлаанбаатарБүк_2024.json",
+      "original_file": "_195 20244report.xls",
+      "company": "УлаанбаатарБүк",
+      "year": "2024",
+      "sector": "Services",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.740298"
+    },
+    {
+      "filename": "Дархан_нэхий_ХК_2024.json",
+      "original_file": "_71 20244report.xls",
+      "company": "Дархан нэхий ХК",
+      "year": "2024",
+      "sector": "Textiles",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.743995"
+    },
+    {
+      "filename": "ЛЭНДМН_2024.json",
+      "original_file": "54520244report.xls",
+      "company": "ЛЭНДМН",
+      "year": "2024",
+      "sector": "Finance",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.749347"
+    },
+    {
+      "filename": "Мандалженерал_даатгал_2024.json",
+      "original_file": "_547 20244report.xls",
+      "company": "Мандалженерал даатгал",
+      "year": "2024",
+      "sector": "Insurance",
+      "sheets_parsed": [
+        "insurance_balance_sheet",
+        "insurance_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.756963"
+    },
+    {
+      "filename": "МИК_холдинг_Групп_2024.json",
+      "original_file": "_542 20244report.xls",
+      "company": "МИК холдинг Групп",
+      "year": "2024",
+      "sector": "Finance",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.760479"
+    },
+    {
+      "filename": "МонголБазальт_2024.json",
+      "original_file": "_544 20244report.xls",
+      "company": "МонголБазальт",
+      "year": "2024",
+      "sector": "Manufacturing",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.765946"
+    },
+    {
+      "filename": "Монгол_шуудан_2024.json",
+      "original_file": "_541 20244report.xls",
+      "company": "Монгол шуудан",
+      "year": "2024",
+      "sector": "Services",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.768988"
+    },
+    {
+      "filename": "Монголын_хөрөнгийн_бирж_2024.json",
+      "original_file": "_510 20244report.xls",
+      "company": "Монголын хөрөнгийн бирж",
+      "year": "2024",
+      "sector": "Standard",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.771854"
+    },
+    {
+      "filename": "Монложистикс_Холдинг_ХК_2024.json",
+      "original_file": "_569 20244report.xls",
+      "company": "Монложистикс Холдинг ХК",
+      "year": "2024",
+      "sector": "Transport",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.774859"
+    },
+    {
+      "filename": "Моносхүнс_2024.json",
+      "original_file": "_551 20244report.xls",
+      "company": "Моносхүнс",
+      "year": "2024",
+      "sector": "Food",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.777838"
+    },
+    {
+      "filename": "Премиум_нэксус_ХК_2024.json",
+      "original_file": "_557 20244report.xls",
+      "company": "Премиум нэксус ХК",
+      "year": "2024",
+      "sector": "Holding",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.780693"
+    },
+    {
+      "filename": "Тавантолгой_2024.json",
+      "original_file": "_458 20244report.xls",
+      "company": "Тавантолгой",
+      "year": "2024",
+      "sector": "Mining",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.824653"
+    },
+    {
+      "filename": "Төрийн_банк_2024.json",
+      "original_file": "_564 20244report.xls",
+      "company": "Төрийн банк",
+      "year": "2024",
+      "sector": "Banking",
+      "sheets_parsed": [
+        "bank_balance_sheet",
+        "bank_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.831530"
+    },
+    {
+      "filename": "Шивээ_Овоо_2024.json",
+      "original_file": "_460 20244report.xls",
+      "company": "Шивээ Овоо",
+      "year": "2024",
+      "sector": "Mining",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.835641"
     },
     {
       "filename": "Хаан_банк_2024.json",
@@ -453,7 +284,111 @@
         "bank_income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.515278"
+      "parsed_at": "2026-05-12T11:52:06.844560"
+    },
+    {
+      "filename": "Худалдаа_xөгжлийн_банк_2024.json",
+      "original_file": "_567 20244report.xls",
+      "company": "Худалдаа xөгжлийн банк",
+      "year": "2024",
+      "sector": "Banking",
+      "sheets_parsed": [
+        "bank_balance_sheet",
+        "bank_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.848830"
+    },
+    {
+      "filename": "Атарөргөө_2024.json",
+      "original_file": "_17 20244report.xls",
+      "company": "Атарөргөө",
+      "year": "2024",
+      "sector": "Construction",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.854843"
+    },
+    {
+      "filename": "Багануур_2024.json",
+      "original_file": "_396 20244report.xls",
+      "company": "Багануур",
+      "year": "2024",
+      "sector": "Mining",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.860025"
+    },
+    {
+      "filename": "БаянголЗочидБуудал_2024.json",
+      "original_file": "_13 20244report (1).xls",
+      "company": "БаянголЗочидБуудал",
+      "year": "2024",
+      "sector": "Tourism",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.862922"
+    },
+    {
+      "filename": "Мон-Ит_Булигаар_2024.json",
+      "original_file": "_38 20244report.xls",
+      "company": "Мон-Ит Булигаар",
+      "year": "2024",
+      "sector": "Textiles",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.869834"
+    },
+    {
+      "filename": "Гермесцентр_2024.json",
+      "original_file": "52820244report.xls",
+      "company": "Гермесцентр",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.874671"
+    },
+    {
+      "filename": "Гутал_2024.json",
+      "original_file": "_88 20244report.xls",
+      "company": "Гутал",
+      "year": "2024",
+      "sector": "Manufacturing",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.879450"
+    },
+    {
+      "filename": "Жуулчин_Дюти_Фрий_2024.json",
+      "original_file": "_34 20244report.xls",
+      "company": "Жуулчин Дюти Фрий",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.885110"
     },
     {
       "filename": "Инновэйшн_инвестмент_2024.json",
@@ -462,11 +397,206 @@
       "year": "2024",
       "sector": "Finance",
       "sheets_parsed": [
-        "bank_balance_sheet",
-        "bank_income_statement",
+        "securities_balance_sheet",
+        "securities_income_statement",
         "cash_flow"
       ],
-      "parsed_at": "2026-04-27T20:35:12.519029"
+      "parsed_at": "2026-05-12T11:52:06.888089"
+    },
+    {
+      "filename": "Крипто_үндэстэн_2024.json",
+      "original_file": "_308 20244report.xls",
+      "company": "Крипто үндэстэн",
+      "year": "2024",
+      "sector": "Finance",
+      "sheets_parsed": [
+        "securities_balance_sheet",
+        "securities_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.891869"
+    },
+    {
+      "filename": "МатериалИмпекс_2024.json",
+      "original_file": "37920244report.xls",
+      "company": "МатериалИмпекс",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.894938"
+    },
+    {
+      "filename": "unknown_2024.json",
+      "original_file": "_162 20244report.xls",
+      "company": "unknown",
+      "year": "2024",
+      "sector": "Insurance",
+      "sheets_parsed": [
+        "insurance_balance_sheet",
+        "insurance_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.898132"
+    },
+    {
+      "filename": "Ремикон_2024.json",
+      "original_file": "_530 20244report.xls",
+      "company": "Ремикон",
+      "year": "2024",
+      "sector": "Construction",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.901777"
+    },
+    {
+      "filename": "Сэндли_ББСБ_ХК_2024.json",
+      "original_file": "56120244report.xls",
+      "company": "Сэндли ББСБ ХК",
+      "year": "2024",
+      "sector": "Finance",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.906247"
+    },
+    {
+      "filename": "\"Тандэм_Инвэст_ББСБ\"_ХК_2024.json",
+      "original_file": "_438 20244report.xls",
+      "company": "\"Тандэм Инвэст ББСБ\" ХК",
+      "year": "2024",
+      "sector": "Finance",
+      "sheets_parsed": [
+        "securities_balance_sheet",
+        "securities_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.909783"
+    },
+    {
+      "filename": "Техникимпорт_2024.json",
+      "original_file": "_441 20244report.xls",
+      "company": "Техникимпорт",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.912987"
+    },
+    {
+      "filename": "Бодь_даатгал_ХХК_2024.json",
+      "original_file": "_573 20244report.xls",
+      "company": "Бодь даатгал ХХК",
+      "year": "2024",
+      "sector": "Insurance",
+      "sheets_parsed": [
+        "insurance_balance_sheet",
+        "insurance_income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.916367"
+    },
+    {
+      "filename": "Улаанбаатар_хивс_ХК_2024.json",
+      "original_file": "_7 20244report.xls",
+      "company": "Улаанбаатар хивс ХК",
+      "year": "2024",
+      "sector": "Textiles",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.919965"
+    },
+    {
+      "filename": "УлсынИхДэлгүүр_2024.json",
+      "original_file": "_484 20244report.xls",
+      "company": "УлсынИхДэлгүүр",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.922790"
+    },
+    {
+      "filename": "Хай_Би_Ойл_2024.json",
+      "original_file": "52520244report.xls",
+      "company": "Хай Би Ойл",
+      "year": "2024",
+      "sector": "Energy",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.925709"
+    },
+    {
+      "filename": "Хасу-Мандал_ХК_2024.json",
+      "original_file": "_378 20244report.xls",
+      "company": "Хасу-Мандал ХК",
+      "year": "2024",
+      "sector": "Trade",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.928565"
+    },
+    {
+      "filename": "ХөвсгөлАлтандуулга_2024.json",
+      "original_file": "_402 20244report (1).xls",
+      "company": "ХөвсгөлАлтандуулга",
+      "year": "2024",
+      "sector": "Manufacturing",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.933931"
+    },
+    {
+      "filename": "Этранс_ложистикс_2024.json",
+      "original_file": "_537 20244report.xls",
+      "company": "Этранс ложистикс",
+      "year": "2024",
+      "sector": "Transport",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.936766"
+    },
+    {
+      "filename": "Эм_жи_эл_акуа_ХК_2024.json",
+      "original_file": "_572 20244report.xls",
+      "company": "Эм жи эл акуа ХК",
+      "year": "2024",
+      "sector": "Services",
+      "sheets_parsed": [
+        "balance_sheet",
+        "income_statement",
+        "cash_flow"
+      ],
+      "parsed_at": "2026-05-12T11:52:06.940203"
     }
   ]
 }

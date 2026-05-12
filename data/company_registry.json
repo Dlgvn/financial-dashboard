@@ -283,7 +283,10 @@
     "ticker": "UBH",
     "tier": "II",
     "sector": "Textiles",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "Улаанбаатар хивс ХК"
+    ]
   },
   {
     "name": "Монгол нэхмэл",
@@ -328,7 +331,10 @@
     "ticker": "JDF",
     "tier": "II",
     "sector": "Trade",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "Жуулчин Дюти Фрий"
+    ]
   },
   {
     "name": "Мон-Ит Булигаар",
@@ -376,7 +382,10 @@
     "ticker": "BUK",
     "tier": "II",
     "sector": "Services",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "УлаанбаатарБүк"
+    ]
   },
   {
     "name": "Махимпэкс",
@@ -443,7 +452,10 @@
     "ticker": "HSR",
     "tier": "II",
     "sector": "Trade",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "Хасу-Мандал ХК"
+    ]
   },
   {
     "name": "Материалимпэкс",
@@ -452,7 +464,10 @@
     "ticker": "MIE",
     "tier": "II",
     "sector": "Trade",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "МатериалИмпекс"
+    ]
   },
   {
     "name": "Багануур",
@@ -470,7 +485,10 @@
     "ticker": "ADU",
     "tier": "II",
     "sector": "Manufacturing",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "ХөвсгөлАлтандуулга"
+    ]
   },
   {
     "name": "Тандем инвест",
@@ -556,7 +574,10 @@
     "ticker": "HBO",
     "tier": "II",
     "sector": "Energy",
-    "mse_index": "MSE B"
+    "mse_index": "MSE B",
+    "aliases": [
+      "Хай Би Ойл"
+    ]
   },
   {
     "name": "Хермэс центр",
@@ -1489,5 +1510,29 @@
     "tier": "III",
     "sector": "Services",
     "mse_index": null
+  },
+  {
+    "name": "Монголын хөрөнгийн бирж",
+    "mse_id": 510,
+    "sector": "Financial",
+    "aliases": []
+  },
+  {
+    "name": "Гермесцентр",
+    "mse_id": 528,
+    "sector": "Trade",
+    "aliases": []
+  },
+  {
+    "name": "Этранс ложистикс",
+    "mse_id": 537,
+    "sector": "Transport",
+    "aliases": []
+  },
+  {
+    "name": "Эм жи эл акуа ХК",
+    "mse_id": 572,
+    "sector": "Services",
+    "aliases": []
   }
 ]
