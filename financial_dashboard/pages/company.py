@@ -567,7 +567,7 @@ def ratios_tab_content() -> rx.Component:
                 {"backgroundColor": _CARD, "color": _FAINT, "borderColor": _BORDER},
             ),
         ),
-        rx.text("Row colors relative to standard benchmarks", class_name="text-xs", style={"color": _FAINT}),
+        rx.text("Green = improved vs prior year · Red = declined", class_name="text-xs", style={"color": _FAINT}),
         spacing="2",
         align="center",
         class_name="mb-4",

@@ -123,6 +123,20 @@ def _color(v, good_above=None, bad_below=None, good_below=None, bad_above=None) 
     return "neutral"
 
 
+def _yoy_color(curr, prev, higher_is_good: bool = True) -> str:
+    """Return 'good', 'neutral', or 'bad' based on YoY direction.
+
+    Green when the ratio moved in the desired direction vs prior year.
+    Neutral when either value is missing or unchanged.
+    """
+    if curr is None or prev is None:
+        return "neutral"
+    if curr == prev:
+        return "neutral"
+    improved = curr > prev if higher_is_good else curr < prev
+    return "good" if improved else "bad"
+
+
 class UploadState(rx.State):
     """Manages file upload, parsing, and display state."""
 
@@ -658,6 +672,9 @@ class AnalysisState(UploadState):
             bank_prev = bank_result.get("prev", {})
             bank_prev_prof = bank_prev.get("profitability", {})
             bank_prev_cap  = bank_prev.get("capital_adequacy", {})
+            bank_prev_aq   = bank_prev.get("asset_quality", {})
+            bank_prev_liq  = bank_prev.get("liquidity", {})
+            bank_prev_eff  = bank_prev.get("efficiency", {})
             self.company_dupont_factor1_label = "ROA"
             self.company_dupont_factor1_unit  = "%"
             self.company_dupont_factor2_label = ""
@@ -673,19 +690,19 @@ class AnalysisState(UploadState):
             self.company_roe_dupont = _pct(bank_prof.get("roe"))
             self.company_roe_prev   = _pct(bank_prev_prof.get("roe"))
             self.company_ratio_color_map = {
-                "bank_nim": _color(bank_prof.get("nim"), good_above=0.04, bad_below=0.02),
-                "bank_roa": _color(bank_prof.get("roa"), good_above=0.015, bad_below=0),
-                "bank_roe": _color(bank_prof.get("roe"), good_above=0.10, bad_below=0),
-                "bank_net_margin": _color(bank_prof.get("net_margin"), good_above=0.15, bad_below=0),
-                "bank_interest_income_ratio": _color(bank_prof.get("interest_income_ratio"), good_above=0.6, bad_below=0.3),
-                "bank_equity_multiplier": _color(bank_cap.get("equity_multiplier"), good_below=10.0, bad_above=15.0),
-                "bank_equity_to_assets": _color(bank_cap.get("equity_to_assets"), good_above=0.12, bad_below=0.08),
-                "bank_npl_ratio": _color(bank_aq.get("npl_ratio"), good_below=0.03, bad_above=0.07),
-                "bank_coverage_ratio": _color(bank_aq.get("coverage_ratio"), good_above=1.5, bad_below=1.0),
-                "bank_loan_loss_reserve": _color(bank_aq.get("loan_loss_reserve_ratio"), good_above=0.05, bad_below=0.02),
-                "bank_provision_to_loans": _color(bank_aq.get("provision_to_loans"), good_above=0.02, bad_below=0.005),
-                "bank_ldr": _color(bank_liq.get("ldr"), good_below=0.80, bad_above=0.90),
-                "bank_cost_to_income": _color(bank_eff.get("cost_to_income"), good_below=0.50, bad_above=0.70),
+                "bank_nim":                  _yoy_color(bank_prof.get("nim"),                      bank_prev_prof.get("nim"),                      higher_is_good=True),
+                "bank_roa":                  _yoy_color(bank_prof.get("roa"),                      bank_prev_prof.get("roa"),                      higher_is_good=True),
+                "bank_roe":                  _yoy_color(bank_prof.get("roe"),                      bank_prev_prof.get("roe"),                      higher_is_good=True),
+                "bank_net_margin":           _yoy_color(bank_prof.get("net_margin"),               bank_prev_prof.get("net_margin"),               higher_is_good=True),
+                "bank_interest_income_ratio":_yoy_color(bank_prof.get("interest_income_ratio"),    bank_prev_prof.get("interest_income_ratio"),    higher_is_good=True),
+                "bank_equity_multiplier":    _yoy_color(bank_cap.get("equity_multiplier"),         bank_prev_cap.get("equity_multiplier"),         higher_is_good=False),
+                "bank_equity_to_assets":     _yoy_color(bank_cap.get("equity_to_assets"),          bank_prev_cap.get("equity_to_assets"),          higher_is_good=True),
+                "bank_npl_ratio":            _yoy_color(bank_aq.get("npl_ratio"),                  bank_prev_aq.get("npl_ratio"),                  higher_is_good=False),
+                "bank_coverage_ratio":       _yoy_color(bank_aq.get("coverage_ratio"),             bank_prev_aq.get("coverage_ratio"),             higher_is_good=True),
+                "bank_loan_loss_reserve":    _yoy_color(bank_aq.get("loan_loss_reserve_ratio"),    bank_prev_aq.get("loan_loss_reserve_ratio"),    higher_is_good=True),
+                "bank_provision_to_loans":   _yoy_color(bank_aq.get("provision_to_loans"),         bank_prev_aq.get("provision_to_loans"),         higher_is_good=True),
+                "bank_ldr":                  _yoy_color(bank_liq.get("ldr"),                       bank_prev_liq.get("ldr"),                       higher_is_good=False),
+                "bank_cost_to_income":       _yoy_color(bank_eff.get("cost_to_income"),            bank_prev_eff.get("cost_to_income"),            higher_is_good=False),
             }
 
         elif sector == "Insurance":
@@ -732,6 +749,8 @@ class AnalysisState(UploadState):
             ins_prev = ins_result.get("prev", {})
             ins_prev_prof = ins_prev.get("profitability", {})
             ins_prev_solv = ins_prev.get("solvency", {})
+            ins_prev_uw   = ins_prev.get("underwriting", {})
+            ins_prev_liq  = ins_prev.get("liquidity", {})
             ins_leverage   = ins_solv.get("leverage_ratio")       # liabilities / equity
             ins_leverage_p = ins_prev_solv.get("leverage_ratio")
             # Equity Multiplier = 1 + leverage_ratio = assets / equity
@@ -760,15 +779,15 @@ class AnalysisState(UploadState):
             self.company_roe_dupont = _pct(ins_prof.get("roe"))
             self.company_roe_prev   = _pct(ins_prev_prof.get("roe"))
             self.company_ratio_color_map = {
-                "ins_loss_ratio": _color(ins_uw.get("loss_ratio"), good_below=0.60, bad_above=0.80),
-                "ins_expense_ratio": _color(ins_uw.get("expense_ratio"), good_below=0.25, bad_above=0.35),
-                "ins_combined_ratio": _color(ins_uw.get("combined_ratio"), good_below=0.95, bad_above=1.00),
-                "ins_roa": _color(ins_prof.get("roa"), good_above=0.03, bad_below=0),
-                "ins_roe": _color(ins_prof.get("roe"), good_above=0.10, bad_below=0),
-                "ins_net_margin": _color(ins_prof.get("net_margin"), good_above=0.10, bad_below=0),
-                "ins_solvency_ratio": _color(ins_solv.get("solvency_ratio"), good_above=1.5, bad_below=1.0),
-                "ins_reserve_coverage": _color(ins_solv.get("reserve_coverage"), good_above=1.5, bad_below=1.0),
-                "ins_ocf_ratio": _color(ins_liq.get("ocf_ratio"), good_above=0.1, bad_below=0),
+                "ins_loss_ratio":      _yoy_color(ins_uw.get("loss_ratio"),         ins_prev_uw.get("loss_ratio"),          higher_is_good=False),
+                "ins_expense_ratio":   _yoy_color(ins_uw.get("expense_ratio"),      ins_prev_uw.get("expense_ratio"),       higher_is_good=False),
+                "ins_combined_ratio":  _yoy_color(ins_uw.get("combined_ratio"),     ins_prev_uw.get("combined_ratio"),      higher_is_good=False),
+                "ins_roa":             _yoy_color(ins_prof.get("roa"),              ins_prev_prof.get("roa"),               higher_is_good=True),
+                "ins_roe":             _yoy_color(ins_prof.get("roe"),              ins_prev_prof.get("roe"),               higher_is_good=True),
+                "ins_net_margin":      _yoy_color(ins_prof.get("net_margin"),       ins_prev_prof.get("net_margin"),        higher_is_good=True),
+                "ins_solvency_ratio":  _yoy_color(ins_solv.get("solvency_ratio"),   ins_prev_solv.get("solvency_ratio"),    higher_is_good=True),
+                "ins_reserve_coverage":_yoy_color(ins_solv.get("reserve_coverage"), ins_prev_solv.get("reserve_coverage"),  higher_is_good=True),
+                "ins_ocf_ratio":       _yoy_color(ins_liq.get("ocf_ratio"),         ins_prev_liq.get("ocf_ratio"),          higher_is_good=True),
             }
 
         elif sector == "Finance":
@@ -824,6 +843,8 @@ class AnalysisState(UploadState):
             fin_prev_prof = fin_prev.get("profitability", {})
             fin_prev_eff  = fin_prev.get("efficiency", {})
             fin_prev_lev  = fin_prev.get("leverage", {})
+            fin_prev_aq   = fin_prev.get("asset_quality", {})
+            fin_prev_liq  = fin_prev.get("liquidity", {})
             self.company_finance_subsector    = _detect_finance_subsector(
                 fin_result.get("company", "")
             )
@@ -842,16 +863,16 @@ class AnalysisState(UploadState):
             self.company_roe_dupont = _pct(fin_prof.get("roe"))
             self.company_roe_prev   = _pct(fin_prev_prof.get("roe"))
             self.company_ratio_color_map = {
-                "fin_nim": _color(fin_prof.get("nim"), good_above=0.04, bad_below=0.02),
-                "fin_roa": _color(fin_prof.get("roa"), good_above=0.02, bad_below=0),
-                "fin_roe": _color(fin_prof.get("roe"), good_above=0.10, bad_below=0),
-                "fin_net_margin": _color(fin_prof.get("net_margin"), good_above=0.10, bad_below=0),
-                "fin_cost_to_income": _color(fin_eff.get("cost_to_income"), good_below=0.50, bad_above=0.70),
-                "fin_debt_to_equity": _color(fin_lev.get("debt_to_equity"), good_below=3.0, bad_above=8.0),
-                "fin_equity_ratio": _color(fin_lev.get("equity_ratio"), good_above=0.15, bad_below=0.08),
-                "fin_npa_ratio": _color(fin_aq.get("npa_ratio"), good_below=0.03, bad_above=0.07),
-                "fin_provision_coverage": _color(fin_aq.get("provision_coverage"), good_above=1.0, bad_below=0.7),
-                "fin_ocf_ratio": _color(fin_liq.get("ocf_ratio"), good_above=0.1, bad_below=0),
+                "fin_nim":              _yoy_color(fin_prof.get("nim"),              fin_prev_prof.get("nim"),              higher_is_good=True),
+                "fin_roa":              _yoy_color(fin_prof.get("roa"),              fin_prev_prof.get("roa"),              higher_is_good=True),
+                "fin_roe":              _yoy_color(fin_prof.get("roe"),              fin_prev_prof.get("roe"),              higher_is_good=True),
+                "fin_net_margin":       _yoy_color(fin_prof.get("net_margin"),       fin_prev_prof.get("net_margin"),       higher_is_good=True),
+                "fin_cost_to_income":   _yoy_color(fin_eff.get("cost_to_income"),    fin_prev_eff.get("cost_to_income"),    higher_is_good=False),
+                "fin_debt_to_equity":   _yoy_color(fin_lev.get("debt_to_equity"),    fin_prev_lev.get("debt_to_equity"),    higher_is_good=False),
+                "fin_equity_ratio":     _yoy_color(fin_lev.get("equity_ratio"),      fin_prev_lev.get("equity_ratio"),      higher_is_good=True),
+                "fin_npa_ratio":        _yoy_color(fin_aq.get("npa_ratio"),          fin_prev_aq.get("npa_ratio"),          higher_is_good=False),
+                "fin_provision_coverage":_yoy_color(fin_aq.get("provision_coverage"),fin_prev_aq.get("provision_coverage"), higher_is_good=True),
+                "fin_ocf_ratio":        _yoy_color(fin_liq.get("ocf_ratio"),         fin_prev_liq.get("ocf_ratio"),         higher_is_good=True),
             }
 
         else:
@@ -918,6 +939,9 @@ class AnalysisState(UploadState):
             prev_prof = prev_data.get("profitability", {})
             prev_act  = prev_data.get("activity", {})
             prev_solv = prev_data.get("solvency", {})
+            prev_liq  = prev_data.get("liquidity", {})
+            prev_perf = prev_data.get("performance", {})
+            prev_zs   = prev_data.get("z_score", {})
 
             self.company_net_margin_dupont = _pct(prof.get("net_margin"))
             self.company_net_margin_prev   = _pct(prev_prof.get("net_margin"))
@@ -932,23 +956,23 @@ class AnalysisState(UploadState):
             self.company_roe_dupont = _pct(prof.get("roe"))
             self.company_roe_prev   = _pct(prev_prof.get("roe"))
             self.company_ratio_color_map = {
-                "roa": _color(prof.get("roa"), good_above=0.05, bad_below=0),
-                "roe": _color(prof.get("roe"), good_above=0.10, bad_below=0),
-                "net_margin": _color(prof.get("net_margin"), good_above=0.05, bad_below=0),
-                "gross_margin": _color(prof.get("gross_margin"), good_above=0.20, bad_below=0.05),
-                "operating_margin": _color(prof.get("operating_margin"), good_above=0.10, bad_below=0),
-                "ebit_margin": _color(prof.get("ebit_margin"), good_above=0.10, bad_below=0),
-                "current_ratio": _color(liq.get("current_ratio"), good_above=1.5, bad_below=1.0),
-                "quick_ratio": _color(liq.get("quick_ratio"), good_above=1.0, bad_below=0.5),
-                "cash_ratio": _color(liq.get("cash_ratio"), good_above=0.5, bad_below=0.1),
-                "debt_equity": _color(solv.get("debt_to_equity"), good_below=1.0, bad_above=3.0),
-                "debt_to_assets": _color(solv.get("debt_to_assets"), good_below=0.4, bad_above=0.6),
-                "equity_ratio": _color(solv.get("equity_ratio"), good_above=0.4, bad_below=0.2),
-                "interest_cov": _color(solv.get("interest_coverage"), good_above=3.0, bad_below=1.0),
-                "asset_turnover": _color(act.get("total_asset_turnover"), good_above=1.0, bad_below=0.3),
-                "ocf_ratio": _color(perf.get("ocf_ratio"), good_above=0.1, bad_below=0),
-                "cf_to_debt": _color(perf.get("cf_to_debt"), good_above=0.2, bad_below=0.05),
-                "z_score": _color(zs.get("z_score"), good_above=2.99, bad_below=1.81),
+                "roa":              _yoy_color(prof.get("roa"),                    prev_prof.get("roa"),                    higher_is_good=True),
+                "roe":              _yoy_color(prof.get("roe"),                    prev_prof.get("roe"),                    higher_is_good=True),
+                "net_margin":       _yoy_color(prof.get("net_margin"),             prev_prof.get("net_margin"),             higher_is_good=True),
+                "gross_margin":     _yoy_color(prof.get("gross_margin"),           prev_prof.get("gross_margin"),           higher_is_good=True),
+                "operating_margin": _yoy_color(prof.get("operating_margin"),       prev_prof.get("operating_margin"),       higher_is_good=True),
+                "ebit_margin":      _yoy_color(prof.get("ebit_margin"),            prev_prof.get("ebit_margin"),            higher_is_good=True),
+                "current_ratio":    _yoy_color(liq.get("current_ratio"),           prev_liq.get("current_ratio"),           higher_is_good=True),
+                "quick_ratio":      _yoy_color(liq.get("quick_ratio"),             prev_liq.get("quick_ratio"),             higher_is_good=True),
+                "cash_ratio":       _yoy_color(liq.get("cash_ratio"),              prev_liq.get("cash_ratio"),              higher_is_good=True),
+                "debt_equity":      _yoy_color(solv.get("debt_to_equity"),         prev_solv.get("debt_to_equity"),         higher_is_good=False),
+                "debt_to_assets":   _yoy_color(solv.get("debt_to_assets"),         prev_solv.get("debt_to_assets"),         higher_is_good=False),
+                "equity_ratio":     _yoy_color(solv.get("equity_ratio"),           prev_solv.get("equity_ratio"),           higher_is_good=True),
+                "interest_cov":     _yoy_color(solv.get("interest_coverage"),      prev_solv.get("interest_coverage"),      higher_is_good=True),
+                "asset_turnover":   _yoy_color(act.get("total_asset_turnover"),    prev_act.get("total_asset_turnover"),    higher_is_good=True),
+                "ocf_ratio":        _yoy_color(perf.get("ocf_ratio"),              prev_perf.get("ocf_ratio"),              higher_is_good=True),
+                "cf_to_debt":       _yoy_color(perf.get("cf_to_debt"),             prev_perf.get("cf_to_debt"),             higher_is_good=True),
+                "z_score":          _yoy_color(zs.get("z_score"),                  prev_zs.get("z_score"),                  higher_is_good=True),
             }
 
         # --- Populate flat display vars (common to all sectors) ---
