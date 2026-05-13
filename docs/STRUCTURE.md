@@ -450,7 +450,7 @@ Requires shares outstanding + last close price. Any metric with missing inputs r
 | `align_returns(returns_map)` | Aligns all series to common date range |
 | `compute_portfolio_returns(weights, matrix)` | Portfolio-level daily return series |
 | `compute_risk_metrics(port_returns)` | Sortino, max drawdown, CVaR 95% |
-| `mean_variance_optimize(matrix, names)` | SciPy minimize → max Sharpe weights |
+| `mean_variance_optimize(matrix, names)` | SciPy minimize → max Sharpe weights (risk-free rate = 12% p.a.) |
 | `sample_frontier(matrix, n=200)` | Efficient frontier scatter data |
 | `compute_sector_breakdown(holdings)` | Sector weights for donut chart |
 | `rebalance_weights(holdings, company, pct)` | Proportional rebalance after manual edit |

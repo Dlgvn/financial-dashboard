@@ -282,12 +282,15 @@ def mean_variance_optimize(
     # Maximize Sharpe ratio by minimizing its negative (scipy.optimize.minimize minimizes by convention).
     # SLSQP (Sequential Least Squares Programming): gradient-based constrained optimizer.
     # Constraints: weights sum to exactly 1.0. Bounds: [0, 1] per asset enforces long-only (no shorting).
+    RISK_FREE_RATE = 0.12  # Annual risk-free rate (12%)
+    daily_rfr = RISK_FREE_RATE / 252
+
     def neg_sharpe(w: np.ndarray) -> float:
         port_return = float(w @ mean_returns)
         port_var = float(w @ cov_matrix @ w)
         if port_var <= 0:
             return 1e10
-        return -(port_return / math.sqrt(port_var))
+        return -((port_return - daily_rfr) / math.sqrt(port_var))
 
     constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
     bounds = [(0.0, 1.0)] * n
@@ -428,7 +431,8 @@ def compute_individual_stats(
         daily_std = float(np.std(returns, ddof=1))
         ann_ret = daily_ret * 252
         ann_std = daily_std * math.sqrt(252)
-        sharpe = ann_ret / ann_std if ann_std > 0 else None
+        RISK_FREE_RATE = 0.12  # Annual risk-free rate (12%)
+        sharpe = (ann_ret - RISK_FREE_RATE) / ann_std if ann_std > 0 else None
         results.append({
             "company": name,
             "daily_return": f"{daily_ret * 100:.4f}%",
